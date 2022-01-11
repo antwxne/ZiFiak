@@ -16,5 +16,6 @@ Server_n::Server::Server(unsigned short port)
 
 void Server_n::Server::run()
 {
+    Debug::log("server running");
     _io_context.run();
 }

@@ -6,15 +6,30 @@
 */
 
 #include <iostream>
-#include "Debug/Debug.hpp"
+#include <cstdlib>
+#include <regex>
 
-int main()
+#include "Debug/Debug.hpp"
+#include "Server/Server.hpp"
+
+int main(int ac, char **av)
 {
+    if (ac != 2) {
+        std::cout << "please provide a port" << std::endl;
+        return 84;
+    }
     try {
+        Server_n::Server server(std::atoi(av[1]));
         std::cout << "hello world!" << std::endl;
-        throw MyException("Ca marche", __func__, __FILE__, __LINE__);
+        server.run();
     } catch (const MyException &e) {
         Debug::err(e);
+        return 84;
+    } catch (const std::exception &e) {
+        std::regex space("[[:space:]]");
+        std::string search = "https://www.google.com/search?q=" + std::string(e.what());
+        Debug::err(std::regex_replace(search, space, "%20"));
+        return 84;
     }
     return 0;
 }

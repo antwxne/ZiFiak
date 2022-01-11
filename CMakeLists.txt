@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #Project name
-project(Basic_server)
+project(Zia)
 
 #Flags
 set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall -Wextra")
@@ -18,7 +18,7 @@ if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
 endif ()
 
 #Bin name
-set(NAME server)
+set(NAME zia)
 
 #Truc conan
 include(${CMAKE_SOURCE_DIR}/build/conanbuildinfo.cmake)
