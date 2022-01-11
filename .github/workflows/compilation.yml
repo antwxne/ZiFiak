@@ -1,0 +1,45 @@
+name: Build Check
+
+on:
+  push:
+    branches:
+      - master
+    commit-ignore:
+      - [skip ci]
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    name: ${{ matrix.os }} build
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install conan
+        run: |
+          pip3 install conan
+          pip3 install conan --upgrade
+
+      - name: Configure conan (Ubuntu only)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          conan profile new --detect default
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+
+      - name: Build project
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: |
+          make
+        working-directory: ./
+
+      - name: Build project Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          mkdir -p build && cd build && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
+        working-directory: ./
