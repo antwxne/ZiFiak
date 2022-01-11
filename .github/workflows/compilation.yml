@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
     commit-ignore:
       - [skip ci]
   pull_request:
