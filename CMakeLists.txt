@@ -1,5 +1,5 @@
 #Cmake version
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.21)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -9,7 +9,7 @@ project(Zia)
 
 #Flags
 set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG_INIT "-Wall -Wextra -g -ggdb -g3")
+set(CMAKE_CXX_FLAGS_DEBUG_INIT "-Wall -Wextra -ggdb -g3")
 
 
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)

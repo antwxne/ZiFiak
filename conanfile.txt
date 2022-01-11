@@ -1,5 +1,6 @@
 [requires]
-asio/1.19.2
+asio/1.21.0
+http_parser/2.9.4
 
 [generators]
 cmake
