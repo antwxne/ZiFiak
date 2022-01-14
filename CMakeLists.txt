@@ -25,26 +25,27 @@ include(${CMAKE_SOURCE_DIR}/build/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS KEEP_RPATHS)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
-#include
+#includes
 include_directories(Sources)
+include_directories(API)
 
-#Sources
-set(SRC Sources/Server/Server.cpp Sources/Server/Server.hpp
-        Sources/Server/Client.cpp Sources/Server/Client.hpp 
-        Sources/Debug/Debug.cpp Sources/Debug/Debug.hpp
-        Sources/Exceptions/MyException.cpp Sources/Exceptions/MyException.hpp
-        )
+# Server Sources
+include(Server.cmake)
+set(MAIN
+        Sources/Main.cpp )
+set(SRC ${SRC} Sources/HTTP/Request/Request.cpp Sources/HTTP/Request/Request.hpp Sources/HTTP/Response/Response.cpp Sources/HTTP/Response/Response.hpp)
 
-set(MAIN Sources/Main.cpp )
-
-
-set(TESTS_SRC
-        ${SRC})
+# Sources et nom des Modules
+include(Modules.cmake)
 
 if(NOT UNIT_TESTS STREQUAL TRUE)
 
+    # Build le server
     add_executable(${NAME} ${MAIN} ${SRC})
     conan_target_link_libraries(${NAME} ${CONAN_LIBS})
+
+    #Build les modules
+    include(Build_modules.cmake)
 
 else()
     set(TESTS_NAME unit_tests)
