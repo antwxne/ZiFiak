@@ -33,7 +33,7 @@ include_directories(API)
 include(Server.cmake)
 set(MAIN
         Sources/Main.cpp )
-set(SRC ${SRC} Sources/HTTP/Request/Request.cpp Sources/HTTP/Request/Request.hpp Sources/HTTP/Response/Response.cpp Sources/HTTP/Response/Response.hpp)
+set(SRC ${SRC} )
 
 # Sources et nom des Modules
 include(Modules.cmake)
