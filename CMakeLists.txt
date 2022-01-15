@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #Flags
-set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall -Wextra -lstdc++17")
 set(CMAKE_CXX_FLAGS_DEBUG_INIT "-Wall -Wextra -ggdb -g3")
 
 
