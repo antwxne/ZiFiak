@@ -1,11 +1,11 @@
 #Cmake version
 cmake_minimum_required(VERSION 3.21)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 #Project name
 project(Zia)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #Flags
 set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall -Wextra")
@@ -25,27 +25,30 @@ include(${CMAKE_SOURCE_DIR}/build/conanbuildinfo.cmake)
 conan_basic_setup(TARGETS KEEP_RPATHS)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
+# Change le dossier d'ouput des binaires / .so
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}/Modules)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR}/Modules)
+
 #includes
 include_directories(Sources)
 include_directories(API)
 
 # Server Sources
-include(Server.cmake)
+include(Sources/Server.cmake)
 set(MAIN
         Sources/Main.cpp )
 set(SRC ${SRC} )
 
 # Sources et nom des Modules
-include(Modules.cmake)
+include(Sources/Modules/Modules.cmake)
 
 if(NOT UNIT_TESTS STREQUAL TRUE)
 
     # Build le server
     add_executable(${NAME} ${MAIN} ${SRC})
     conan_target_link_libraries(${NAME} ${CONAN_LIBS})
-
-    #Build les modules
-    include(Build_modules.cmake)
 
 else()
     set(TESTS_NAME unit_tests)
