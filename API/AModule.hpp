@@ -12,13 +12,14 @@
 #include "Server/Config/Configuration.hpp"
 
 namespace Module_n {
-class AModule: IModule {
+class AModule: public IModule {
+public:
     AModule(const Server_n::Configuration &configuration);
     ~AModule() = default;
 
     API_n::phase_e getExecutionPhase() const noexcept final;
 
-private:
+protected:
     API_n::phase_e _phase;
 };
 }
