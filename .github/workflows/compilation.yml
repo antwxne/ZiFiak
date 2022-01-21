@@ -53,14 +53,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: webfactory/ssh-agent@v0.5.4
+
+      - uses: pixta-dev/repository-mirroring-action@v1
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-      - run: |
-          echo "The name of the pusher: ${{ github.event.pusher.name }}"
-          echo "The email of the pusher: ${{ github.event.pusher.email }}"
-      - run: |
-          git config --global user.name ${{ github.event.pusher.name }}
-          git remote add epitech git@github.com:EpitechPromo2024/B-YEP-500-PAR-5-1-zia-arthur.fouquet.git
-          git fetch --unshallow epitech
-          git push epitech master:main --force
+          target_repo_url: git@github.com:EpitechPromo2024/B-YEP-500-PAR-5-1-zia-arthur.fouquet.git
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
