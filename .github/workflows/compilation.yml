@@ -14,46 +14,35 @@ on:
   workflow_dispatch:
 
 jobs:
-#  build:
-#    strategy:
-#      matrix:
-#        os: [ubuntu-latest, windows-latest, macos-latest]
-#    name: ${{ matrix.os }} build
-#    runs-on: ${{ matrix.os }}
-#    timeout-minutes: 15
-#    steps:
-#      - uses: actions/checkout@v2
-#
-#      - name: Install conan
-#        run: |
-#          pip3 install conan
-#          pip3 install conan --upgrade
-#
-#      - name: Configure conan (Ubuntu only)
-#        if: ${{ matrix.os == 'ubuntu-latest' }}
-#        run: |
-#          conan profile new --detect default
-#          conan profile update settings.compiler.libcxx=libstdc++11 default
-#
-#      - name: Build project
-#        if: ${{ matrix.os != 'windows-latest' }}
-#        run: |
-#          make
-#        working-directory: ./
-#
-#      - name: Build project Windows
-#        if: ${{ matrix.os == 'windows-latest' }}
-#        run: |
-#          mkdir -p build && cd build && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
-#        working-directory: ./
-
-  pushToEpitech:
-    name: Push Master branch to Epitech project
-    #needs: build
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    name: ${{ matrix.os }} build
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v2
-      - uses: pixta-dev/repository-mirroring-action@v1
-        with:
-          target_repo_url: git@github.com:EpitechPromo2024/B-YEP-500-PAR-5-1-zia-arthur.fouquet.git
-          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Install conan
+        run: |
+          pip3 install conan
+          pip3 install conan --upgrade
+
+      - name: Configure conan (Ubuntu only)
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          conan profile new --detect default
+          conan profile update settings.compiler.libcxx=libstdc++11 default
+
+      - name: Build project
+        if: ${{ matrix.os != 'windows-latest' }}
+        run: |
+          make
+        working-directory: ./
+
+      - name: Build project Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          mkdir -p build && cd build && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
+        working-directory: ./
