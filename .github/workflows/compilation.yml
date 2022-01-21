@@ -5,7 +5,6 @@ on:
     branches:
       - master
       - main
-      - dev
     commit-ignore:
       - [skip ci]
   pull_request:
