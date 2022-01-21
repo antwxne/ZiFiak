@@ -7,7 +7,7 @@
 
 #include "AModule.hpp"
 
-Module_n::AModule::AModule(const Server_n::Configuration &configuration)
+Module_n::AModule::AModule(const JObject &configuration)
 {
 }
 

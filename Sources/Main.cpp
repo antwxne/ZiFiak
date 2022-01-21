@@ -12,6 +12,25 @@
 #include "Debug/Debug.hpp"
 #include "Server/Server.hpp"
 
+#include "AModule.hpp"
+
+void plop()
+{
+    using namespace std::string_literals;
+
+    JObject plouf = {
+        JField("firstName"s, "phn"s), JField{"lastName"s, "Smith"s},
+        JField{"isAlive"s, true}, JField{"age"s, 27},
+
+
+    }
+
+
+}
+
+
+
+
 int main(int ac, char **av)
 {
     if (ac != 2) {

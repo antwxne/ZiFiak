@@ -24,6 +24,9 @@ public:
     void run();
 
 private:
+    // le truc qui est appellé apres read doit etre threadé
+
+private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
     std::vector<std::shared_ptr<Server_n::Client>> _clients;
