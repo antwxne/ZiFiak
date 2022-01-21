@@ -53,7 +53,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
       - uses: pixta-dev/repository-mirroring-action@v1
         with:
           target_repo_url: git@github.com:EpitechPromo2024/B-YEP-500-PAR-5-1-zia-arthur.fouquet.git
