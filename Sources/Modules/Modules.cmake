@@ -1,7 +1,9 @@
 # Interface et Abstraction des modules
 set(BASE_MODULE
         API/IModule.hpp
-        API/AModule.cpp API/AModule.hpp)
+        API/AModule.cpp API/AModule.hpp
+        Sources/Debug/Debug.cpp Sources/Debug/Debug.hpp
+        )
 
 #Module d'exemple
 set(MODULE1_NAME module1)
