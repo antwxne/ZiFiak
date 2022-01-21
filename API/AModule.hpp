@@ -12,16 +12,38 @@
 #include "Server/Config/Configuration.hpp"
 
 namespace Module_n {
-class AModule: public IModule {
-public:
-    AModule(const Server_n::Configuration &configuration);
-    ~AModule() = default;
 
-    API_n::phase_e getExecutionPhase() const noexcept final;
+    /**
+    * @brief Abstraction for Module
+    *
+    */
+    class AModule : public IModule {
+    public:
+        /**
+         * @brief Construct a new AModule object
+         *
+         * @param configuration
+         */
+        AModule(const Server_n::Configuration &configuration);
 
-protected:
-    API_n::phase_e _phase;
-};
+        /**
+         * @brief Destroy the AModule object
+         *
+         */
+        ~AModule() = default;
+
+        /**
+         * @brief Get the Execution Phase object
+         *
+         * @return API_n::phase_e
+         */
+        API_n::phase_e getExecutionPhase() const
+
+        noexcept final;
+
+    protected:
+        API_n::phase_e _phase;
+    };
 }
 
 #endif //ZIA_AMODULE_HPP

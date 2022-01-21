@@ -7,3 +7,5 @@ cmake-build-*
 out/
 .vs/
 zia
+*.dylib
+*.dll
