@@ -59,12 +59,8 @@ jobs:
       - run: |
           echo "The name of the pusher: ${{ github.event.pusher.name }}"
           echo "The email of the pusher: ${{ github.event.pusher.email }}"
-      - uses: oleksiyrudenko/gha-git-credentials@v2.1
-        with:
-          global: true
-          name: ${{ github.event.pusher.name }}
-          email: ${{ github.event.pusher.email }}
       - run: |
+          git config --global user.name ${{ github.event.pusher.name }}
           git remote add epitech git@github.com:EpitechPromo2024/B-YEP-500-PAR-5-1-zia-arthur.fouquet.git
           git fetch --unshallow epitech main
           git push epitech epitech/main
