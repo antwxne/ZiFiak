@@ -62,4 +62,4 @@ jobs:
       - run: |
           git config --global user.name ${{ github.event.pusher.name }}
           git remote add epitech git@github.com:EpitechPromo2024/B-YEP-500-PAR-5-1-zia-arthur.fouquet.git
-          git push epitech dev
+          git push epitech master:main --force
