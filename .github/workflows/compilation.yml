@@ -3,11 +3,13 @@ name: Build Check
 on:
   push:
     branches:
+      - master
       - main
     commit-ignore:
       - [skip ci]
   pull_request:
     branches:
+      - master
       - main
   workflow_dispatch:
 
@@ -43,3 +45,16 @@ jobs:
         run: |
           mkdir -p build && cd build && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
         working-directory: ./
+
+  pushToEpitech:
+    name: Push Master branch to Epitech project
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - run: |
+          git remote add epitech git@github.com:EpitechPromo2024/B-YEP-500-PAR-5-1-zia-arthur.fouquet.git
+          git push epitech main
