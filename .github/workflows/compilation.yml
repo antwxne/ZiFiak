@@ -58,5 +58,5 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       - run: |
           git remote add epitech git@github.com:EpitechPromo2024/B-YEP-500-PAR-5-1-zia-arthur.fouquet.git
-          git fetch --unshallow epitech
+          git fetch --unshallow epitech main
           git push epitech main
