@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #Flags
-set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall -Wextra -lstdc++")
+set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG_INIT "-Wall -Wextra -ggdb -g3")
 
 
@@ -39,7 +39,7 @@ include_directories(API)
 include(Sources/Server.cmake)
 set(MAIN
         Sources/Main.cpp )
-set(SRC ${SRC} API/Context/Context.cpp API/Context/Context.hpp)
+set(SRC ${SRC} )
 
 # Sources et nom des Modules
 include(Sources/Modules/Modules.cmake)

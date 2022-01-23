@@ -14,8 +14,8 @@ namespace Module_n {
 
 class TestModule : public AModule{
 public:
-    TestModule(const Server_n::Configuration &configuration);
-    responseCode_e handleRequest(HTTP_n::Request &req, HTTP_n::Response &res);
+    TestModule(const JSONObject &configuration);
+    responseCode_e handleRequest(IContext &context);
 };
 }
 #endif //ZIA_TESTMODULE_HPP

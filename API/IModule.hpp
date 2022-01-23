@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "Context/Context.hpp"
+#include "Context/IContext.hpp"
 
 namespace API_n {
 enum phase_e : char;
@@ -27,7 +27,7 @@ enum responseCode_e : char {
 class IModule {
 public:
     virtual API_n::phase_e getExecutionPhase() const noexcept = 0;
-    virtual responseCode_e handleRequest(Context &context) = 0; // prendre un contexte (client, buffer, socket, config du serveur(optionel))
+    virtual responseCode_e handleRequest(IContext &context) = 0; // prendre un contexte (client, buffer, socket, config du serveur(optionel))
 };
 }
 #endif //ZIA_IMODULE_HPP

@@ -7,7 +7,7 @@
 
 #include "AModule.hpp"
 
-Module_n::AModule::AModule(const JObject &configuration)
+Module_n::AModule::AModule(const JSONObject &configuration)
 {
 }
 
