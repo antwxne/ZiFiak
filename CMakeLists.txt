@@ -41,9 +41,6 @@ set(MAIN
         Sources/Main.cpp )
 set(SRC ${SRC} )
 
-# Sources et nom des Modules
-include(Sources/Modules/Modules.cmake)
-
 if(NOT UNIT_TESTS STREQUAL TRUE)
 
     # Build le server
