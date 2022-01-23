@@ -12,7 +12,7 @@
 Module_n::TestModule::TestModule(const JSONObject &configuration) : AModule(
     configuration)
 {
-    _phase = API_n::phase_e::PLOP;
+    _phase = API_n::phase_e::CGI;
 }
 
 Module_n::responseCode_e Module_n::TestModule::handleRequest(IContext &context

@@ -23,7 +23,7 @@ public:
     /**
      * @brief Construct a new AModule object
      *
-     * @param configuration
+     * @param configuration (contains the server config in a JSON like data type)
      */
     AModule(const JSONObject &configuration);
     /**

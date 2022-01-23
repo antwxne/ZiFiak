@@ -13,9 +13,7 @@
 #include <vector>
 #include <memory>
 
-#include "IModule.hpp"
-#include "HTTP/Response/Response.hpp"
-#include "HTTP/Request/Request.hpp"
+#include "Module/IModule.hpp"
 
 namespace API_n {
 
@@ -24,8 +22,11 @@ namespace API_n {
  * 
  */
 enum phase_e : char {
-    PLOP,
-    PLOUF
+    CGI,
+    PRE_REQ,
+    POST_REQ,
+    PRE_PARSE,
+    POST_PARSE
 };
 
 /**
@@ -52,11 +53,11 @@ public:
     void loadModule(const std::string &name);
     /**
      * @brief handleRequest
+     * call all the module in the correct execution order.
      *
-     * @param req
-     * @return std::shared_ptr<HTTP_n::Response>
+     * @param context (contains client information)
      */
-    std::shared_ptr<HTTP_n::Response> handleRequest(HTTP_n::Request &req);
+    void handleRequest(IContext &context);
 
 private:
     /**

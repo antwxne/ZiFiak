@@ -8,7 +8,7 @@
 #ifndef ZIA_TESTMODULE_HPP
 #define ZIA_TESTMODULE_HPP
 
-#include "AModule.hpp"
+#include "Module/AModule.hpp"
 
 namespace Module_n {
 
