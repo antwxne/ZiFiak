@@ -9,14 +9,13 @@
 #include "Api.hpp"
 #include "Debug/Debug.hpp"
 
-Module_n::TestModule::TestModule(const Server_n::Configuration &configuration)
-    : AModule(configuration)
+Module_n::TestModule::TestModule(const JSONObject &configuration) : AModule(
+    configuration)
 {
     _phase = API_n::phase_e::PLOP;
 }
 
-Module_n::responseCode_e Module_n::TestModule::handleRequest(
-    HTTP_n::Request &req, HTTP_n::Response &res
+Module_n::responseCode_e Module_n::TestModule::handleRequest(IContext &context
 )
 {
     Debug::log("je suis une petite fleure");

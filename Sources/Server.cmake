@@ -11,6 +11,7 @@ set(SRC
         Sources/Watcher/Watcher.cpp Sources/Watcher/Watcher.hpp
         API/IModule.hpp
         API/AModule.cpp API/AModule.hpp
+        API/Context/IContext.hpp API/JSON.hpp
         )
 
 
