@@ -8,6 +8,8 @@ set(SRC
         Sources/HTTP/Request/Request.cpp Sources/HTTP/Request/Request.hpp
         Sources/HTTP/Response/Response.cpp Sources/HTTP/Response/Response.hpp
         Sources/Watcher/Watcher.cpp Sources/Watcher/Watcher.hpp
+        Sources/Watcher/LoadLib.cpp Sources/Watcher/LoadLib.hpp
+        Sources/dylib/dylib.hpp
         )
 
 
