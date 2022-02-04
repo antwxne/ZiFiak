@@ -4,15 +4,6 @@ set(SRC
         Sources/Server/Client.cpp Sources/Server/Client.hpp
         Sources/Debug/Debug.cpp Sources/Debug/Debug.hpp
         Sources/Exceptions/MyException.cpp Sources/Exceptions/MyException.hpp
-        Sources/Server/Config/Configuration.cpp Sources/Server/Config/Configuration.hpp
-        Sources/HTTP/Request/Request.cpp Sources/HTTP/Request/Request.hpp
-        Sources/HTTP/Response/Response.cpp Sources/HTTP/Response/Response.hpp
-        Sources/Watcher/Watcher.cpp Sources/Watcher/Watcher.hpp
+        Sources/LoadLib/LoadLib.cpp Sources/LoadLib/LoadLib.hpp
+        Sources/dylib/dylib.hpp
         )
-
-
-
-#Sources tests unitaires
-
-set(TESTS_SRC
-        ${SRC})
