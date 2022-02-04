@@ -8,6 +8,8 @@
 #include <iostream>
 #include <dlfcn.h>
 #include <vector>
+#include <memory>
+#include <functional>
 
 class LoadLib {
 public:
