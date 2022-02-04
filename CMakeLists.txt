@@ -45,6 +45,9 @@ set(SRC ${SRC})
 # Build le server
 add_executable(${NAME} ${MAIN} ${SRC})
 conan_target_link_libraries(${NAME} ${CONAN_LIBS})
+if(UNIX)
+    target_link_libraries(${NAME} dl)
+endif()
 
 # Truc pour utiliser l'api de reference
 include(ExternalProject)
