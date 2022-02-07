@@ -4,12 +4,15 @@ cmake_minimum_required(VERSION 3.21)
 #Project name
 project(Zia)
 
+#Bin name
+set(NAME zia)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 #Flags
-set(CMAKE_CXX_FLAGS_RELEASE_INIT "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG_INIT "-Wall -Wextra -ggdb -g3")
+set(CMAKE_CXX_FLAGS_RELEASE_INIT -Wall -Wextra)
+set(CMAKE_CXX_FLAGS_DEBUG_INIT ${CMAKE_CXX_FLAGS_RELEASE_INIT} -ggdb -g3)
 
 
 if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
@@ -17,8 +20,6 @@ if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
     add_compile_definitions(DEBUG)
 endif ()
 
-#Bin name
-set(NAME zia)
 
 #Truc conan
 include(${CMAKE_SOURCE_DIR}/build/conanbuildinfo.cmake)
@@ -39,32 +40,32 @@ include_directories(API)
 include(Sources/Server.cmake)
 include(Sources/Modules/Modules.cmake)
 set(MAIN
-        Sources/Main.cpp )
-set(SRC ${SRC} )
+        Sources/Main.cpp)
+set(SRC ${SRC})
 
-if(NOT UNIT_TESTS STREQUAL TRUE)
-
-    # Build le server
-    add_executable(${NAME} ${MAIN} ${SRC})
-    conan_target_link_libraries(${NAME} ${CONAN_LIBS})
-    if (UNIX)
-        target_link_libraries(
-            ${NAME}
-                dl
-        )
-    endif()
-else()
-    set(TESTS_NAME unit_tests)
-    set(CMAKE_CXX_FLAGS --coverage)
-
-    add_executable(${TESTS_NAME} ${TESTS_SRC})
-    find_library(CRITERION criterion)
-    target_link_libraries(${TESTS_NAME} ${CRITERION})
-    conan_target_link_libraries(${TESTS_NAME} ${CONAN_LIBS})
-    if (UNIX)
-        target_link_libraries(
-                ${NAME}
-                dl
-        )
-    endif()
+# Build le server
+add_executable(${NAME} ${MAIN} ${SRC})
+conan_target_link_libraries(${NAME} ${CONAN_LIBS})
+if(UNIX)
+    target_link_libraries(${NAME} dl)
 endif()
+
+# Truc pour utiliser l'api de reference
+include(ExternalProject)
+
+ExternalProject_Add(
+        ziapi
+        GIT_REPOSITORY https://github.com/martin-olivier/ZiAPI.git
+        GIT_TAG v2.1.0
+        INSTALL_COMMAND ""
+        TEST_COMMAND ""
+)
+
+add_dependencies(${NAME} ziapi)
+ExternalProject_Get_Property(ziapi SOURCE_DIR)
+include_directories(${SOURCE_DIR}/include)
+
+#truc pour faire des TU avec google tests
+#if (CMAKE_BUILD_TYPE STREQUAL Debug)
+#    include(Tests/Tests.cmake)
+#endif ()

@@ -4,7 +4,8 @@
 
 #include <ostream>
 #include <iostream>
+#include "../LoadLib/LoadLib.hpp"
 
-extern "C" void toto() {
-    std::cout << "charlie la grande suceuse \n";
+Loading void toto() {
+    std::cout << "charlie la grande suceuse ssss\n";
 }

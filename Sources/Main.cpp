@@ -12,7 +12,7 @@
 #include "Debug/Debug.hpp"
 #include "Server/Server.hpp"
 #include "dylib/dylib.hpp"
-//#include "Watcher/LoadLib.hpp"
+#include "LoadLib/LoadLib.hpp"
 
 int main(int ac, char **av)
 {/*
@@ -33,11 +33,11 @@ int main(int ac, char **av)
         Debug::err(std::regex_replace(search, space, "%20"));
         return 84;
     }*/
-    dylib lib(av[1]);
-    auto tata = lib.get_function<void()>("toto");
+//dylib lib(av[1]);
+//    auto tata = lib.get_function<void()>("toto");
     //tata();
-    //LoadLib a;
-    //a.dlOPenLib(av[1]);
-    //a.loadingLib<void ()>("toto")();
+    LoadLib a;
+    a.dlOPenLib(av[1]);
+    a.loadingLib<void ()>("toto")();
     return 0;
 }
