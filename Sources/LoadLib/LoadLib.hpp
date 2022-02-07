@@ -30,6 +30,7 @@ public:
             throw std::runtime_error(dlerror());
         return std::function<T>(tmp);
     }
+    void dlOPenLib(const std::string lib);
 #else
     template<typename T>
     std::function<T> loadingLib(const std::string &symbol) const {
@@ -38,9 +39,10 @@ public:
             throw std::runtime_error(dlerror());
         return std::function<T>(tmp);
     }
+    void dlOPenLib(const std::string &lib);
+
 #endif
 
-void dlOPenLib(const std::string &lib);
 
 private:
 #if defined(_WIN64)
