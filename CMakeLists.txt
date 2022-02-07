@@ -37,6 +37,7 @@ include_directories(API)
 
 # Server Sources
 include(Sources/Server.cmake)
+include(Sources/Modules/Modules.cmake)
 set(MAIN
         Sources/Main.cpp )
 set(SRC ${SRC} )
@@ -46,7 +47,12 @@ if(NOT UNIT_TESTS STREQUAL TRUE)
     # Build le server
     add_executable(${NAME} ${MAIN} ${SRC})
     conan_target_link_libraries(${NAME} ${CONAN_LIBS})
-
+    if (UNIX)
+        target_link_libraries(
+            ${NAME}
+                dl
+        )
+    endif()
 else()
     set(TESTS_NAME unit_tests)
     set(CMAKE_CXX_FLAGS --coverage)
@@ -55,4 +61,10 @@ else()
     find_library(CRITERION criterion)
     target_link_libraries(${TESTS_NAME} ${CRITERION})
     conan_target_link_libraries(${TESTS_NAME} ${CONAN_LIBS})
+    if (UNIX)
+        target_link_libraries(
+                ${NAME}
+                dl
+        )
+    endif()
 endif()
