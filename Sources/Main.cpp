@@ -8,6 +8,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <regex>
+#include <fstream>
 
 #include "Debug/Debug.hpp"
 #include "Server/Server.hpp"
@@ -20,9 +21,10 @@ int main(int ac, char **av)
         std::cout << "please provide a port" << std::endl;
         return 84;
     }
+    std::ifstream input(av[1]);
+    input >> config;
     try {
-        Server_n::Server server(std::atoi(av[1]));
-        std::cout << "hello world!" << std::endl;
+        server.init(config);
         server.run();
     } catch (const MyException &e) {
         Debug::err(e);
@@ -33,11 +35,6 @@ int main(int ac, char **av)
         Debug::err(std::regex_replace(search, space, "%20"));
         return 84;
     }*/
-//dylib lib(av[1]);
-//    auto tata = lib.get_function<void()>("toto");
-    //tata();
-    LoadLib a;
-    a.dlOPenLib(av[1]);
-    a.loadingLib<void ()>("toto")();
+
     return 0;
 }
