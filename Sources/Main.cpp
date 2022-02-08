@@ -8,19 +8,24 @@
 #include <iostream>
 #include <cstdlib>
 #include <regex>
+#include <fstream>
 
 #include "Debug/Debug.hpp"
 #include "Server/Server.hpp"
 
-int main(int ac, char **av)
+int main(int ac, const char **av)
 {
+    zia::server::Server server;
+    nlohmann::json config;
+
     if (ac != 2) {
         std::cout << "please provide a port" << std::endl;
         return 84;
     }
+    std::ifstream input(av[1]);
+    input >> config;
     try {
-        Server_n::Server server(std::atoi(av[1]));
-        std::cout << "hello world!" << std::endl;
+        server.init(config);
         server.run();
     } catch (const MyException &e) {
         Debug::err(e);

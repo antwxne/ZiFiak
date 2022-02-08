@@ -1,0 +1,15 @@
+{
+  "max_request_size": 8000,
+  "default": {
+    "port": "80",
+    "threads": 5
+  },
+  "ssl": {
+    "port": "443",
+    "threads": 2
+  },
+  "timeout_s": {
+    "client": 5,
+    "refresh": 1
+  }
+}

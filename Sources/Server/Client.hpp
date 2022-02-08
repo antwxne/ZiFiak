@@ -11,34 +11,48 @@
 #include <asio.hpp>
 #include <vector>
 #include <iostream>
+#include <chrono>
 
 #include "Exceptions/MyException.hpp"
 #include "Debug/Debug.hpp"
 
-namespace Server_n {
+namespace zia::server {
 class Client {
 public:
-    Client();
+    Client(const std::size_t &bufferSize, asio::io_context &ioContext);
 
     template<typename T>
     Client &operator<<(const T &obj)
     {
-        this->_socket.async_send(asio::buffer(obj, sizeof(T),
-            [](const asio::error_code &errorCode, std::size_t bytesTransferred) {
-                if (errorCode) {
-                    throw MyException(errorCode.message(), __PRETTY_FUNCTION__, __FILE__, __LINE__);
-                }
-                Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
-            }));
-        return *this;
+        return genericSend(&obj, sizeof obj);
     }
+
+    Client &operator<<(std::string &str);
+    Client &operator<<(std::vector<uint8_t> &arr);
+    void operator>>(std::string &str) const;
+    void operator>>(std::vector<uint8_t> &arr) const;
+    asio::ip::tcp::socket &getAsioSocket();
+    int getSocketFd();
+    const std::vector<uint8_t> &getRawRequest() const noexcept;
+    std::vector<uint8_t> &getRawRequest() noexcept;
+    bool isProcessingARequest() const noexcept;
+    bool isKeepingAlive() const noexcept;
+    void setProcessingARequest(bool var) noexcept;
+    void setKeepAlive(bool var) noexcept;
+    const std::chrono::time_point<std::chrono::system_clock> &getTimeLastRequest() const noexcept;
+    void updateTime() noexcept;
+    void changeBufferSize(const std::size_t &newSize) noexcept;
+
+private:
+    Client &genericSend(const void *obj, const std::size_t size);
 
 private:
     asio::ip::tcp::socket _socket;
-    std::vector<uint8_t> _buffer;
+    bool _keepAlive;
+    bool _processingRequest;
+    std::vector<uint8_t> _rawRequest;
+    std::chrono::time_point<std::chrono::system_clock> _lastRequest;
 };
-
-
 }
 
 #endif //BASIC_SERVER_CLIENT_HPP

@@ -1,5 +1,6 @@
 [requires]
 asio/1.21.0
+nlohmann_json/3.10.5
 
 [generators]
 cmake
@@ -11,4 +12,4 @@ cmake
 lib, *.so* -> lib
 lib, *.dll -> lib
 lib, *.dylib -> lib
-include, *.h -> include
+include, *.h* -> include
