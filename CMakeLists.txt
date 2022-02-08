@@ -38,6 +38,7 @@ include_directories(API)
 
 # Server Sources
 include(Sources/Server.cmake)
+include(Sources/Modules/Modules.cmake)
 set(MAIN
         Sources/Main.cpp)
 set(SRC ${SRC})
@@ -45,6 +46,7 @@ set(SRC ${SRC})
 # Build le server
 add_executable(${NAME} ${MAIN} ${SRC})
 conan_target_link_libraries(${NAME} ${CONAN_LIBS})
+
 if(UNIX)
     target_link_libraries(${NAME} dl)
 endif()

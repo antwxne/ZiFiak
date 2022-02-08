@@ -92,7 +92,7 @@ void zia::server::Client::operator>>(std::vector<uint8_t> &arr) const
 }
 
 zia::server::Client &zia::server::Client::genericSend(const void *obj,
-    const std::size_t size
+    const std::size_t &size
 )
 {
     // on peut changer la callback par un module post request

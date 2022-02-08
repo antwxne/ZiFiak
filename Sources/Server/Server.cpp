@@ -8,8 +8,7 @@
 #include "Server.hpp"
 
 zia::server::Server::Server()
-    : _io_context(), _acceptorSSL(_io_context), _acceptor(_io_context),
-    _signalSet(_io_context)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -23,24 +22,17 @@ void zia::server::Server::init(const nlohmann::json &config)
 {
     Debug::log("init server");
 
-    asio::ip::tcp::endpoint sslEndpoint(
-        asio::ip::tcp::endpoint(asio::ip::tcp::v4(), config["ssl"]["port"]));
     asio::ip::tcp::endpoint basicEndPoint(
         asio::ip::tcp::endpoint(asio::ip::tcp::v4(),
             config["default"]["port"]));
 
     _internConfig = config;
-    _acceptorSSL.open(sslEndpoint.protocol());
-    _acceptorSSL.set_option(asio::ip::tcp::acceptor::reuse_address(true));
-    _acceptorSSL.bind(sslEndpoint);
-    _acceptorSSL.listen();
 
     _acceptor.open(basicEndPoint.protocol());
     _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
     _acceptor.bind(basicEndPoint);
     _acceptor.listen();
     startAccept();
-    startAcceptSSL();
 }
 
 void zia::server::Server::run()

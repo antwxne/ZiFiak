@@ -16,7 +16,7 @@
 #include "Exceptions/MyException.hpp"
 #include "Debug/Debug.hpp"
 
-namespace zia::server {
+namespace zia::modules::network {
 class Client {
 public:
     Client(const std::size_t &bufferSize, asio::io_context &ioContext);
@@ -44,7 +44,7 @@ public:
     void changeBufferSize(const std::size_t &newSize) noexcept;
 
 private:
-    Client &genericSend(const void *obj, const std::size_t size);
+    Client &genericSend(const void *obj, const std::size_t &size);
 
 private:
     asio::ip::tcp::socket _socket;

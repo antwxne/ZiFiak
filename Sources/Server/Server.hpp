@@ -13,7 +13,7 @@
 #include <memory>
 
 #include "nlohmann/json.hpp"
-#include "Server/Client.hpp"
+#include "Modules/Network/Client.hpp"
 
 
 // TODO le core
@@ -34,18 +34,13 @@ public:
 
 private:
     void startAccept();
-    void startAcceptSSL();
     void handleAccept(Client &client);
-    void handleAcceptSSL(Client &client);
     void startReceive(Client &client);
-    void startReceiveSSL(Client &client);
     void handleReceive(Client &client);
-    void handleReceiveSSL(Client &client);
 
 private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
-    asio::ip::tcp::acceptor _acceptorSSL;
     asio::signal_set _signalSet;
     std::vector<std::unique_ptr<zia::server::Client>> _clients;
     std::vector<uint8_t> _buffer;
