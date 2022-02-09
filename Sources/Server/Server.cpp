@@ -5,17 +5,24 @@
 ** Created by antoine,
 */
 
+#include "Debug/Debug.hpp"
 #include "Server.hpp"
 
-Server_n::Server::Server(unsigned short port)
-    : _io_context(),
-    _acceptor(_io_context, asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port)),
-    _clients(), _buffer(1 << 10)
+zia::server::Server::Server()
 {
+
 }
 
-void Server_n::Server::run()
+void zia::server::Server::init(const nlohmann::json &config)
+{
+    Debug::log("init server");
+
+}
+
+void zia::server::Server::run()
 {
     Debug::log("server running");
-    _io_context.run();
+
 }
+
+

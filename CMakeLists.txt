@@ -41,10 +41,16 @@ include(Sources/Server.cmake)
 set(MAIN
         Sources/Main.cpp)
 set(SRC ${SRC})
+include(Sources/Modules/Modules.cmake)
+
 
 # Build le server
 add_executable(${NAME} ${MAIN} ${SRC})
 conan_target_link_libraries(${NAME} ${CONAN_LIBS})
+
+if(UNIX)
+    target_link_libraries(${NAME} dl)
+endif()
 
 # Truc pour utiliser l'api de reference
 include(ExternalProject)
@@ -60,6 +66,7 @@ ExternalProject_Add(
 add_dependencies(${NAME} ziapi)
 ExternalProject_Get_Property(ziapi SOURCE_DIR)
 include_directories(${SOURCE_DIR}/include)
+
 
 #truc pour faire des TU avec google tests
 #if (CMAKE_BUILD_TYPE STREQUAL Debug)
