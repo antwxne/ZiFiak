@@ -13,6 +13,7 @@
 #include <iostream>
 #include <chrono>
 
+#include "ziapi/Http.hpp"
 #include "Exceptions/MyException.hpp"
 #include "Debug/Debug.hpp"
 
@@ -26,11 +27,13 @@ public:
     {
         return genericSend(&obj, sizeof obj);
     }
-
     Client &operator<<(std::string &str);
     Client &operator<<(std::vector<uint8_t> &arr);
+    Client &operator<<(const ziapi::http::Response &response);
+    bool operator==(int fd);
     void operator>>(std::string &str) const;
     void operator>>(std::vector<uint8_t> &arr) const;
+    Client &operator+=(const std::vector<uint8_t> &arr);
     asio::ip::tcp::socket &getAsioSocket();
     int getSocketFd();
     const std::vector<uint8_t> &getRawRequest() const noexcept;
@@ -42,7 +45,8 @@ public:
     const std::chrono::time_point<std::chrono::system_clock> &getTimeLastRequest() const noexcept;
     void updateTime() noexcept;
     void changeBufferSize(const std::size_t &newSize) noexcept;
-
+    bool isConnected() const;
+    void setConnectionStatut(bool isConnected);
 private:
     Client &genericSend(const void *obj, const std::size_t &size);
 
@@ -50,6 +54,7 @@ private:
     asio::ip::tcp::socket _socket;
     bool _keepAlive;
     bool _processingRequest;
+    bool _isConnected;
     std::vector<uint8_t> _rawRequest;
     std::chrono::time_point<std::chrono::system_clock> _lastRequest;
 };

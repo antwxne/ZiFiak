@@ -38,10 +38,11 @@ include_directories(API)
 
 # Server Sources
 include(Sources/Server.cmake)
-include(Sources/Modules/Modules.cmake)
 set(MAIN
         Sources/Main.cpp)
 set(SRC ${SRC})
+include(Sources/Modules/Modules.cmake)
+
 
 # Build le server
 add_executable(${NAME} ${MAIN} ${SRC})
@@ -65,6 +66,7 @@ ExternalProject_Add(
 add_dependencies(${NAME} ziapi)
 ExternalProject_Get_Property(ziapi SOURCE_DIR)
 include_directories(${SOURCE_DIR}/include)
+
 
 #truc pour faire des TU avec google tests
 #if (CMAKE_BUILD_TYPE STREQUAL Debug)
