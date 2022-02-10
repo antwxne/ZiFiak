@@ -133,7 +133,7 @@ zia::modules::network::Client &zia::modules::network::Client::operator<<(
 )
 {
     std::string res = "";
-    res += std::to_string(response.version) + "\r\n" + std::to_string(response.status_code) + "\r\n" + response.reason + "\r\n";
+    res += std::to_string(static_cast<int>(response.version)) + "\r\n" + std::to_string(static_cast<int>(response.status_code)) + "\r\n" + response.reason + "\r\n";
 
     for (const auto &value: response.fields) {
         res += value.first + ": " + value.second + "\r\n";

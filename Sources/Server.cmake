@@ -5,4 +5,5 @@ set(SRC
         Sources/Exceptions/MyException.cpp Sources/Exceptions/MyException.hpp
         Sources/LoadLib/LoadLib.cpp Sources/LoadLib/LoadLib.hpp
         Sources/dylib/dylib.hpp
+        Sources/Server/ConfigParser.cpp Sources/Server/ConfigParser.hpp
         )

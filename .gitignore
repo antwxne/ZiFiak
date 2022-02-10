@@ -9,3 +9,4 @@ out/
 zia
 *.dylib
 *.dll
+.vscode

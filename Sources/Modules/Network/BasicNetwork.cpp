@@ -34,12 +34,12 @@ void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
 
 ziapi::Version zia::modules::network::BasicNetwork::GetVersion() const noexcept
 {
-    return {0xcaca, 0xcaca};
+    return {1, 0, 0};
 }
 
 ziapi::Version zia::modules::network::BasicNetwork::GetCompatibleApiVersion() const noexcept
 {
-    return {0xcaca, 0xcaca};
+    return {3, 0, 0};
 }
 
 const char *zia::modules::network::BasicNetwork::GetName() const noexcept
@@ -125,10 +125,10 @@ void zia::modules::network::BasicNetwork::sendResponses(
     while (_isRunning) {
         if (responses.Size() > 0) {
             auto current = responses.Pop();
-            auto response = current.first;
+            auto response = current.value().first;
             auto client = std::find_if(_clients.begin(), _clients.end(),
                 [&current](const std::unique_ptr<Client> &c) {
-                    return current.second["socket"].has_value() && *c == std::any_cast<int>(current.second["socket"]);
+                    return current.value().second["socket"].has_value() && *c == std::any_cast<int>(current.value().second["socket"]);
             });
             *(client->get()) << response;
         } else {
