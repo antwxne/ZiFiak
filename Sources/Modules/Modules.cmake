@@ -3,7 +3,7 @@ set(BASE_MODULE
         Sources/Exceptions/MyException.hpp
         Sources/Debug/Debug.hpp
         Sources/Debug/Debug.cpp
-        )
+       )
 
 # BASIC NETWORK MODULE
 add_library(basic_network SHARED ${BASE_MODULE}

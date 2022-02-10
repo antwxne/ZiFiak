@@ -5,6 +5,8 @@
 ** Created by antoine,
 */
 
+#include <thread>
+
 #include "BasicNetwork.hpp"
 
 zia::modules::network::BasicNetwork::BasicNetwork()
@@ -61,7 +63,8 @@ void zia::modules::network::BasicNetwork::Run(
     _isRunning = true;
     startAccept(requests);
     _io_context.run();
-    _horreurDeSqueezieChien = std::thread(&BasicNetwork::sendResponses, this, std::ref(responses));
+    _horreurDeSqueezieChien = std::thread(&BasicNetwork::sendResponses, this,
+        std::ref(responses));
 }
 
 void zia::modules::network::BasicNetwork::Terminate()
@@ -89,7 +92,7 @@ void zia::modules::network::BasicNetwork::handleAccept(
 )
 {
     Debug::log("Client connected");
-    startReceive(requests,  client);
+    startReceive(requests, client);
     startAccept(requests);
 }
 
@@ -123,16 +126,16 @@ void zia::modules::network::BasicNetwork::sendResponses(
 )
 {
     while (_isRunning) {
-        if (responses.Size() > 0) {
+        while (responses.Size() > 0) {
             auto current = responses.Pop();
             auto response = current.value().first;
             auto client = std::find_if(_clients.begin(), _clients.end(),
                 [&current](const std::unique_ptr<Client> &c) {
-                    return current.value().second["socket"].has_value() && *c == std::any_cast<int>(current.value().second["socket"]);
-            });
+                    return current.value().second["socket"].has_value() && *c ==
+                        std::any_cast<int>(current.value().second["socket"]);
+                });
             *(client->get()) << response;
-        } else {
-            sleep(1);
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
