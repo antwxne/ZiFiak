@@ -23,7 +23,7 @@ void zia::server::Server::init(const std::string &filepath)
     ConfigParser confParser;
 
     try {
-        this->_serverConfig = confParser.loadFromFile(filepath);
+        this->_serverConfig = ConfigParser::loadFromFile(filepath);
         Debug::log("config load successfully loaded");
     } catch(const std::runtime_error& e) {
         Debug::warn("failed to load config file: " + std::string(e.what()));

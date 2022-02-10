@@ -21,27 +21,27 @@ ConfigParser::~ConfigParser()
 {
 }
 
-ConfigParser::Node ConfigParser::createArray(const JsonParser &json) const
+ConfigParser::Node ConfigParser::createArray(const JsonParser &json)
 {
     std::vector<std::shared_ptr<Node>> vecNode;
 
     for (auto &elem : json) {
-        vecNode.push_back(std::make_shared<Node>(this->convertJsonToNode(elem)));
+        vecNode.push_back(std::make_shared<Node>(ConfigParser::convertJsonToNode(elem)));
     }
     return Node({vecNode});
 }
 
-ConfigParser::Node ConfigParser::createObj(const JsonParser &json) const
+ConfigParser::Node ConfigParser::createObj(const JsonParser &json)
 {
     std::unordered_map<std::string, std::shared_ptr<Node>> vecNode;
 
     for (auto &elem : json.items()) {
-        vecNode.insert({elem.key(), std::make_shared<Node>(this->convertJsonToNode(elem.value()))});
+        vecNode.insert({elem.key(), std::make_shared<Node>(ConfigParser::convertJsonToNode(elem.value()))});
     }
     return Node({vecNode});
 }
 
-ConfigParser::Node ConfigParser::convertJsonToNode(const JsonParser &json) const
+ConfigParser::Node ConfigParser::convertJsonToNode(const JsonParser &json)
 {
     auto type = json.type();
 
@@ -59,9 +59,9 @@ ConfigParser::Node ConfigParser::convertJsonToNode(const JsonParser &json) const
     case JsonParser::value_t::string:
         return Node(json.get<std::string>());
     case JsonParser::value_t::array:
-        return this->createArray(json);
+        return ConfigParser::createArray(json);
     case JsonParser::value_t::object:
-        return this->createObj(json);
+        return ConfigParser::createObj(json);
     default:
         return Node(ziapi::config::Undefined{});
     }
@@ -70,15 +70,16 @@ ConfigParser::Node ConfigParser::convertJsonToNode(const JsonParser &json) const
 ConfigParser::Node ConfigParser::loadFromFile(const std::string &filePath)
 {
     std::ifstream file(filePath);
+    JsonParser json;
 
     if (!file.is_open())
         throw std::system_error(errno, std::system_category(), "Failed to open " + filePath);
     try {
-        file >> this->_json;
+        file >> json;
     } catch(const std::exception& e) {
         throw std::runtime_error("Invalid json file: " + std::string(e.what()));
     }
-    return this->convertJsonToNode(this->_json);
+    return ConfigParser::convertJsonToNode(json);
 }
 
 }

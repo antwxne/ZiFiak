@@ -22,15 +22,13 @@ class ConfigParser {
         ConfigParser();
         ~ConfigParser();
 
-        Node loadFromFile(const std::string &filePath);
+        static Node loadFromFile(const std::string &filePath);
 
     protected:
     private:
-        Node convertJsonToNode(const JsonParser &json) const;
-        Node createObj(const JsonParser &json) const;
-        Node createArray(const JsonParser &json) const;
-
-        JsonParser _json;
+        static Node convertJsonToNode(const JsonParser &json);
+        static Node createObj(const JsonParser &json);
+        static Node createArray(const JsonParser &json);
 };
 
 }
