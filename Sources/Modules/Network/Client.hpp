@@ -36,16 +36,16 @@ public:
     Client &operator+=(const std::vector<uint8_t> &arr);
     asio::ip::tcp::socket &getAsioSocket();
     int getSocketFd();
-    const std::vector<uint8_t> &getRawRequest() const noexcept;
+    [[nodiscard]] const std::vector<uint8_t> &getRawRequest() const noexcept;
     std::vector<uint8_t> &getRawRequest() noexcept;
-    bool isProcessingARequest() const noexcept;
-    bool isKeepingAlive() const noexcept;
+    [[nodiscard]] bool isProcessingARequest() const noexcept;
+    [[nodiscard]] bool isKeepingAlive() const noexcept;
     void setProcessingARequest(bool var) noexcept;
     void setKeepAlive(bool var) noexcept;
-    const std::chrono::time_point<std::chrono::system_clock> &getTimeLastRequest() const noexcept;
+    [[nodiscard]] const std::chrono::time_point<std::chrono::system_clock> &getTimeLastRequest() const noexcept;
     void updateTime() noexcept;
     void changeBufferSize(const std::size_t &newSize) noexcept;
-    bool isConnected() const;
+    [[nodiscard]] bool isConnected() const;
     void setConnectionStatut(bool isConnected);
 private:
     Client &genericSend(const void *obj, const std::size_t &size);

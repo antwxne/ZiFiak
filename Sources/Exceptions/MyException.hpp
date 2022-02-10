@@ -12,6 +12,10 @@
 #include <exception>
 #include <iostream>
 
+#if defined(_WIN32) || defined(_WIN64)
+    #define __PRETTY_FUNCTION__ __FUNCSIG__
+#endif
+
 class MyException : std::exception {
 public:
     MyException(const std::string &what, const std::string &function,
