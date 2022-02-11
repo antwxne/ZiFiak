@@ -12,7 +12,7 @@ void LoadLibs::openFilesAndStore(std::string &file) {
     std::string tmp;
     for (auto &x: std::filesystem::directory_iterator()) {
         try {
-            tmp = std::string(x.path().c_str());
+            tmp = x.path().string();
             if (tmp == file)
                 continue;
             dylib lib(x.path());
