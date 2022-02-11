@@ -7,7 +7,6 @@
 #include <iostream>
 #include "dylib/dylib.hpp"
 #include "ziapi/Module.hpp"
-#include "../../build/ziapi-prefix/src/ziapi/include/ziapi/Module.hpp"
 
 void LoadLibs::openFilesAndStore(std::string &file) {
     std::string tmp;
