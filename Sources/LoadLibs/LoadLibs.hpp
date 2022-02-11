@@ -11,7 +11,7 @@ public:
     LoadLibs() = default;
     ~LoadLibs() = default;
     void openFilesAndStore(std::string &file);
-    void initLibs();
+    void initLibs(ziapi::config::Node config);
     void getType();
 
 protected:

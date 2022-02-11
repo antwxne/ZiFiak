@@ -7,6 +7,7 @@
 #include <iostream>
 #include "dylib/dylib.hpp"
 #include "ziapi/Module.hpp"
+#include "../Server/Server.hpp"
 
 void LoadLibs::openFilesAndStore(std::string &file) {
     std::string tmp;
@@ -25,9 +26,9 @@ void LoadLibs::openFilesAndStore(std::string &file) {
     };
 }
 
-void LoadLibs::initLibs() {
+void LoadLibs::initLibs(ziapi::config::Node config) {
     for (auto &e: listLib) {
- //    e->Init();
+        e->Init(config);
     }
 }
 

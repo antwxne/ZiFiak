@@ -37,4 +37,8 @@ void zia::server::Server::run()
 
 }
 
+const ziapi::config::Node &zia::server::Server::getServerConfig() const {
+    return _serverConfig;
+}
+
 
