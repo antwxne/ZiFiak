@@ -5,6 +5,7 @@
 #pragma  once
 #include <string>
 #include "ziapi/Module.hpp"
+#include "../../build/ziapi-prefix/src/ziapi/include/ziapi/Module.hpp"
 
 class LoadLibs {
 public:

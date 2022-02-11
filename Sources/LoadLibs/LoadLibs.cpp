@@ -7,6 +7,7 @@
 #include <iostream>
 #include "dylib/dylib.hpp"
 #include "ziapi/Module.hpp"
+#include "../../build/ziapi-prefix/src/ziapi/include/ziapi/Module.hpp"
 
 void LoadLibs::openFilesAndStore(std::string &file) {
     std::string tmp;
@@ -17,7 +18,8 @@ void LoadLibs::openFilesAndStore(std::string &file) {
                 continue;
             dylib lib(x.path());
             auto libs = lib.get_function<ziapi::IModule * ()>("LoadZiaModule");
-            listLib.push_back(libs);
+            std::unique_ptr<ziapi::IModule> toto(libs());
+            listLib.push_back(std::move(toto));
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
@@ -26,28 +28,28 @@ void LoadLibs::openFilesAndStore(std::string &file) {
 
 void LoadLibs::initLibs() {
     for (auto &e: listLib) {
-        e.init();
+// e->Init();
     }
 }
 
 void LoadLibs::getType() {
     for (auto &e: listLib) {
-        auto handlerType = dynamic_cast<ziapi::IHandlerModule>(e);
-        auto postProcessorType = dynamic_cast<ziapi::IPostProcessorModule>(e);
-        auto preProcessorType = dynamic_cast<ziapi::IPreProcessorModule>(e);
-        auto netWorkType = dynamic_cast<ziapi::INetworkModule>(e);
+        auto handlerType = dynamic_cast<ziapi::IHandlerModule *>(e.get());
+        auto postProcessorType = dynamic_cast<ziapi::IPostProcessorModule *>(e.get());
+        auto preProcessorType = dynamic_cast<ziapi::IPreProcessorModule *>(e.get());
+        auto netWorkType = dynamic_cast<ziapi::INetworkModule *>(e.get());
 
         if (handlerType) {
-            handlerModules.push_back(e);
+            handlerModules.emplace_back(handlerType);
         }
         if (postProcessorType) {
-            postProcessorModules.push_back(e);
+            postProcessorModules.emplace_back(postProcessorType);
         }
         if (preProcessorType) {
-            preProcessorModules.push_back(e);
+            preProcessorModules.emplace_back(preProcessorType);
         }
         if (netWorkType) {
-            netWorkModules.push_back(e);
+            netWorkModules.emplace_back(netWorkType);
         }
     }
 }
