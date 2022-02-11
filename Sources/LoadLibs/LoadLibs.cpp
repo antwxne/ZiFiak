@@ -15,7 +15,7 @@ void LoadLibs::openFilesAndStore(std::string &file) {
             tmp = x.path().string();
             if (tmp == file)
                 continue;
-            dylib lib(x.path());
+            dylib lib(x.path().string());
             auto libs = lib.get_function<ziapi::IModule * ()>("LoadZiaModule");
             std::unique_ptr<ziapi::IModule> toto(libs());
             listLib.push_back(std::move(toto));
