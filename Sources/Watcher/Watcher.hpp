@@ -14,16 +14,28 @@
 
 namespace Watcher {
 
+enum State {
+    ADD,
+    MOD,
+    DEL
+};
+
+struct FileState {
+    std::string filepath;
+    State state;
+};
+
 static const std::string ModulesPath = "Modules/";
 
 class Watcher {
     public:
         Watcher(const std::string &path);
         ~Watcher();
-        void update();
+        std::vector<FileState> update();
 
     private:
-        std::vector<std::string> getFilesInFolder(const std::string &path);
+        std::vector<FileState> getFilesInFolder(const std::string &path);
+        std::vector<FileState> checkDeletedFiles();
         std::string _basicPath;
         std::map<std::filesystem::path, std::chrono::nanoseconds> _saves;
 };
