@@ -167,3 +167,8 @@ bool zia::modules::network::Client::operator==(const ziapi::http::Context &ctx
         std::any_cast<std::uint16_t>(ctx.at("client.socket.port"));
     return dest;
 }
+
+bool zia::modules::network::Client::operator==(int fd)
+{
+    return fd == getSocketFd();
+}

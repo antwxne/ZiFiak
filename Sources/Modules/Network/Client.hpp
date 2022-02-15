@@ -30,6 +30,7 @@ public:
     Client &operator<<(std::string &str);
     Client &operator<<(std::vector<uint8_t> &arr);
     Client &operator<<(const ziapi::http::Response &response);
+    bool operator==(int fd);
     bool operator==(const ziapi::http::Context &ctx) const;
     void operator>>(std::string &str) const;
     void operator>>(std::vector<uint8_t> &arr) const;
