@@ -31,6 +31,7 @@ public:
     Client &operator<<(std::vector<uint8_t> &arr);
     Client &operator<<(const ziapi::http::Response &response);
     bool operator==(int fd);
+    bool operator==(const ziapi::http::Context &ctx) const;
     void operator>>(std::string &str) const;
     void operator>>(std::vector<uint8_t> &arr) const;
     Client &operator+=(const std::vector<uint8_t> &arr);
@@ -47,6 +48,7 @@ public:
     void changeBufferSize(const std::size_t &newSize) noexcept;
     [[nodiscard]] bool isConnected() const;
     void setConnectionStatut(bool isConnected);
+    [[nodiscard]] ziapi::http::Context getContext() const noexcept;
 private:
     Client &genericSend(const void *obj, const std::size_t &size);
 

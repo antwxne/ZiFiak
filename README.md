@@ -16,7 +16,7 @@ make
 Windows
 
 ```shell
-mkdir -p build && cd build && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
+mkdir -p build && cd build && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . ; cd .. 
 ```
 
 ## Push to Epitech repository
