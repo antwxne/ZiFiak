@@ -11,13 +11,11 @@
 #include "Server.hpp"
 #include <iostream>
 
-zia::server::Server::Server()
-{
+zia::server::Server::Server() {
 
 }
 
-void zia::server::Server::init(const std::string &filepath)
-{
+void zia::server::Server::init(const std::string &filepath) {
     Debug::log("init server");
 
     ConfigParser confParser;
@@ -25,20 +23,17 @@ void zia::server::Server::init(const std::string &filepath)
     try {
         this->_serverConfig = ConfigParser::loadFromFile(filepath);
         Debug::log("config load successfully loaded");
-    } catch(const std::runtime_error& e) {
+    } catch (const std::runtime_error &e) {
         Debug::warn("failed to load config file: " + std::string(e.what()));
         this->_serverConfig = Node(ziapi::config::Undefined{});
     }
 }
 
-void zia::server::Server::run()
-{
+void zia::server::Server::run() {
+  //  loadLibs.openFilesAndStore("./totos");
     Debug::log("server running");
-
 }
 
 const ziapi::config::Node &zia::server::Server::getServerConfig() const {
     return _serverConfig;
 }
-
-

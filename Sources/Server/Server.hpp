@@ -9,6 +9,7 @@
 #define BASIC_SERVER_SERVER_HPP
 
 #include "ziapi/Config.hpp"
+#include "LoadLibs/LoadLibs.hpp"
 
 namespace zia::server {
 class Server {
@@ -24,6 +25,7 @@ public:
 
 private:
     Node _serverConfig;
+    LoadLibs loadLibs;
 public:
     const ziapi::config::Node &getServerConfig() const;
 };
