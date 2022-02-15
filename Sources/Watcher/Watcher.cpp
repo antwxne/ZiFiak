@@ -44,11 +44,6 @@ std::vector<std::string> Watcher::getFilesInFolder(const std::string &path)
     return files;
 }
 
-void Watcher::CreateNewSave(const std::string &path, std::chrono::microseconds &modifiedTime)
-{
-    _saves[path] = modifiedTime;
-}
-
 void Watcher::update()
 {
     auto modifiedFiles = getFilesInFolder(_basicPath);

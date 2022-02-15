@@ -23,7 +23,6 @@ class Watcher {
         void update();
 
     private:
-        void CreateNewSave(const std::string &path, std::chrono::microseconds &modifiedTime);
         std::vector<std::string> getFilesInFolder(const std::string &path);
         std::string _basicPath;
         std::map<std::filesystem::path, std::chrono::nanoseconds> _saves;
