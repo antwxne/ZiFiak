@@ -29,8 +29,17 @@ void zia::server::Server::init(const std::string &filepath) {
     }
 }
 
+const std::string &zia::server::Server::getPathDirectory() const {
+    try {
+        return _serverConfig["directory"].AsString();
+    } catch (std::runtime_error &e) {
+        std::cerr << "Error module Directory" << std::endl;
+        return "./modules";
+    }
+}
+
 void zia::server::Server::run() {
-  //  loadLibs.openFilesAndStore("./totos");
+    auto pathDirectory = zia::server::Server::getPathDirectory();
     Debug::log("server running");
 }
 

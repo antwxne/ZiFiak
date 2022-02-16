@@ -5,6 +5,7 @@
 #include "LoadLibs/LoadLibs.hpp"
 #include  <filesystem>
 #include <iostream>
+#include <vector>
 #include "dylib/dylib.hpp"
 #include "ziapi/Module.hpp"
 #include "../Server/Server.hpp"
@@ -18,13 +19,14 @@ bool LoadLibs::getTimeChange(std::string &file) {
     return false;
 }
 
+void LoadLibs::loadLibByFiles(const std::vector<std::string> &files) {
+    for (auto &e : files) {
+
+    }
+}
+
 void LoadLibs::openFilesAndStore(const std::string &file) {
     std::string tmp;
-    _handlerModules.clear();
-    _listLib.clear();
-    _netWorkModules.clear();
-    _postProcessorModules.clear();
-    _preProcessorModules.clear();
     for (auto &x: std::filesystem::directory_iterator()) {
         try {
             tmp = x.path().string();

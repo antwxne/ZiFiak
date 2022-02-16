@@ -16,6 +16,7 @@ public:
     void initLibs(ziapi::config::Node config);
     void getType();
     bool getTimeChange(std::string &file);
+    void loadLibByFiles(const std::vector<std::string> &files);
 
 protected:
     std::vector<std::unique_ptr<ziapi::IModule>> _listLib;

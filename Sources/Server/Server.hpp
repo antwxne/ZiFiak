@@ -22,6 +22,7 @@ public:
     Server &operator=(const Server &) = delete;
     void init(const std::string &filepath);
     void run();
+    const std::string &getPathDirectory() const;
 
 private:
     Node _serverConfig;
