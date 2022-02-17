@@ -128,13 +128,16 @@ void zia::modules::network::BasicNetwork::sendResponses(
     while (_isRunning) {
         while (responses.Size() > 0) {
             auto current = responses.Pop();
+            if (!current.has_value()) {
+                continue;
+            }
             auto response = current.value().first;
+            auto ctx = current.value().second;
             auto client = std::find_if(_clients.begin(), _clients.end(),
-                [&current](const std::unique_ptr<Client> &c) {
-                    return current.value().second["socket"].has_value() && *c ==
-                        std::any_cast<int>(current.value().second["socket"]);
+                [&ctx](const std::unique_ptr<Client> &c) {
+                    return *c == ctx;
                 });
-            *(client->get()) << response;
+            *client->get() << response;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
