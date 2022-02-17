@@ -21,7 +21,11 @@ void zia::server::Server::init(const std::string &filepath) {
     ConfigParser confParser;
 
     try {
+        auto pathDirectory = zia::server::Server::getPathDirectory();
         this->_serverConfig = ConfigParser::loadFromFile(filepath);
+        loadLibs.openFilesAndStore(pathDirectory);
+        loadLibs.initLibs(_serverConfig);
+        loadLibs.getType();
         Debug::log("config load successfully loaded");
     } catch (const std::runtime_error &e) {
         Debug::warn("failed to load config file: " + std::string(e.what()));
@@ -39,7 +43,9 @@ const std::string &zia::server::Server::getPathDirectory() const {
 }
 
 void zia::server::Server::run() {
-    auto pathDirectory = zia::server::Server::getPathDirectory();
+    while (1) {
+       // loadLibs.loadLibByFiles("path", _serverConfig);
+    }
     Debug::log("server running");
 }
 

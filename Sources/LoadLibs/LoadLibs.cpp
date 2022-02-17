@@ -109,3 +109,21 @@ void LoadLibs::getType() {
         }
     }
 }
+
+const std::vector<std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string>> &LoadLibs::getHandlerModules() const {
+    return _handlerModules;
+}
+
+const std::vector<std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string>> &
+LoadLibs::getPostProcessorModules() const {
+    return _postProcessorModules;
+}
+
+const std::vector<std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string>> &
+LoadLibs::getPreProcessorModules() const {
+    return _preProcessorModules;
+}
+
+const std::vector<std::pair<std::unique_ptr<ziapi::INetworkModule>, std::string>> &LoadLibs::getNetWorkModules() const {
+    return _netWorkModules;
+}

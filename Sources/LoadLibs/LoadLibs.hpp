@@ -29,6 +29,18 @@ protected:
 protected:
     std::vector<std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string>> _handlerModules;
     std::vector<std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string>>_postProcessorModules;
+public:
+    const std::vector<std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string>> &getHandlerModules() const;
+
+    const std::vector<std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string>> &
+    getPostProcessorModules() const;
+
+    const std::vector<std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string>> &
+    getPreProcessorModules() const;
+
+    const std::vector<std::pair<std::unique_ptr<ziapi::INetworkModule>, std::string>> &getNetWorkModules() const;
+
+protected:
     std::vector<std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string>> _preProcessorModules;
     std::vector<std::pair<std::unique_ptr<ziapi::INetworkModule>, std::string>> _netWorkModules;
 
