@@ -10,6 +10,7 @@
 
 #include "ziapi/Config.hpp"
 #include "LoadLibs/LoadLibs.hpp"
+#include "Watcher/Watcher.hpp"
 
 namespace zia::server {
 class Server {
@@ -27,6 +28,9 @@ public:
 private:
     Node _serverConfig;
     LoadLibs loadLibs;
+    bool _isModuleChange;
+    Watcher::Watcher _moduleWatcher;
+
 public:
     const ziapi::config::Node &getServerConfig() const;
 };

@@ -43,7 +43,7 @@ void LoadLibs::loadSingleModule(const std::string &path) {
         auto libs = lib.get_function<ziapi::IModule *()>("LoadZiaModule");
         std::unique_ptr<ziapi::IModule> toto(libs());
         _listLib.push_back(std::make_pair(std::move(toto), path));
-    } catch (std::runtime_error &e) {
+    } catch (dylib::exception &e) {
         std::cerr << e.what() << std::endl;
     }
 }
@@ -76,7 +76,7 @@ void LoadLibs::openFilesAndStore(const std::string &file) {
             auto libs = lib.get_function<ziapi::IModule *()>("LoadZiaModule");
             std::unique_ptr<ziapi::IModule> toto(libs());
             _listLib.push_back(std::make_pair(std::move(toto), tmp));
-        } catch (const std::runtime_error &e) {
+        } catch (const dylib::exception &e) {
             std::cerr << e.what() << std::endl;
         }
     };

@@ -11,8 +11,7 @@
 #include "Server.hpp"
 #include <iostream>
 
-zia::server::Server::Server() {
-
+zia::server::Server::Server() : _isModuleChange(false), _moduleWatcher(Watcher::ModulesPath, _isModuleChange) {
 }
 
 void zia::server::Server::init(const std::string &filepath) {
@@ -44,7 +43,11 @@ const std::string &zia::server::Server::getPathDirectory() const {
 
 void zia::server::Server::run() {
     while (1) {
-       // loadLibs.loadLibByFiles("path", _serverConfig);
+        if (_isModuleChange) {
+            _moduleWatcher.getChanges();
+            // loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
+            _isModuleChange = false;
+        }
     }
     Debug::log("server running");
 }

@@ -7,16 +7,17 @@
 
 #include "Watcher.hpp"
 #include <iostream>
-#include <algorithm>
 
 namespace Watcher {
 
-Watcher::Watcher(const std::string &path) : _basicPath(path)
+Watcher::Watcher(const std::string &path, bool &changes) : _basicPath(path), _changes(changes)
 {
+    _thread = std::thread(&Watcher::update, this);
 }
 
 Watcher::~Watcher()
 {
+    _thread.join();
 }
 
 std::vector<FileState> Watcher::getFilesInFolder(const std::string &folderPath)
@@ -61,14 +62,34 @@ std::vector<FileState> Watcher::checkDeletedFiles()
     return (files);
 }
 
-
-std::vector<FileState> Watcher::update()
+void Watcher::setUpdatedFiles(std::vector<FileState> &files)
 {
-    auto modifiedFiles = getFilesInFolder(_basicPath);
-    auto deletedFiles = checkDeletedFiles();
+    std::scoped_lock lock(_mutex);
+    _changes = true;
+    _modifiedFiles.insert(_modifiedFiles.end(), files.begin(), files.end());
+}
 
-    modifiedFiles.insert(modifiedFiles.end(), deletedFiles.begin(), deletedFiles.end());
-    return (modifiedFiles);
+std::vector<FileState> Watcher::getChanges()
+{
+    std::scoped_lock lock(_mutex);
+    std::vector<FileState> tmp(_modifiedFiles);
+
+    _modifiedFiles.clear();
+    return (tmp);
+}
+
+void Watcher::update()
+{
+    while (1) {
+        auto modifiedFiles = getFilesInFolder(_basicPath);
+        auto deletedFiles = checkDeletedFiles();
+
+        modifiedFiles.insert(modifiedFiles.end(), deletedFiles.begin(), deletedFiles.end());
+        if (!modifiedFiles.empty()) {
+            setUpdatedFiles(modifiedFiles);
+        }
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
 }
 
 }
