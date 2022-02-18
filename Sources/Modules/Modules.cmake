@@ -13,6 +13,7 @@ add_library(basic_network SHARED ${BASE_MODULE}
         Sources/Modules/Network/Basic/Client.cpp
         Sources/Modules/Network/AClient.hpp
         Sources/Modules/Network/AClient.cpp
+        Sources/Modules/Http/HttpModule.cpp Sources/Modules/Http/HttpModule.hpp
         )
 conan_target_link_libraries(basic_network ${CONAN_LIBS})
 add_dependencies(basic_network ziapi)
@@ -26,6 +27,7 @@ add_library(SSL_network SHARED ${BASE_MODULE}
         Sources/Modules/Network/AClient.cpp
         Sources/Modules/Network/SSL/SslNetwork.cpp
         Sources/Modules/Network/SSL/SslNetwork.hpp
+        Sources/Modules/Http/HttpModule.cpp Sources/Modules/Http/HttpModule.hpp
         )
 conan_target_link_libraries(SSL_network ${CONAN_LIBS})
 add_dependencies(SSL_network ziapi)
