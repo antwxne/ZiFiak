@@ -59,6 +59,7 @@ zia::modules::network::Client &zia::modules::network::Client::genericSend(
             if (!this->_keepAlive) {
                 this->_isConnected = false;
             }
+            this->_processingRequest = false;
             this->updateTime();
             Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
         });

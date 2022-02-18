@@ -120,7 +120,9 @@ void zia::modules::network::BasicNetwork::handleReceive(
     if (error == asio::error::eof) {
         Debug::log("Client disconected");
         client.setConnectionStatut(false);
+        return;
     }
+    client.setProcessingARequest(true);
     try {
         requests.Push(std::make_pair(
             zia::modules::http::HttpModule::createRequest(client.toString()),

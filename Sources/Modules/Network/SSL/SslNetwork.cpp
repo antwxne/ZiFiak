@@ -125,7 +125,9 @@ void zia::modules::network::SSLNetwork::handleReceive(
     if (error == asio::error::eof) {
         Debug::log("SSLClient disconected");
         client.setConnectionStatut(false);
+        return;
     }
+    client.setProcessingARequest(true);
     try {
         requests.Push(std::make_pair(
             zia::modules::http::HttpModule::createRequest(client.toString()),

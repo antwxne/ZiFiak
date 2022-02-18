@@ -59,6 +59,7 @@ zia::modules::network::SSLClient &zia::modules::network::SSLClient::genericSend(
                 this->_isConnected = false;
             }
             this->updateTime();
+            this->_processingRequest = false;
             Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
         });
     return *this;
