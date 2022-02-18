@@ -25,8 +25,11 @@ void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("init server");
 
+    int port = cfg["http"]["port"].AsInt();
+    _timeout_s = cfg["http"]["timeout_s"].AsInt();
+
     asio::ip::tcp::endpoint basicEndPoint(
-        asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 80));
+        asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
 
     _acceptor.open(basicEndPoint.protocol());
     _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));

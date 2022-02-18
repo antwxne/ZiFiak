@@ -9,6 +9,7 @@
 #define ZIA_REQUESTQUEUE_HPP
 
 #include <vector>
+#include <mutex>
 
 #include "ziapi/Http.hpp"
 
@@ -22,6 +23,9 @@ public:
 
     void Push(std::pair<ziapi::http::Request, ziapi::http::Context> &&req) override;
     [[nodiscard]] std::size_t Size() const noexcept override;
+
+private:
+    std::mutex _mutex;
 };
 }
 

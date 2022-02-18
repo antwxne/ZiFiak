@@ -94,11 +94,11 @@ ziapi::http::Request HttpModule::createRequest(const std::string &str)
     return req;
 }
 
-std::string HttpModule::readResponse(ziapi::http::Response &res)
+std::string HttpModule::readResponse(const ziapi::http::Response &res) noexcept
 {
     std::string str;
 
-    for (auto &v : _versions) {
+    for (const auto &v : _versions) {
         if (v.second == res.version){
             str += v.first;
             break;
@@ -106,7 +106,7 @@ std::string HttpModule::readResponse(ziapi::http::Response &res)
     }
     str += ' ' + _codes.at(res.status_code);
     str += ' ' + res.reason;
-    for (auto &f : res.fields)
+    for (const auto &f : res.fields)
         str += ' ' + f.first + ": " + f.second;
     str += ' ' + res.body;
     return str;

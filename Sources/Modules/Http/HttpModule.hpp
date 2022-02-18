@@ -45,7 +45,7 @@ namespace zia::modules::http {
             ~HttpModule() = default;
 
             static ziapi::http::Request createRequest(const std::string &str);
-            static std::string readResponse(ziapi::http::Response &res);
+            static std::string readResponse(const ziapi::http::Response &res) noexcept;
 
     };
 

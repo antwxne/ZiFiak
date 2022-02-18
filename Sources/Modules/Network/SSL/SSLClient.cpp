@@ -50,11 +50,15 @@ zia::modules::network::SSLClient &zia::modules::network::SSLClient::genericSend(
 )
 {
     this->_socket.async_send(asio::buffer(obj, size),
-        [](const asio::error_code &errorCode, std::size_t bytesTransferred) {
+        [this](const asio::error_code &errorCode, std::size_t bytesTransferred) {
             if (errorCode) {
                 throw MyException(errorCode.message(), __PRETTY_FUNCTION__,
                     __FILE__, __LINE__);
             }
+            if (!this->_keepAlive) {
+                this->_isConnected = false;
+            }
+            this->updateTime();
             Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
         });
     return *this;
