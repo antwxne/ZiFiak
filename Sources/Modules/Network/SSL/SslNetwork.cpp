@@ -6,11 +6,13 @@
 */
 
 #include <thread>
+
+#include "Modules/Http/HttpModule.hpp"
 #include "SslNetwork.hpp"
 
 zia::modules::network::SSLNetwork::SSLNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
-    _buffer(8000, 0)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context), _isRunning(false),
+    _sslContext(asio::ssl::context::sslv23)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -123,6 +125,14 @@ void zia::modules::network::SSLNetwork::handleReceive(
         Debug::log("SSLClient disconected");
         client.setConnectionStatut(false);
     }
+    try {
+        requests.Push(std::make_pair(
+            zia::modules::http::HttpModule::createRequest(client.toString()),
+            client.getContext()));
+    } catch (const std::invalid_argument &error) {
+        Debug::warn(error.what());
+    }
+    client.empty();
     startReceive(requests, client);
 }
 

@@ -47,6 +47,7 @@ public:
     [[nodiscard]] bool isConnected() const;
     void setConnectionStatut(bool isConnected);
     [[nodiscard]] std::string toString() const noexcept;
+    void empty();
 
 public:
     virtual int getSocketFd() = 0;

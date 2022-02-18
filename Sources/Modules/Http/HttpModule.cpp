@@ -9,14 +9,6 @@
 
 namespace zia::modules::http {
 
-HttpModule::HttpModule()
-{
-}
-
-HttpModule::~HttpModule()
-{
-}
-
 void getHeaderBody(ziapi::http::Request &req, std::stringstream &stream)
 {
     std::string str;

@@ -7,6 +7,7 @@
 
 #include <thread>
 
+#include "Modules/Http/HttpModule.hpp"
 #include "BasicNetwork.hpp"
 
 zia::modules::network::BasicNetwork::BasicNetwork()
@@ -117,8 +118,14 @@ void zia::modules::network::BasicNetwork::handleReceive(
         Debug::log("Client disconected");
         client.setConnectionStatut(false);
     }
-    // c'est ici qu'on rempli la reque http avec la methode
-    // la on vide le buffer du client
+    try {
+        requests.Push(std::make_pair(
+            zia::modules::http::HttpModule::createRequest(client.toString()),
+            client.getContext()));
+    } catch (const std::invalid_argument &error) {
+        Debug::warn(error.what());
+    }
+    client.empty();
     startReceive(requests, client);
 }
 

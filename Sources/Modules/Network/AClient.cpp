@@ -128,3 +128,8 @@ std::string zia::modules::network::AClient::toString() const noexcept
         _rawRequest.size() * sizeof(uint8_t));
     return dest;
 }
+
+void zia::modules::network::AClient::empty()
+{
+    _rawRequest.clear();
+}

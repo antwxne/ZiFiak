@@ -49,8 +49,8 @@ private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
     asio::signal_set _signalSet;
-    std::vector<std::unique_ptr<SSLClient>> _clients;
     bool _isRunning;
+    std::vector<std::unique_ptr<SSLClient>> _clients;
     std::thread _responseThread;
     asio::ssl::context _sslContext;
 };
