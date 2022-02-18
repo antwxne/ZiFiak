@@ -7,7 +7,7 @@
 
 #include "AClient.hpp"
 
-zia::modules::network::AClient::AClient(const std::size_t &bufferSize) : _keepAlive(false), _processingRequest(false), _rawRequest(bufferSize, 0),
+zia::modules::network::AClient::AClient() : _keepAlive(false), _processingRequest(false), _isConnected(true), _rawRequest(),
     _lastRequest(std::chrono::system_clock::now())
 {
 }

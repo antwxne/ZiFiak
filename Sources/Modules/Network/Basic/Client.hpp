@@ -13,7 +13,7 @@
 namespace zia::modules::network {
 class Client : public AClient {
 public:
-    Client(const std::size_t &bufferSize, asio::io_context &ioContext);
+    Client(asio::io_context &ioContext);
     int getSocketFd() override;
     bool operator==(int fd) noexcept override;
     bool operator==(const ziapi::http::Context &ctx) const override;

@@ -20,7 +20,7 @@
 namespace zia::modules::network {
 class AClient {
 public:
-    AClient(const std::size_t &bufferSize);
+    AClient();
 
     template<typename T>
     AClient &operator<<(const T &obj)
