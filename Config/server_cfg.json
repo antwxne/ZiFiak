@@ -11,5 +11,14 @@
   "timeout_s": {
     "client": 5,
     "refresh": 1
-  }
+  },
+  "AllowMethods": [
+    {
+      "path": "/",
+      "methods": [
+        "POSTS",
+        "GET"
+      ]
+    }
+  ]
 }
