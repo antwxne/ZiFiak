@@ -20,34 +20,33 @@ void FallBack::Init([[maybe_unused]] const ziapi::config::Node &)
     // Don't need anything to configure in this implementation
 }
 
-ziapi::Version FallBack::GetVersion() const
+[[nodiscard]] ziapi::Version FallBack::GetVersion() const noexcept
 {
     return ziapi::Version{3, 0, 0};
 }
 
-ziapi::Version FallBack::GetCompatibleApiVersion() const
+[[nodiscard]] ziapi::Version FallBack::GetCompatibleApiVersion() const noexcept
 {
     return ziapi::Version{3, 0, 0};
 }
 
-const char *FallBack::GetName() const
+[[nodiscard]] const char *FallBack::GetName() const noexcept
 {
     return "CompressorModule";
 }
 
-const char *FallBack::GetDescription() const
+[[nodiscard]] const char *FallBack::GetDescription() const noexcept
 {
     return "Compress the response body before sending it back to the network";
 }
 
-void PostProcess(ziapi::http::Context &context, ziapi::http::Response &res)
+void FallBack::PostProcess(ziapi::http::Context &context, ziapi::http::Response &res)
 {
     auto errorOccured = std::any_cast<std::pair<ziapi::http::Code, std::string>>(context["ErrorOccured"]);
     res.Bootstrap(errorOccured.first, errorOccured.second);
 }
 
-
-double FallBack::GetPostProcessorPriority() const
+[[nodiscard]] double FallBack::GetPostProcessorPriority() const noexcept
 {
     return 0.0f;
 }

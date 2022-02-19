@@ -24,6 +24,8 @@ public:
 
 private:
     Node _serverConfig;
+public:
+    const ziapi::config::Node &getServerConfig() const;
 };
 }
 #endif //BASIC_SERVER_SERVER_HPP
