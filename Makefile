@@ -1,5 +1,5 @@
 ## VAR
-NAME			=	server
+NAME			=	zia
 TESTS_NAME	=	unit_tests
 
 BUILD_DIR	=	build
@@ -33,6 +33,7 @@ doc-clean:
 # Clean build and binaries
 .PHONY: fclean
 fclean: clean doc-clean
+	$(RM) $(NAME)
 
 .PHONY: re
 re: fclean all
