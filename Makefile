@@ -20,6 +20,7 @@ debug:
 # Clean build
 .PHONY: clean
 clean:
+	$(RM) -r $(BUILD_DIR)
 
 .PHONY: doc-clean
 doc-clean:
@@ -31,7 +32,6 @@ doc-clean:
 .PHONY: fclean
 fclean: clean doc-clean
 	$(RM) $(NAME)
-	cmake --build build/ --target clean
 
 .PHONY: re
 re: fclean all
@@ -42,7 +42,7 @@ tests_build:
 
 .PHONY: tests_run
 tests_run: tests_build
-	$(BUILD_DIR)/bin/${TESTS_NAME}
+	./${TESTS_NAME}
 
 .PHONY: doc
 doc:

@@ -20,7 +20,7 @@ void getHeaderBody(ziapi::http::Request &req, std::stringstream &stream)
         mod.resize(mod.size()-1);
         if (std::find(_headers.begin(), _headers.end(), mod) != _headers.end()) {
             std::getline(stream, temp, ' ');
-            req.fields[mod] = temp;
+            req.headers[mod] = temp;
         } else
             req.body += ' ' + str;
     }
@@ -106,7 +106,7 @@ std::string HttpModule::readResponse(const ziapi::http::Response &res) noexcept
     }
     str += ' ' + _codes.at(res.status_code);
     str += ' ' + res.reason;
-    for (const auto &f : res.fields)
+    for (const auto &f : res.headers)
         str += ' ' + f.first + ": " + f.second;
     str += ' ' + res.body;
     return str;
