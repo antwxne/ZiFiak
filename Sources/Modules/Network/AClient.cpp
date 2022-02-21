@@ -5,9 +5,10 @@
 ** Created by antoine,
 */
 
+#include "Modules/Http/HttpModule.hpp"
 #include "AClient.hpp"
 
-zia::modules::network::AClient::AClient(const std::size_t &bufferSize) : _keepAlive(false), _processingRequest(false), _rawRequest(bufferSize, 0),
+zia::modules::network::AClient::AClient() : _keepAlive(false), _processingRequest(false), _isConnected(true), _rawRequest(),
     _lastRequest(std::chrono::system_clock::now())
 {
 }
@@ -62,26 +63,26 @@ zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
     std::string &str
 )
 {
-    return genericSend(str.c_str(), str.size());
+    return genericSend(str.c_str(), str.size() * sizeof (*str.c_str()));
 }
 
 zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
     std::vector<uint8_t> &arr
 )
 {
-    return genericSend(&*arr.begin(), arr.size());
+    return genericSend(&*arr.begin(), arr.size() * sizeof(*arr.begin()));
 }
 
 void zia::modules::network::AClient::operator>>(std::string &str) const
 {
-    str.resize(_rawRequest.size());
-    std::memcpy(&*str.begin(), &*_rawRequest.begin(), _rawRequest.size());
+    str.resize(_rawRequest.size()  * sizeof(*_rawRequest.begin()));
+    std::memcpy(&*str.begin(), &*_rawRequest.begin(), _rawRequest.size() * sizeof(*_rawRequest.begin()));
 }
 
 void zia::modules::network::AClient::operator>>(std::vector<uint8_t> &arr) const
 {
-    arr.resize(_rawRequest.size());
-    std::memcpy(&*arr.begin(), &*_rawRequest.begin(), _rawRequest.size());
+    arr.resize(_rawRequest.size() * sizeof(*_rawRequest.begin()));
+    std::memcpy(&*arr.begin(), &*_rawRequest.begin(), _rawRequest.size() * sizeof(*_rawRequest.begin()));
 }
 
 zia::modules::network::AClient &zia::modules::network::AClient::operator+=(
@@ -106,25 +107,22 @@ zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
     const ziapi::http::Response &response
 )
 {
-    std::string res = "";
-    res += std::to_string(static_cast<int>(response.version)) + "\r\n" +
-        std::to_string(static_cast<int>(response.status_code)) + "\r\n" +
-        response.reason + "\r\n";
-
-    for (const auto &value: response.fields) {
-        res += value.first + ": " + value.second + "\r\n";
-    }
-    res += response.body + "\r\n";
-    return genericSend(&*res.begin(), res.size());
+    std::string res = zia::modules::http::HttpModule::readResponse(response);
+    return genericSend(res.c_str(), res.size() * sizeof(*res.c_str()));
 }
 
 std::string zia::modules::network::AClient::toString() const noexcept
 {
     std::string dest;
 
-    dest.resize(_rawRequest.size() * sizeof(uint8_t));
+    dest.resize(_rawRequest.size() * sizeof(*_rawRequest.begin()));
 
     std::memcpy(&*dest.begin(), &*_rawRequest.begin(),
-        _rawRequest.size() * sizeof(uint8_t));
+        _rawRequest.size() * sizeof(*_rawRequest.begin()));
     return dest;
+}
+
+void zia::modules::network::AClient::empty()
+{
+    _rawRequest.clear();
 }

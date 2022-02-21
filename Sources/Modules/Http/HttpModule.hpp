@@ -41,14 +41,12 @@ namespace zia::modules::http {
 
     class HttpModule {
         public:
-            HttpModule();
-            ~HttpModule();
+            HttpModule() = default;
+            ~HttpModule() = default;
 
-            ziapi::http::Request createRequest(const std::string &str);
-            std::string readResponse(ziapi::http::Response &res);
+            static ziapi::http::Request createRequest(const std::string &str);
+            static std::string readResponse(const ziapi::http::Response &res) noexcept;
 
-        protected:
-        private:
     };
 
     static const std::map<ziapi::http::Code, std::string> _codes {

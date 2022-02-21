@@ -8,10 +8,11 @@
 #include <thread>
 
 #include "Modules/Http/HttpModule.hpp"
-#include "BasicNetwork.hpp"
+#include "SslNetwork.hpp"
 
-zia::modules::network::BasicNetwork::BasicNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context)
+zia::modules::network::SSLNetwork::SSLNetwork()
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context), _isRunning(false),
+    _sslContext(asio::ssl::context::sslv23)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -21,13 +22,16 @@ zia::modules::network::BasicNetwork::BasicNetwork()
     });
 }
 
-void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
+void zia::modules::network::SSLNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("init server");
+    std::string permFilePath = cfg["https"]["perm_file_path"].AsString();
+    int port = cfg["https"]["port"].AsInt();
+    _timeout_s = cfg["https"]["timeout_s"].AsInt();
 
-    int port = cfg["http"]["port"].AsInt();
-    _timeout_s = cfg["http"]["timeout_s"].AsInt();
-
+    _sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 | asio::ssl::context::single_dh_use);
+    _sslContext.use_certificate_chain_file(permFilePath);
+    _sslContext.use_private_key_file(permFilePath, asio::ssl::context::pem);
     asio::ip::tcp::endpoint basicEndPoint(
         asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
 
@@ -37,27 +41,27 @@ void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
     _acceptor.listen();
 }
 
-ziapi::Version zia::modules::network::BasicNetwork::GetVersion() const noexcept
+ziapi::Version zia::modules::network::SSLNetwork::GetVersion() const noexcept
 {
     return {1, 0, 0};
 }
 
-ziapi::Version zia::modules::network::BasicNetwork::GetCompatibleApiVersion() const noexcept
+ziapi::Version zia::modules::network::SSLNetwork::GetCompatibleApiVersion() const noexcept
 {
     return {3, 0, 0};
 }
 
-const char *zia::modules::network::BasicNetwork::GetName() const noexcept
+const char *zia::modules::network::SSLNetwork::GetName() const noexcept
 {
-    return "Basic network module";
+    return "SLL network module";
 }
 
-const char *zia::modules::network::BasicNetwork::GetDescription() const noexcept
+const char *zia::modules::network::SSLNetwork::GetDescription() const noexcept
 {
-    return "je suis un gentil petit module de merde";
+    return "SSL module for https connection";
 }
 
-void zia::modules::network::BasicNetwork::Run(
+void zia::modules::network::SSLNetwork::Run(
     ziapi::http::IRequestOutputQueue &requests,
     ziapi::http::IResponseInputQueue &responses
 )
@@ -66,59 +70,60 @@ void zia::modules::network::BasicNetwork::Run(
     _isRunning = true;
     startAccept(requests);
     _io_context.run();
-    _horreurDeSqueezieChien = std::thread(&BasicNetwork::sendResponses, this,
+    _responseThread = std::thread(&SSLNetwork::sendResponses, this,
         std::ref(responses));
 }
 
-void zia::modules::network::BasicNetwork::Terminate()
+void zia::modules::network::SSLNetwork::Terminate()
 {
     Debug::log("server stop");
     _isRunning = false;
     _io_context.stop();
-    _horreurDeSqueezieChien.join();
+    _responseThread.join();
 }
 
-void zia::modules::network::BasicNetwork::startAccept(
+void zia::modules::network::SSLNetwork::startAccept(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-    _clients.emplace_back(
-        std::make_unique<zia::modules::network::Client>(Client(_io_context)));
+    _clients.emplace_back(std::make_unique<zia::modules::network::SSLClient>(
+        SSLClient(_io_context, _sslContext)));
     _acceptor.async_accept(_clients.back()->getAsioSocket(),
-        std::bind(&BasicNetwork::handleAccept, this, std::ref(requests),
+        std::bind(&SSLNetwork::handleAccept, this, std::ref(requests),
             std::ref(*_clients.back().get())));
 }
 
-void zia::modules::network::BasicNetwork::handleAccept(
+void zia::modules::network::SSLNetwork::handleAccept(
     ziapi::http::IRequestOutputQueue &requests,
-    zia::modules::network::Client &client
+    zia::modules::network::SSLClient &client
 )
 {
-    Debug::log("Client connected");
+    Debug::log("SSLClient connected");
+    client.initSSL();
     startReceive(requests, client);
     startAccept(requests);
 }
 
-void zia::modules::network::BasicNetwork::startReceive(
+void zia::modules::network::SSLNetwork::startReceive(
     ziapi::http::IRequestOutputQueue &requests,
-    zia::modules::network::Client &client
+    zia::modules::network::SSLClient &client
 )
 {
     std::string delimiter = "\r\n\r\n";
-    asio::async_read_until(client.getAsioSocket(),
+    asio::async_read_until(*client.getAsioSSLSocket(),
         asio::dynamic_buffer(client.getRawRequest()), delimiter,
-        std::bind(&BasicNetwork::handleReceive, this, std::ref(requests),
+        std::bind(&SSLNetwork::handleReceive, this, std::ref(requests),
             std::ref(client), std::placeholders::_1, std::placeholders::_2));
 }
 
-void zia::modules::network::BasicNetwork::handleReceive(
+void zia::modules::network::SSLNetwork::handleReceive(
     ziapi::http::IRequestOutputQueue &requests,
-    zia::modules::network::Client &client, const std::error_code &error,
+    zia::modules::network::SSLClient &client, const std::error_code &error,
     std::size_t bytes_transfered
 )
 {
     if (error == asio::error::eof) {
-        Debug::log("Client disconected");
+        Debug::log("SSLClient disconected");
         client.setConnectionStatut(false);
         return;
     }
@@ -134,7 +139,7 @@ void zia::modules::network::BasicNetwork::handleReceive(
     startReceive(requests, client);
 }
 
-void zia::modules::network::BasicNetwork::sendResponses(
+void zia::modules::network::SSLNetwork::sendResponses(
     ziapi::http::IResponseInputQueue &responses
 )
 {
@@ -147,7 +152,7 @@ void zia::modules::network::BasicNetwork::sendResponses(
             auto response = current.value().first;
             auto ctx = current.value().second;
             auto client = std::find_if(_clients.begin(), _clients.end(),
-                [&ctx](const std::unique_ptr<Client> &c) {
+                [&ctx](const std::unique_ptr<SSLClient> &c) {
                     return *c == ctx;
                 });
             *client->get() << response;

@@ -20,7 +20,7 @@
 namespace zia::modules::network {
 class AClient {
 public:
-    AClient(const std::size_t &bufferSize);
+    AClient();
 
     template<typename T>
     AClient &operator<<(const T &obj)
@@ -47,6 +47,7 @@ public:
     [[nodiscard]] bool isConnected() const;
     void setConnectionStatut(bool isConnected);
     [[nodiscard]] std::string toString() const noexcept;
+    void empty();
 
 public:
     virtual int getSocketFd() = 0;

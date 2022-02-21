@@ -5,18 +5,20 @@
 ** Created by antoine,
 */
 
-#ifndef ZIA_BASICNETWORK_HPP
-#define ZIA_BASICNETWORK_HPP
+#ifndef ZIA_SSLNETWORK_HPP
+#define ZIA_SSLNETWORK_HPP
 
-#include <asio.hpp>
+#include <asio/ssl.hpp>
 
-#include "Client.hpp"
 #include "ziapi/Module.hpp"
+#include "ziapi/Http.hpp"
+
+#include "SSLClient.hpp"
 
 namespace zia::modules::network {
-class BasicNetwork : public ziapi::INetworkModule {
+class SSLNetwork: public ziapi::INetworkModule {
 public:
-    BasicNetwork();
+    SSLNetwork();
     // IModule
     void Init(const ziapi::config::Node &cfg) override;
     ziapi::Version GetVersion() const noexcept override;
@@ -32,13 +34,13 @@ public:
 private:
     void startAccept(ziapi::http::IRequestOutputQueue &requests);
     void handleAccept(ziapi::http::IRequestOutputQueue &requests,
-        Client &client
+        SSLClient &client
     );
     void startReceive(ziapi::http::IRequestOutputQueue &requests,
-        Client &client
+        SSLClient &client
     );
     void handleReceive(ziapi::http::IRequestOutputQueue &requests,
-        Client &client, const std::error_code &error,
+        SSLClient &client, const std::error_code &error,
         std::size_t bytes_transfered
     );
     void sendResponses(ziapi::http::IResponseInputQueue &responses);
@@ -47,11 +49,11 @@ private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
     asio::signal_set _signalSet;
-    std::vector<std::unique_ptr<Client>> _clients;
     bool _isRunning;
-    std::thread _horreurDeSqueezieChien;
+    std::vector<std::unique_ptr<SSLClient>> _clients;
+    std::thread _responseThread;
+    asio::ssl::context _sslContext;
     int _timeout_s;
 };
 }
-
-#endif //ZIA_BASICNETWORK_HPP
+#endif //ZIA_SSLNETWORK_HPP

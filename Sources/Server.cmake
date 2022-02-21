@@ -9,4 +9,5 @@ set(SRC
         Sources/Queue/RequestQueue.cpp Sources/Queue/RequestQueue.hpp
         Sources/Queue/ResponseQueue.cpp Sources/Queue/ResponseQueue.hpp
         Sources/Modules/Http/HttpModule.cpp Sources/Modules/Http/HttpModule.hpp
+        Sources/Watcher/Watcher.cpp Sources/Watcher/Watcher.hpp
         )
