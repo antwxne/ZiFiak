@@ -27,9 +27,9 @@ std::vector<FileState> Watcher::getFilesInFolder(const std::string &folderPath)
     for (const auto &entry : std::filesystem::directory_iterator(folderPath)) {
         auto path = entry.path();
 
-        if (std::filesystem::is_directory(entry)) {
-            auto tmpVector = getFilesInFolder(path);
-            files.insert( files.end(), tmpVector.begin(), tmpVector.end());
+        if (std::filesystem::is_directory(path)) {
+            auto tmpVector = getFilesInFolder(std::string(path));
+            files.insert(files.end(), tmpVector.begin(), tmpVector.end());
             continue;
         } else if (!std::filesystem::exists(path)) {
             continue;
@@ -37,9 +37,9 @@ std::vector<FileState> Watcher::getFilesInFolder(const std::string &folderPath)
         auto modifiedTime = std::filesystem::last_write_time(entry).time_since_epoch();
         if (_saves.find(path) == _saves.end()) {
             _saves[path] = modifiedTime;
-            files.emplace_back(FileState{path, State::ADD});
+            files.push_back(FileState{path, State::ADD});
         } else if (_saves.at(path) != modifiedTime) {
-            files.emplace_back(FileState{path, State::MOD});
+            files.push_back(FileState{path, State::MOD});
             _saves[path] = modifiedTime;
         }
     }
@@ -53,7 +53,7 @@ std::vector<FileState> Watcher::checkDeletedFiles()
 
     while (it != _saves.cend()) {
         if (!std::filesystem::exists(it->first)) {
-            files.emplace_back(FileState{it->first, State::DEL});
+            files.push_back(FileState{it->first, State::DEL});
             it = _saves.erase(it);
         } else {
             ++it;
