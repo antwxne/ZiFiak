@@ -8,5 +8,6 @@
 class SSLCertificate {
     SSLCertificate() = default;
     ~SSLCertificate() = default;
-    void verifyCertificate(std::string certif);
+    void verifyCertificateClient();
+    void verifyCertificateServer();
 };
