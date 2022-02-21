@@ -24,6 +24,8 @@ add_library(SSL_network SHARED ${BASE_MODULE}
         Sources/Modules/Network/SSL/SSLClient.cpp
         Sources/Modules/Network/AClient.hpp
         Sources/Modules/Network/AClient.cpp
+        Sources/Modules/Network/SSL/SSLCertificate.hpp
+        Sources/Modules/Network/SSL/SSLCertificate.cpp
         )
 conan_target_link_libraries(SSL_network ${CONAN_LIBS})
 add_dependencies(SSL_network ziapi)
