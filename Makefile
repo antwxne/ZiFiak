@@ -30,6 +30,7 @@ doc-clean:
 # Clean build and binaries
 .PHONY: fclean
 fclean: clean doc-clean
+	$(RM) $(NAME)
 	cmake --build build/ --target clean
 
 .PHONY: re
