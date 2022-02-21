@@ -47,10 +47,10 @@ private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
     asio::signal_set _signalSet;
-    std::vector<std::unique_ptr<zia::modules::network::Client>> _clients;
-    std::vector<uint8_t> _buffer;
+    std::vector<std::unique_ptr<Client>> _clients;
     bool _isRunning;
     std::thread _horreurDeSqueezieChien;
+    int _timeout_s;
 };
 }
 

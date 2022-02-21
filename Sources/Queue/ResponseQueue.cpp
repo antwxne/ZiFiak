@@ -9,12 +9,15 @@
 
 std::optional<std::pair<ziapi::http::Response, ziapi::http::Context>> zia::container::ResponseQueue::Pop()
 {
+    _mutex.lock();
     if (!empty()) {
         std::optional<std::pair<ziapi::http::Response, ziapi::http::Context>> dest = *begin();
 
         erase(cbegin());
+        _mutex.unlock();
         return dest;
     }
+    _mutex.unlock();
     return std::nullopt;
 }
 

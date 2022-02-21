@@ -7,10 +7,42 @@ set(BASE_MODULE
 
 # BASIC NETWORK MODULE
 add_library(basic_network SHARED ${BASE_MODULE}
-        Sources/Modules/Network/BasicNetwork.cpp
-        Sources/Modules/Network/BasicNetwork.hpp
-        Sources/Modules/Network/Client.hpp
-        Sources/Modules/Network/Client.cpp
+        Sources/Modules/Network/Basic/BasicNetwork.cpp
+        Sources/Modules/Network/Basic/BasicNetwork.hpp
+        Sources/Modules/Network/Basic/Client.hpp
+        Sources/Modules/Network/Basic/Client.cpp
+        Sources/Modules/Network/AClient.hpp
+        Sources/Modules/Network/AClient.cpp
+        Sources/Modules/Http/HttpModule.cpp Sources/Modules/Http/HttpModule.hpp
         )
 conan_target_link_libraries(basic_network ${CONAN_LIBS})
 add_dependencies(basic_network ziapi)
+
+# Allow Methods MODULE
+add_library(allow_method SHARED ${BASE_MODULE}
+        Sources/Modules/AllowMethods/AllowMethods.hpp
+        Sources/Modules/AllowMethods/AllowMethods.cpp
+        )
+conan_target_link_libraries(allow_method ${CONAN_LIBS})
+add_dependencies(allow_method ziapi)
+
+# Fall Back MODULE
+add_library(fall_back SHARED ${BASE_MODULE}
+        Sources/Modules/FallBack/FallBack.hpp
+        Sources/Modules/FallBack/FallBack.cpp
+        )
+conan_target_link_libraries(fall_back ${CONAN_LIBS})
+add_dependencies(fall_back ziapi)
+
+# SSL NETWORK MODULE
+add_library(SSL_network SHARED ${BASE_MODULE}
+        Sources/Modules/Network/SSL/SSLClient.hpp
+        Sources/Modules/Network/SSL/SSLClient.cpp
+        Sources/Modules/Network/AClient.hpp
+        Sources/Modules/Network/AClient.cpp
+        Sources/Modules/Network/SSL/SslNetwork.cpp
+        Sources/Modules/Network/SSL/SslNetwork.hpp
+        Sources/Modules/Http/HttpModule.cpp Sources/Modules/Http/HttpModule.hpp
+        )
+conan_target_link_libraries(SSL_network ${CONAN_LIBS})
+add_dependencies(SSL_network ziapi)

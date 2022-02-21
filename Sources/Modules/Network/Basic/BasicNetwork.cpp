@@ -7,11 +7,11 @@
 
 #include <thread>
 
+#include "Modules/Http/HttpModule.hpp"
 #include "BasicNetwork.hpp"
 
 zia::modules::network::BasicNetwork::BasicNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
-    _buffer(8000, 0)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -25,8 +25,11 @@ void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("init server");
 
+    int port = cfg["http"]["port"].AsInt();
+    _timeout_s = cfg["http"]["timeout_s"].AsInt();
+
     asio::ip::tcp::endpoint basicEndPoint(
-        asio::ip::tcp::endpoint(asio::ip::tcp::v4(), 80));
+        asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
 
     _acceptor.open(basicEndPoint.protocol());
     _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
@@ -79,8 +82,8 @@ void zia::modules::network::BasicNetwork::startAccept(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-    _clients.emplace_back(std::make_unique<zia::modules::network::Client>(
-        Client(8000, _io_context)));
+    _clients.emplace_back(
+        std::make_unique<zia::modules::network::Client>(Client(_io_context)));
     _acceptor.async_accept(_clients.back()->getAsioSocket(),
         std::bind(&BasicNetwork::handleAccept, this, std::ref(requests),
             std::ref(*_clients.back().get())));
@@ -101,7 +104,9 @@ void zia::modules::network::BasicNetwork::startReceive(
     zia::modules::network::Client &client
 )
 {
-    client.getAsioSocket().async_receive(asio::buffer(&*_buffer.begin(), 8000),
+    std::string delimiter = "\r\n\r\n";
+    asio::async_read_until(client.getAsioSocket(),
+        asio::dynamic_buffer(client.getRawRequest()), delimiter,
         std::bind(&BasicNetwork::handleReceive, this, std::ref(requests),
             std::ref(client), std::placeholders::_1, std::placeholders::_2));
 }
@@ -116,8 +121,14 @@ void zia::modules::network::BasicNetwork::handleReceive(
         Debug::log("Client disconected");
         client.setConnectionStatut(false);
     }
-    client += _buffer;
-    _buffer.assign(8000, 0);
+    try {
+        requests.Push(std::make_pair(
+            zia::modules::http::HttpModule::createRequest(client.toString()),
+            client.getContext()));
+    } catch (const std::invalid_argument &error) {
+        Debug::warn(error.what());
+    }
+    client.empty();
     startReceive(requests, client);
 }
 
@@ -128,13 +139,16 @@ void zia::modules::network::BasicNetwork::sendResponses(
     while (_isRunning) {
         while (responses.Size() > 0) {
             auto current = responses.Pop();
+            if (!current.has_value()) {
+                continue;
+            }
             auto response = current.value().first;
+            auto ctx = current.value().second;
             auto client = std::find_if(_clients.begin(), _clients.end(),
-                [&current](const std::unique_ptr<Client> &c) {
-                    return current.value().second["socket"].has_value() && *c ==
-                        std::any_cast<int>(current.value().second["socket"]);
+                [&ctx](const std::unique_ptr<Client> &c) {
+                    return *c == ctx;
                 });
-            *(client->get()) << response;
+            *client->get() << response;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }

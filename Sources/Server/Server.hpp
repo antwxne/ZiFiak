@@ -23,13 +23,17 @@ public:
     Server &operator=(const Server &) = delete;
     void init(const std::string &filepath);
     void run();
-    const std::string &getPathDirectory() const;
+    const std::string getPathDirectory() const;
 
 private:
     Node _serverConfig;
     LoadLibs loadLibs;
     bool _isModuleChange;
     Watcher::Watcher _moduleWatcher;
+    std::vector<std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string>> _allPreProcessorModules;
+    std::vector<std::pair<std::unique_ptr<ziapi::INetworkModule>, std::string>> _allNetWorkModules;
+    std::vector<std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string>> _allHandlerModules;
+    std::vector<std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string>>_allPostProcessorModules;
 
 public:
     const ziapi::config::Node &getServerConfig() const;

@@ -9,6 +9,7 @@
 #define ZIA_RESPONSEQUEUE_HPP
 
 #include <vector>
+#include <mutex>
 
 #include "ziapi/Http.hpp"
 
@@ -22,6 +23,9 @@ public:
 
     std::optional<std::pair<ziapi::http::Response, ziapi::http::Context>> Pop() override;
     [[nodiscard]] std::size_t Size() const noexcept override;
+private:
+    std::mutex _mutex;
+
 };
 }
 #endif //ZIA_RESPONSEQUEUE_HPP
