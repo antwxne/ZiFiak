@@ -20,8 +20,13 @@ void zia::server::Server::init(const std::string &filepath) {
     ConfigParser confParser;
 
     try {
-        auto pathDirectory = zia::server::Server::getPathDirectory();
+        std::cout << filepath << std::endl;
         this->_serverConfig = ConfigParser::loadFromFile(filepath);
+        std::cout << "bizarre" << std::endl;
+        std::cout << "acca " << std::endl;
+        std::cout << "toto ==  " << _serverConfig << std::endl;
+        auto pathDirectory = zia::server::Server::getPathDirectory();
+        std::cout << pathDirectory << std::endl;
         loadLibs.openFilesAndStore(pathDirectory);
         loadLibs.initLibs(_serverConfig);
         loadLibs.getType();
@@ -34,8 +39,12 @@ void zia::server::Server::init(const std::string &filepath) {
 
 const std::string &zia::server::Server::getPathDirectory() const {
     try {
+        std::cout << "toto" << std::endl;
+        std::cout << _serverConfig << std::endl;
+        std::cout << "bizarre == " << _serverConfig["directory"].AsString() << std::endl;
         return _serverConfig["directory"].AsString();
     } catch (std::runtime_error &e) {
+        std::cout << "tata" << std::endl;
         std::cerr << "Error module Directory" << std::endl;
         return "./modules";
     }
