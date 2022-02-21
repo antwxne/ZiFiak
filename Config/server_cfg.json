@@ -1,16 +1,21 @@
 {
-  "max_request_size": 8000,
   "directory" : "Modules",
-  "default": {
+  "http": {
     "port": "80",
-    "threads": 5
+    "timeout_s": 5
   },
-  "ssl": {
+  "https": {
     "port": "443",
-    "threads": 2
+    "perm_file_path": "plop.perm",
+    "timeout_s": 5
   },
-  "timeout_s": {
-    "client": 5,
-    "refresh": 1
-  }
+  "AllowMethods": [
+    {
+      "path": "/",
+      "methods": [
+        "POSTS",
+        "GET"
+      ]
+    }
+  ]
 }

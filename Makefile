@@ -1,5 +1,5 @@
 ## VAR
-NAME			=	server
+NAME			=	zia
 TESTS_NAME	=	unit_tests
 
 BUILD_DIR	=	build
@@ -11,18 +11,15 @@ RM		?=	rm -f
 ## Rules ##
 .PHONY: all
 all:
-	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && conan install .. --build=missing \
-	&& cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .. && cmake --build .
+	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Release -G "Unix Makefiles" .. && cmake --build .
 
 .PHONY: debug
 debug:
-	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && conan install .. --build=missing\
-	&& cmake -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles" .. && cmake --build .
+	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles" .. && cmake --build .
 
 # Clean build
 .PHONY: clean
 clean:
-	$(RM) -r $(BUILD_DIR)
 
 .PHONY: doc-clean
 doc-clean:
@@ -33,14 +30,15 @@ doc-clean:
 # Clean build and binaries
 .PHONY: fclean
 fclean: clean doc-clean
+	$(RM) $(NAME)
+	cmake --build build/ --target clean
 
 .PHONY: re
 re: fclean all
 
 .PHONY: tests_build
 tests_build:
-	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && conan install .. --build=missing \
-    	&& cmake -DCMAKE_BUILD_TYPE=Release -DUNIT_TESTS=TRUE .. -G "Unix Makefiles" && cmake --build .
+	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Release -DUNIT_TESTS=TRUE .. -G "Unix Makefiles" && cmake --build .
 
 .PHONY: tests_run
 tests_run: tests_build

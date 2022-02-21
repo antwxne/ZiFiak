@@ -1,7 +1,7 @@
 [requires]
 asio/1.21.0
 nlohmann_json/3.10.5
-
+openssl/3.0.1
 [generators]
 cmake
 
