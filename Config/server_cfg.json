@@ -3,7 +3,7 @@
   "directory" : "Modules",
   "default": {
     "port": "80",
-    "threads": 5,
+    "threads": 5
   },
   "ssl": {
     "port": "443",
