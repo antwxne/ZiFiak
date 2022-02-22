@@ -66,7 +66,8 @@ void zia::modules::network::BasicNetwork::Run(
     _io_context.run();
     _responseThread = std::thread(&BasicNetwork::sendResponses, this,
         std::ref(responses));
-    _disconnectClientThread = std::thread(&BasicNetwork::disconnectClient, this);
+    _disconnectClientThread = std::thread(&BasicNetwork::disconnectClient,
+        this);
 }
 
 void zia::modules::network::BasicNetwork::Terminate()
@@ -149,23 +150,22 @@ void zia::modules::network::BasicNetwork::sendResponses(
 )
 {
     while (_isRunning) {
-        while (responses.Size() > 0) {
-            auto current = responses.Pop();
-            if (!current.has_value()) {
-                continue;
-            }
-            auto response = current.value().first;
-            auto ctx = current.value().second;
-            auto client = std::find_if(_clients.begin(), _clients.end(),
-                [&ctx](const std::unique_ptr<Client> &c) {
-                    return *c == ctx;
-                });
-            if (client != _clients.cend()) {
-                *client->get() << response;
-            }
+        responses.Wait();
+        auto current = responses.Pop();
+        if (!current.has_value()) {
+            continue;
         }
+        auto response = current.value().first;
+        auto ctx = current.value().second;
+        auto client = std::find_if(_clients.begin(), _clients.end(),
+            [&ctx](const std::unique_ptr<Client> &c) {
+                return *c == ctx;
+            });
+        if (client != _clients.cend()) {
+            *client->get() << response;
         }
     }
+}
 
 void zia::modules::network::BasicNetwork::disconnectClient() noexcept
 {

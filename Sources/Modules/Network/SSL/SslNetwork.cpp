@@ -157,20 +157,19 @@ void zia::modules::network::SSLNetwork::sendResponses(
 )
 {
     while (_isRunning) {
-        while (responses.Size() > 0) {
-            auto current = responses.Pop();
-            if (!current.has_value()) {
-                continue;
-            }
-            auto response = current.value().first;
-            auto ctx = current.value().second;
-            auto client = std::find_if(_clients.begin(), _clients.end(),
-                [&ctx](const std::unique_ptr<SSLClient> &c) {
-                    return *c == ctx;
-                });
-            if (client != _clients.cend()) {
-                *client->get() << response;
-            }
+        responses.Wait();
+        auto current = responses.Pop();
+        if (!current.has_value()) {
+            continue;
+        }
+        auto response = current.value().first;
+        auto ctx = current.value().second;
+        auto client = std::find_if(_clients.begin(), _clients.end(),
+            [&ctx](const std::unique_ptr<SSLClient> &c) {
+                return *c == ctx;
+            });
+        if (client != _clients.cend()) {
+            *client->get() << response;
         }
     }
 }
