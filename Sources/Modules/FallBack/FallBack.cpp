@@ -32,12 +32,12 @@ void FallBack::Init([[maybe_unused]] const ziapi::config::Node &)
 
 [[nodiscard]] const char *FallBack::GetName() const noexcept
 {
-    return "CompressorModule";
+    return "Compressor Module";
 }
 
 [[nodiscard]] const char *FallBack::GetDescription() const noexcept
 {
-    return "Compress the response body before sending it back to the network";
+    return "Check if an error occured during pipelines and set error response properly";
 }
 
 void FallBack::PostProcess(ziapi::http::Context &context, ziapi::http::Response &res)

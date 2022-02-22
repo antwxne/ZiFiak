@@ -34,6 +34,14 @@ add_library(fall_back SHARED ${BASE_MODULE}
 conan_target_link_libraries(fall_back ${CONAN_LIBS})
 add_dependencies(fall_back ziapi)
 
+# Delegate MODULE
+add_library(deflate SHARED ${BASE_MODULE}
+        Sources/Modules/Deflate/Deflate.hpp
+        Sources/Modules/Deflate/Deflate.cpp
+        )
+conan_target_link_libraries(deflate ${CONAN_LIBS})
+add_dependencies(deflate ziapi)
+
 # SSL NETWORK MODULE
 add_library(SSL_network SHARED ${BASE_MODULE}
         Sources/Modules/Network/SSL/SSLClient.hpp
