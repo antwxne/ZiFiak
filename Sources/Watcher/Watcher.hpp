@@ -11,6 +11,8 @@
 #include <chrono>
 #include <vector>
 #include <filesystem>
+#include <mutex>
+#include <thread>
 
 namespace Watcher {
 
@@ -29,15 +31,21 @@ static const std::string ModulesPath = "Modules/";
 
 class Watcher {
     public:
-        Watcher(const std::string &path);
+        Watcher(const std::string &path, bool &changes);
         ~Watcher();
-        std::vector<FileState> update();
+        void update();
+        std::vector<FileState> getChanges();
 
     private:
+        void setUpdatedFiles(std::vector<FileState> &files);
         std::vector<FileState> getFilesInFolder(const std::string &path);
         std::vector<FileState> checkDeletedFiles();
         std::string _basicPath;
         std::map<std::filesystem::path, std::chrono::nanoseconds> _saves;
+        std::vector<FileState> _modifiedFiles;
+        bool &_changes;
+        std::thread _thread;
+        std::mutex _mutex;
 };
 
 }
