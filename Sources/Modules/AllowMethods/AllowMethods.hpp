@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "ziapi/Module.hpp"
+#include "dylib/dylib.hpp"
 
 class AllowMethods : public ziapi::IPreProcessorModule
 {
@@ -36,5 +37,7 @@ class AllowMethods : public ziapi::IPreProcessorModule
     private:
         std::vector<std::pair<std::string, std::vector<std::string>>> _authorized;
 };
+
+DYLIB_API ziapi::IModule *LoadZiaModule();
 
 #endif /* !ALLOWMETHODS_HPP_ */

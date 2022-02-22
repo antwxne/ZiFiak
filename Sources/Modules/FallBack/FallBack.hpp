@@ -36,4 +36,6 @@ class FallBack : public ziapi::IPostProcessorModule
     private:
 };
 
+DYLIB_API ziapi::IModule *LoadZiaModule();
+
 #endif /* !FALLBACK_HPP_ */

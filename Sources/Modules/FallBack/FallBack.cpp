@@ -57,3 +57,8 @@ bool FallBack::ShouldPostProcess(const ziapi::http::Context &context, const ziap
         return true;
     return false;
 }
+
+DYLIB_API ziapi::IModule *LoadZiaModule()
+{
+    return new FallBack;
+}
