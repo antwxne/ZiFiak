@@ -11,8 +11,8 @@
 #include "SslNetwork.hpp"
 
 zia::modules::network::SSLNetwork::SSLNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context), _isRunning(false),
-    _sslContext(asio::ssl::context::sslv23)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
+    _isRunning(false), _sslContext(asio::ssl::context::sslv23)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -28,7 +28,9 @@ void zia::modules::network::SSLNetwork::Init(const ziapi::config::Node &cfg)
     std::string permFilePath = cfg["https"]["certificat_file_path"].AsString();
     int port = cfg["https"]["port"].AsInt();
 
-    _sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 | asio::ssl::context::single_dh_use);
+    _sslContext.set_options(
+        asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
+            asio::ssl::context::single_dh_use);
     _sslContext.use_certificate_chain_file(permFilePath);
     _sslContext.use_private_key_file(permFilePath, asio::ssl::context::pem);
     asio::ip::tcp::endpoint basicEndPoint(
@@ -71,6 +73,7 @@ void zia::modules::network::SSLNetwork::Run(
     _io_context.run();
     _responseThread = std::thread(&SSLNetwork::sendResponses, this,
         std::ref(responses));
+    _disconnectClientThread = std::thread(&SSLNetwork::disconnectClient, this);
 }
 
 void zia::modules::network::SSLNetwork::Terminate()
@@ -79,6 +82,7 @@ void zia::modules::network::SSLNetwork::Terminate()
     _isRunning = false;
     _io_context.stop();
     _responseThread.join();
+    _disconnectClientThread.join();
 }
 
 void zia::modules::network::SSLNetwork::startAccept(
@@ -164,8 +168,36 @@ void zia::modules::network::SSLNetwork::sendResponses(
                 [&ctx](const std::unique_ptr<SSLClient> &c) {
                     return *c == ctx;
                 });
-            *client->get() << response;
+            if (client != _clients.cend()) {
+                *client->get() << response;
+            }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+}
+
+void zia::modules::network::SSLNetwork::disconnectClient() noexcept
+{
+    while (_isRunning) {
+        _clients.erase(std::find_if(_clients.begin(), _clients.end(),
+            [](const std::unique_ptr<SSLClient> &client) {
+                auto keepAlive = client->getKeepAliveInfos();
+                if (!client->isConnected()) {
+                    return true;
+                }
+                if (!keepAlive.has_value()) {
+                    return true;
+                }
+                if (keepAlive.value().max == 0) {
+                    return true;
+                }
+                auto time = std::chrono::steady_clock::now();
+                const auto &clientTime = client->getTimeLastRequest();
+                if (std::chrono::duration_cast<std::chrono::seconds>(
+                    time - clientTime) >=
+                    std::chrono::seconds(keepAlive.value().timeout)) {
+                    return true;
+                }
+                return false;
+            }), _clients.end());
     }
 }

@@ -160,11 +160,12 @@ void zia::modules::network::BasicNetwork::sendResponses(
                 [&ctx](const std::unique_ptr<Client> &c) {
                     return *c == ctx;
                 });
-            *client->get() << response;
+            if (client != _clients.cend()) {
+                *client->get() << response;
+            }
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }
     }
-}
 
 void zia::modules::network::BasicNetwork::disconnectClient() noexcept
 {
