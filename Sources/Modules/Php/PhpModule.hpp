@@ -7,6 +7,9 @@
 
 #pragma once
 
+#include <stdlib.h>
+#include <fstream>
+#include <cstdlib>
 #include "ziapi/Module.hpp"
 
 namespace zia::modules::php {
@@ -17,19 +20,19 @@ class PhpCgi : public ziapi::IHandlerModule {
         ~PhpCgi() = default;
 
         //IModule
-        void Init(const config::Node &cfg) override; // Set up environnement variables / get the config values
+        void Init(const ziapi::config::Node &cfg) override;
         ziapi::Version GetVersion() const noexcept override;
         ziapi::Version GetCompatibleApiVersion() const noexcept override;
         const char *GetName() const noexcept override;
         const char *GetDescription() const noexcept override;
 
         //IHandlerModule
-        double GetHandlerPriority() const override;
-        bool ShouldHandle(const http::Context &ctx, const http::Request &req) const override;
-        void Handle(http::Context &ctx, const http::Request &req, http::Response &res) override; // execute the php with php-cgi
+        double GetHandlerPriority() const noexcept override;
+        bool ShouldHandle(const ziapi::http::Context &ctx, const ziapi::http::Request &req) const override;
+        void Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res) override;
 
     private:
-
+            bool _initSetUp = true;
     protected:
 
 };
