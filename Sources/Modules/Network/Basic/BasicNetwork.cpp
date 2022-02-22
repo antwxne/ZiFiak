@@ -26,7 +26,6 @@ void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
     Debug::log("init server");
 
     int port = cfg["http"]["port"].AsInt();
-
     asio::ip::tcp::endpoint basicEndPoint(
         asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
 
@@ -65,8 +64,9 @@ void zia::modules::network::BasicNetwork::Run(
     _isRunning = true;
     startAccept(requests);
     _io_context.run();
-    _horreurDeSqueezieChien = std::thread(&BasicNetwork::sendResponses, this,
+    _responseThread = std::thread(&BasicNetwork::sendResponses, this,
         std::ref(responses));
+    _disconnectClientThread = std::thread(&BasicNetwork::disconnectClient, this);
 }
 
 void zia::modules::network::BasicNetwork::Terminate()
@@ -74,7 +74,8 @@ void zia::modules::network::BasicNetwork::Terminate()
     Debug::log("server stop");
     _isRunning = false;
     _io_context.stop();
-    _horreurDeSqueezieChien.join();
+    _responseThread.join();
+    _disconnectClientThread.join();
 }
 
 void zia::modules::network::BasicNetwork::startAccept(
@@ -162,5 +163,32 @@ void zia::modules::network::BasicNetwork::sendResponses(
             *client->get() << response;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+}
+
+void zia::modules::network::BasicNetwork::disconnectClient() noexcept
+{
+    while (_isRunning) {
+        _clients.erase(std::find_if(_clients.begin(), _clients.end(),
+            [](const std::unique_ptr<Client> &client) {
+                auto keepAlive = client->getKeepAliveInfos();
+                if (!client->isConnected()) {
+                    return true;
+                }
+                if (!keepAlive.has_value()) {
+                    return true;
+                }
+                if (keepAlive.value().max == 0) {
+                    return true;
+                }
+                auto time = std::chrono::steady_clock::now();
+                const auto &clientTime = client->getTimeLastRequest();
+                if (std::chrono::duration_cast<std::chrono::seconds>(
+                    time - clientTime) >=
+                    std::chrono::seconds(keepAlive.value().timeout)) {
+                    return true;
+                }
+                return false;
+            }), _clients.end());
     }
 }

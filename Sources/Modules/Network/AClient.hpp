@@ -54,7 +54,7 @@ public:
     void setProcessingARequest(bool var) noexcept;
     void setKeepAlive(const ziapi::http::Request &req) noexcept;
     [[nodiscard]] const std::optional<KeepAliveInfos> &getKeepAliveInfos() const noexcept;
-    [[nodiscard]] const std::chrono::time_point <std::chrono::system_clock> &getTimeLastRequest() const noexcept;
+    [[nodiscard]] const std::chrono::steady_clock::time_point &getTimeLastRequest() const noexcept;
     void updateTime() noexcept;
     void changeBufferSize(const std::size_t &newSize) noexcept;
     [[nodiscard]] bool isConnected() const;
@@ -78,7 +78,7 @@ protected:
     bool _isConnected;
     std::vector <uint8_t> _rawRequest;
     std::vector <uint8_t> _buffer;
-    std::chrono::time_point <std::chrono::system_clock> _lastRequest;
+    std::chrono::steady_clock::time_point _lastRequest;
     std::optional<KeepAliveInfos> _keepAlive;
 };
 }

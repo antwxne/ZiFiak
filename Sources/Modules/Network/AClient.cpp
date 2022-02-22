@@ -9,7 +9,7 @@
 #include "AClient.hpp"
 
 zia::modules::network::AClient::AClient() : _keepAlive(std::nullopt), _processingRequest(false), _isConnected(true), _rawRequest(),
-    _lastRequest(std::chrono::system_clock::now())
+    _lastRequest(std::chrono::steady_clock::now())
 {
 }
 
@@ -46,14 +46,14 @@ void zia::modules::network::AClient::setKeepAlive(
     }
 }
 
-const std::chrono::time_point<std::chrono::system_clock> &zia::modules::network::AClient::getTimeLastRequest() const noexcept
+const std::chrono::steady_clock::time_point &zia::modules::network::AClient::getTimeLastRequest() const noexcept
 {
     return _lastRequest;
 }
 
 void zia::modules::network::AClient::updateTime() noexcept
 {
-    _lastRequest = std::chrono::system_clock::now();
+    _lastRequest = std::chrono::steady_clock::now();
 }
 
 void zia::modules::network::AClient::changeBufferSize(const std::size_t &size
