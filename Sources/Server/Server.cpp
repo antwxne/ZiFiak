@@ -20,14 +20,11 @@ void zia::server::Server::init(const std::string &filepath) {
     ConfigParser confParser;
 
     try {
-        std::cout << filepath << std::endl;
         this->_serverConfig = ConfigParser::loadFromFile(filepath);
         auto pathDirectory = zia::server::Server::getPathDirectory();
         std::cout << pathDirectory << std::endl;
         std::cout << pathDirectory << std::endl;
-        loadLibs.openFilesAndStore(pathDirectory);
-        loadLibs.initLibs(_serverConfig);
-        loadLibs.getType();
+        _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
         Debug::log("config load successfully loaded");
     } catch (const std::runtime_error &e) {
         Debug::warn("failed to load config file: " + std::string(e.what()));
@@ -46,14 +43,8 @@ const std::string zia::server::Server::getPathDirectory() const {
 void zia::server::Server::run() {
     while (1) {
         if (_isModuleChange) {
-            _moduleWatcher.getChanges();
-             //loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
+            _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
             _isModuleChange = false;
-            /*std::cout << "--------------------" << std::endl;
-            std::cout << loadLibs.getHandlerModules().size() << std::endl;
-            std::cout << loadLibs.getPreProcessorModules().size() << std::endl;
-            std::cout << loadLibs.getPostProcessorModules().size() << std::endl;
-            std::cout << loadLibs.getNetWorkModules().size() << std::endl;*/
         }
     }
     Debug::log("server running");

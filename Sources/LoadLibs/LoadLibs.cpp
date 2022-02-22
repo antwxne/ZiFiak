@@ -44,25 +44,21 @@ void LoadLibs::loadSingleModule(const std::string &path) {
         std::unique_ptr<ziapi::IModule> toto(libs());
         _tmp.push_back(std::move(lib));
         _listLib.push_back(std::make_pair(std::move(toto), path));
+
     } catch (dylib::exception &e) {
-        std::cerr << e.what() << std::endl;
+        std::cout << e.what() << std::endl;
     }
 }
 
 void LoadLibs::loadLibByFiles(const std::vector<Watcher::FileState> &files, ziapi::config::Node config) {
-    std::cout << "size files: " << files.size() << std::endl;
     for (auto &e: files) {
-        std::cout << e.state << std::endl;
         if (e.state == Watcher::State::DEL) {
-            std::cout << "Del " << std::endl;
             deleteModule(e);
         } else if (e.state == Watcher::State::ADD) {
-            std::cout << "Add " << std::endl;
             loadSingleModule(e.filepath);
             initLibs(config);
             getType();
         } else if (e.state == Watcher::State::MOD) {
-            std::cout << "Mod " << std::endl;
             deleteModule(e);
             loadSingleModule(e.filepath);
             initLibs(config);
@@ -101,6 +97,8 @@ void LoadLibs::getType() {
         auto postProcessorType = dynamic_cast<ziapi::IPostProcessorModule *>(e.first.get());
         auto preProcessorType = dynamic_cast<ziapi::IPreProcessorModule *>(e.first.get());
         auto netWorkType = dynamic_cast<ziapi::INetworkModule *>(e.first.get());
+
+        e.first.release();
 
         if (handlerType) {
             _handlerModules.emplace_back(std::make_pair(handlerType, e.second));

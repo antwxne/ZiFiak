@@ -27,7 +27,7 @@ public:
 
 private:
     Node _serverConfig;
-    LoadLibs loadLibs;
+    LoadLibs _loadLibs;
     bool _isModuleChange;
     Watcher::Watcher _moduleWatcher;
     std::vector<std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string>> _allPreProcessorModules;
