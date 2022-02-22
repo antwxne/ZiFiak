@@ -2,22 +2,22 @@
 ** EPITECH PROJECT, 2022
 ** ZiFiak
 ** File description:
-** FallBack
+** Deflate
 */
 
-#ifndef FALLBACK_HPP_
-#define FALLBACK_HPP_
+#ifndef DEFLATE_HPP_
+#define DEFLATE_HPP_
 
 #include "ziapi/Module.hpp"
 #include "dylib/dylib.hpp"
 
-class FallBack : public ziapi::IPostProcessorModule
+class Deflate : public ziapi::IPostProcessorModule
 {
     public:
-        FallBack();
-        ~FallBack();
+        Deflate();
+        ~Deflate();
 
-    void Init(const ziapi::config::Node &) override;
+        void Init(const ziapi::config::Node &) override;
 
     [[nodiscard]] ziapi::Version GetVersion() const noexcept override;
 
@@ -35,8 +35,10 @@ class FallBack : public ziapi::IPostProcessorModule
 
     protected:
     private:
+        std::string _compressString(const std::string &str) const noexcept;
+        std::string _uncompressString(const std::string &str) const noexcept;
 };
 
 DYLIB_API ziapi::IModule *LoadZiaModule();
 
-#endif /* !FALLBACK_HPP_ */
+#endif /* !DEFLATE_HPP_ */

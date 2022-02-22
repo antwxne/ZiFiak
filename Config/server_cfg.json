@@ -1,4 +1,5 @@
 {
+  "directory" : "Modules",
   "http": {
     "port": "80",
     "timeout_s": 5
