@@ -50,7 +50,6 @@ private:
     std::vector<std::unique_ptr<Client>> _clients;
     bool _isRunning;
     std::thread _horreurDeSqueezieChien;
-    int _timeout_s;
 };
 }
 

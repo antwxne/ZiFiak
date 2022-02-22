@@ -8,7 +8,7 @@
 #include "Modules/Http/HttpModule.hpp"
 #include "AClient.hpp"
 
-zia::modules::network::AClient::AClient() : _keepAlive(false), _processingRequest(false), _isConnected(true), _rawRequest(),
+zia::modules::network::AClient::AClient() : _keepAlive(std::nullopt), _processingRequest(false), _isConnected(true), _rawRequest(),
     _lastRequest(std::chrono::system_clock::now())
 {
 }
@@ -28,19 +28,22 @@ bool zia::modules::network::AClient::isProcessingARequest() const noexcept
     return _processingRequest;
 }
 
-bool zia::modules::network::AClient::isKeepingAlive() const noexcept
-{
-    return _keepAlive;
-}
-
 void zia::modules::network::AClient::setProcessingARequest(bool var) noexcept
 {
     _processingRequest = var;
 }
 
-void zia::modules::network::AClient::setKeepAlive(bool var) noexcept
+void zia::modules::network::AClient::setKeepAlive(
+    const ziapi::http::Request &req
+) noexcept
 {
-    _keepAlive = var;
+    try {
+        const auto &keepAliveValue = req.headers.at("Keep-Alive");
+        auto values = zia::modules::http::HttpModule::parseKeepAliveInfos(keepAliveValue);
+        _keepAlive = KeepAliveInfos(values.first, values.second);
+    } catch (...){
+        _keepAlive = std::nullopt;
+    }
 }
 
 const std::chrono::time_point<std::chrono::system_clock> &zia::modules::network::AClient::getTimeLastRequest() const noexcept
@@ -122,7 +125,27 @@ std::string zia::modules::network::AClient::toString() const noexcept
     return dest;
 }
 
-void zia::modules::network::AClient::empty()
+void zia::modules::network::AClient::clearRawRequest()
 {
     _rawRequest.clear();
+}
+
+std::vector<uint8_t> &zia::modules::network::AClient::getBuffer() noexcept
+{
+    return _buffer;
+}
+
+void zia::modules::network::AClient::saveBuffer() noexcept
+{
+    _rawRequest.insert(_rawRequest.cend(), _buffer.begin(), _buffer.end());
+}
+
+void zia::modules::network::AClient::clearBuffer() noexcept
+{
+    _buffer.clear();
+}
+
+const std::optional<zia::modules::network::KeepAliveInfos> &zia::modules::network::AClient::getKeepAliveInfos() const noexcept
+{
+    return _keepAlive;
 }

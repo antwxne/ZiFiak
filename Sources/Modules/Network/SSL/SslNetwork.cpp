@@ -25,9 +25,8 @@ zia::modules::network::SSLNetwork::SSLNetwork()
 void zia::modules::network::SSLNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("init server");
-    std::string permFilePath = cfg["https"]["perm_file_path"].AsString();
+    std::string permFilePath = cfg["https"]["certificat_file_path"].AsString();
     int port = cfg["https"]["port"].AsInt();
-    _timeout_s = cfg["https"]["timeout_s"].AsInt();
 
     _sslContext.set_options(asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 | asio::ssl::context::single_dh_use);
     _sslContext.use_certificate_chain_file(permFilePath);
@@ -127,15 +126,25 @@ void zia::modules::network::SSLNetwork::handleReceive(
         client.setConnectionStatut(false);
         return;
     }
-    client.setProcessingARequest(true);
+    if (!client.isConnected()) {
+        return;
+    }
+    client.saveBuffer();
+    client.clearBuffer();
     try {
-        requests.Push(std::make_pair(
-            zia::modules::http::HttpModule::createRequest(client.toString()),
-            client.getContext()));
+        auto req = zia::modules::http::HttpModule::createRequest(
+            client.toString());
+        if (zia::modules::http::HttpModule::isRequestComplete(req)) {
+            client.setProcessingARequest(true);
+            requests.Push(std::make_pair(req, client.getContext()));
+            client.clearRawRequest();
+        }
+        client.setKeepAlive(req);
     } catch (const std::invalid_argument &error) {
         Debug::warn(error.what());
+    } catch (const std::out_of_range &error) {
+        Debug::warn(error.what());
     }
-    client.empty();
     startReceive(requests, client);
 }
 

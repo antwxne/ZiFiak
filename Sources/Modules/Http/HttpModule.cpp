@@ -6,6 +6,7 @@
 */
 
 #include "HttpModule.hpp"
+#include "Debug/Debug.hpp"
 
 namespace zia::modules::http {
 
@@ -17,8 +18,9 @@ void getHeaderBody(ziapi::http::Request &req, std::stringstream &stream)
 
     while (std::getline(stream, str, ' ')) {
         mod = str;
-        mod.resize(mod.size()-1);
-        if (std::find(_headers.begin(), _headers.end(), mod) != _headers.end()) {
+        mod.resize(mod.size() - 1);
+        if (std::find(_headers.begin(), _headers.end(), mod) !=
+            _headers.end()) {
             std::getline(stream, temp, ' ');
             req.headers[mod] = temp;
         } else
@@ -32,7 +34,8 @@ std::string getTarget(std::stringstream &stream)
 
     std::getline(stream, str, ' ');
     if (str.empty())
-        throw std::invalid_argument("getTarget - Http request Usage: {Version} {Method} {target} {header} {body}");
+        throw std::invalid_argument(
+            "getTarget - Http request Usage: {Version} {Method} {target} {header} {body}");
     return str;
 }
 
@@ -42,7 +45,8 @@ std::string getMethod(std::stringstream &stream)
 
     std::getline(stream, method, ' ');
     if (std::find(_methods.begin(), _methods.end(), method) == _methods.end())
-        throw std::invalid_argument("getMethod - Http request Usage: {Version} {Method} {target} {header} {body}");
+        throw std::invalid_argument(
+            "getMethod - Http request Usage: {Version} {Method} {target} {header} {body}");
     return method;
 }
 
@@ -52,7 +56,8 @@ ziapi::http::Version getVersion(std::stringstream &stream)
 
     std::getline(stream, version, ' ');
     if (_versions.find(version) == _versions.end())
-        throw std::invalid_argument("getVersion - Http request Usage: {Version} {Method} {target} {header} {body}");
+        throw std::invalid_argument(
+            "getVersion - Http request Usage: {Version} {Method} {target} {header} {body}");
     return _versions.at(version);
 }
 
@@ -98,18 +103,61 @@ std::string HttpModule::readResponse(const ziapi::http::Response &res) noexcept
 {
     std::string str;
 
-    for (const auto &v : _versions) {
-        if (v.second == res.version){
+    for (const auto &v: _versions) {
+        if (v.second == res.version) {
             str += v.first;
             break;
         }
     }
     str += ' ' + _codes.at(res.status_code);
     str += ' ' + res.reason;
-    for (const auto &f : res.headers)
+    for (const auto &f: res.headers)
         str += ' ' + f.first + ": " + f.second;
     str += ' ' + res.body;
     return str;
 }
 
+bool HttpModule::isRequestComplete(const ziapi::http::Request &req) noexcept
+{
+    if (req.method != ziapi::http::method::kPatch &&
+        req.method != ziapi::http::method::kPost &&
+        req.method != ziapi::http::method::kPut) {
+        return true;
+    }
+    int contentLength;
+    try {
+        contentLength = std::atoi(
+            req.headers.at(ziapi::http::header::kContentLength).c_str());
+    } catch (const std::out_of_range &error) {
+        Debug::warn(error.what());
+        return true;
+    }
+    if (contentLength != 0) {
+        return contentLength == req.body.size();
+    } else {
+        return true;
+    }
+}
+
+std::pair<int, int> HttpModule::parseKeepAliveInfos(const std::string &value)
+{
+    auto replace_char = [](std::string &str, const std::string &substr, char c) {
+        for (auto &i: str) {
+            for (const auto &a: substr) {
+                if (i == a) {
+                    i = c;
+                }
+            }
+        }
+    };
+    std::string cpyValue(value);
+    char *timeout = std::strstr(&*cpyValue.begin(), "timeout=") + std::strlen("timeout=");
+    char *max = std::strstr(&*cpyValue.begin(), "max=") + std::strlen("max=");
+    std::pair<int, int> dest;
+
+    replace_char(cpyValue, ", ", '\0');
+    dest.first = std::atoi(timeout);
+    dest.second = std::atoi(max);
+    return dest;
+}
 }

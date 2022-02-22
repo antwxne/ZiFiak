@@ -47,7 +47,8 @@ namespace zia::modules::http {
 
             static ziapi::http::Request createRequest(const std::string &str);
             static std::string readResponse(const ziapi::http::Response &res) noexcept;
-
+            static bool isRequestComplete(const ziapi::http::Request &req) noexcept;
+            static std::pair<int, int>parseKeepAliveInfos(const std::string &value);
     };
 
     static const std::map<ziapi::http::Code, std::string> _codes {

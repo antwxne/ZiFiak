@@ -53,7 +53,6 @@ private:
     std::vector<std::unique_ptr<SSLClient>> _clients;
     std::thread _responseThread;
     asio::ssl::context _sslContext;
-    int _timeout_s;
 };
 }
 #endif //ZIA_SSLNETWORK_HPP

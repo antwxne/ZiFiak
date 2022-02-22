@@ -26,7 +26,6 @@ void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
     Debug::log("init server");
 
     int port = cfg["http"]["port"].AsInt();
-    _timeout_s = cfg["http"]["timeout_s"].AsInt();
 
     asio::ip::tcp::endpoint basicEndPoint(
         asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
@@ -106,7 +105,7 @@ void zia::modules::network::BasicNetwork::startReceive(
 {
     std::string delimiter = "\r\n\r\n";
     asio::async_read_until(client.getAsioSocket(),
-        asio::dynamic_buffer(client.getRawRequest()), delimiter,
+        asio::dynamic_buffer(client.getBuffer()), delimiter,
         std::bind(&BasicNetwork::handleReceive, this, std::ref(requests),
             std::ref(client), std::placeholders::_1, std::placeholders::_2));
 }
@@ -122,15 +121,25 @@ void zia::modules::network::BasicNetwork::handleReceive(
         client.setConnectionStatut(false);
         return;
     }
-    client.setProcessingARequest(true);
+    if (!client.isConnected()) {
+        return;
+    }
+    client.saveBuffer();
+    client.clearBuffer();
     try {
-        requests.Push(std::make_pair(
-            zia::modules::http::HttpModule::createRequest(client.toString()),
-            client.getContext()));
+        auto req = zia::modules::http::HttpModule::createRequest(
+            client.toString());
+        if (zia::modules::http::HttpModule::isRequestComplete(req)) {
+            client.setProcessingARequest(true);
+            requests.Push(std::make_pair(req, client.getContext()));
+            client.clearRawRequest();
+        }
+        client.setKeepAlive(req);
     } catch (const std::invalid_argument &error) {
         Debug::warn(error.what());
+    } catch (const std::out_of_range &error) {
+        Debug::warn(error.what());
     }
-    client.empty();
     startReceive(requests, client);
 }
 
