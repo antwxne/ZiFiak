@@ -10,13 +10,14 @@
 #include "ziapi/Module.hpp"
 #include "../../build/ziapi-prefix/src/ziapi/include/ziapi/Config.hpp"
 #include "../../build/ziapi-prefix/src/ziapi/include/ziapi/Module.hpp"
+#include "dylib/dylib.hpp"
 
 class LoadLibs {
 public:
     LoadLibs() = default;
     ~LoadLibs() = default;
     void openFilesAndStore(const std::string &file);
-    void initLibs(ziapi::config::Node config);
+    void initLibs(ziapi::config::Node &config);
     void getType();
     void loadLibByFiles(const std::vector<Watcher::FileState> &files, ziapi::config::Node config);
     void loadSingleModule(const std::string &path);
@@ -43,7 +44,5 @@ public:
 protected:
     std::vector<std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string>> _preProcessorModules;
     std::vector<std::pair<std::unique_ptr<ziapi::INetworkModule>, std::string>> _netWorkModules;
-
-protected:
-    std::filesystem::file_time_type _lastTime;
+    std::vector<dylib> _tmp;
 };

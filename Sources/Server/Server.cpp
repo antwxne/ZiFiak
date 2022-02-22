@@ -47,8 +47,13 @@ void zia::server::Server::run() {
     while (1) {
         if (_isModuleChange) {
             _moduleWatcher.getChanges();
-            // loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
+             //loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
             _isModuleChange = false;
+            /*std::cout << "--------------------" << std::endl;
+            std::cout << loadLibs.getHandlerModules().size() << std::endl;
+            std::cout << loadLibs.getPreProcessorModules().size() << std::endl;
+            std::cout << loadLibs.getPostProcessorModules().size() << std::endl;
+            std::cout << loadLibs.getNetWorkModules().size() << std::endl;*/
         }
     }
     Debug::log("server running");

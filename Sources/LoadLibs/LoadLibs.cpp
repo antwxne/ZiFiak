@@ -42,6 +42,7 @@ void LoadLibs::loadSingleModule(const std::string &path) {
         dylib lib(path);
         auto libs = lib.get_function<ziapi::IModule *()>("LoadZiaModule");
         std::unique_ptr<ziapi::IModule> toto(libs());
+        _tmp.push_back(std::move(lib));
         _listLib.push_back(std::make_pair(std::move(toto), path));
     } catch (dylib::exception &e) {
         std::cerr << e.what() << std::endl;
@@ -49,14 +50,19 @@ void LoadLibs::loadSingleModule(const std::string &path) {
 }
 
 void LoadLibs::loadLibByFiles(const std::vector<Watcher::FileState> &files, ziapi::config::Node config) {
+    std::cout << "size files: " << files.size() << std::endl;
     for (auto &e: files) {
+        std::cout << e.state << std::endl;
         if (e.state == Watcher::State::DEL) {
+            std::cout << "Del " << std::endl;
             deleteModule(e);
         } else if (e.state == Watcher::State::ADD) {
+            std::cout << "Add " << std::endl;
             loadSingleModule(e.filepath);
             initLibs(config);
             getType();
         } else if (e.state == Watcher::State::MOD) {
+            std::cout << "Mod " << std::endl;
             deleteModule(e);
             loadSingleModule(e.filepath);
             initLibs(config);
@@ -75,6 +81,7 @@ void LoadLibs::openFilesAndStore(const std::string &file) {
             dylib lib(x.path().string());
             auto libs = lib.get_function<ziapi::IModule *()>("LoadZiaModule");
             std::unique_ptr<ziapi::IModule> toto(libs());
+            _tmp.push_back(std::move(lib));
             _listLib.push_back(std::make_pair(std::move(toto), tmp));
         } catch (const dylib::exception &e) {
             std::cerr << e.what() << std::endl;
@@ -82,7 +89,7 @@ void LoadLibs::openFilesAndStore(const std::string &file) {
     };
 }
 
-void LoadLibs::initLibs(ziapi::config::Node config) {
+void LoadLibs::initLibs(ziapi::config::Node &config) {
     for (auto &e: _listLib) {
         e.first->Init(config);
     }
