@@ -6,10 +6,10 @@
 #include <string>
 #include  <filesystem>
 #include <unordered_map>
-#include "../Watcher/Watcher.hpp"
+#include "Watcher/Watcher.hpp"
 #include "ziapi/Module.hpp"
-#include "../../build/ziapi-prefix/src/ziapi/include/ziapi/Config.hpp"
-#include "../../build/ziapi-prefix/src/ziapi/include/ziapi/Module.hpp"
+#include "ziapi/Config.hpp"
+#include "ziapi/Module.hpp"
 #include "dylib/dylib.hpp"
 
 class LoadLibs {

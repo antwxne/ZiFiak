@@ -2,15 +2,13 @@
 // Created by Clement Ruat on 02/02/2022.
 //
 
-#include "LoadLibs/LoadLibs.hpp"
 #include  <filesystem>
 #include <iostream>
 #include <vector>
+#include "LoadLibs/LoadLibs.hpp"
 #include "dylib/dylib.hpp"
 #include "ziapi/Module.hpp"
-#include "../Server/Server.hpp"
 
-class INetworkModule;
 class INetworkModule;
 
 void LoadLibs::deleteModule(const Watcher::FileState &e) {
