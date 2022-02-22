@@ -9,6 +9,7 @@
 #define FALLBACK_HPP_
 
 #include "ziapi/Module.hpp"
+#include "dylib/dylib.hpp"
 
 class FallBack : public ziapi::IPostProcessorModule
 {
