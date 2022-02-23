@@ -23,6 +23,7 @@ public:
     Server &operator=(const Server &) = delete;
     void init(const std::string &filepath);
     void run();
+    void threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses);
     const std::string getPathDirectory() const;
 
 private:
@@ -34,6 +35,8 @@ private:
     std::vector<std::pair<std::unique_ptr<ziapi::INetworkModule>, std::string>> _allNetWorkModules;
     std::vector<std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string>> _allHandlerModules;
     std::vector<std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string>>_allPostProcessorModules;
+    std::vector<std::thread> _threadPool;
+    bool _isRunning;
 
 public:
     const ziapi::config::Node &getServerConfig() const;

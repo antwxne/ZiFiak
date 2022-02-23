@@ -9,9 +9,11 @@
 #include "Debug/Debug.hpp"
 #include "ConfigParser.hpp"
 #include "Server.hpp"
+#include "Queue/RequestQueue.hpp"
+#include "Queue/ResponseQueue.hpp"
 #include <iostream>
 
-zia::server::Server::Server() : _isModuleChange(false), _moduleWatcher(Watcher::ModulesPath, _isModuleChange) {
+zia::server::Server::Server() : _isModuleChange(false), _moduleWatcher(Watcher::ModulesPath, _isModuleChange), _isRunning(false) {
 }
 
 void zia::server::Server::init(const std::string &filepath) {
@@ -40,13 +42,30 @@ const std::string zia::server::Server::getPathDirectory() const {
     }
 }
 
+void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses)
+{
+    while (_isRunning) {
+        // auto curr = request;
+    }
+}
+
 void zia::server::Server::run() {
+    zia::container::RequestQueue requests;
+    zia::container::ResponseQueue responses;
+
+    _isRunning = true;
+    for (auto &module : _allNetWorkModules) {
+        module.first->Run(requests, responses);
+    }
+    _threadPool.emplace_back(std::thread(&threadPool, this, requests, responses));
     while (1) {
+
         if (_isModuleChange) {
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
             _isModuleChange = false;
         }
     }
+    _isRunning = false;
     Debug::log("server running");
 }
 
