@@ -23,6 +23,7 @@ public:
 
     std::optional<std::pair<ziapi::http::Response, ziapi::http::Context>> Pop() override;
     [[nodiscard]] std::size_t Size() const noexcept override;
+    void Wait() noexcept override;
 private:
     std::mutex _mutex;
 

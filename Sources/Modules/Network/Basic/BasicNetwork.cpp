@@ -26,8 +26,6 @@ void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
     Debug::log("init server");
 
     int port = cfg["http"]["port"].AsInt();
-    _timeout_s = cfg["http"]["timeout_s"].AsInt();
-
     asio::ip::tcp::endpoint basicEndPoint(
         asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
 
@@ -66,8 +64,10 @@ void zia::modules::network::BasicNetwork::Run(
     _isRunning = true;
     startAccept(requests);
     _io_context.run();
-    _horreurDeSqueezieChien = std::thread(&BasicNetwork::sendResponses, this,
+    _responseThread = std::thread(&BasicNetwork::sendResponses, this,
         std::ref(responses));
+    _disconnectClientThread = std::thread(&BasicNetwork::disconnectClient,
+        this);
 }
 
 void zia::modules::network::BasicNetwork::Terminate()
@@ -75,7 +75,8 @@ void zia::modules::network::BasicNetwork::Terminate()
     Debug::log("server stop");
     _isRunning = false;
     _io_context.stop();
-    _horreurDeSqueezieChien.join();
+    _responseThread.join();
+    _disconnectClientThread.join();
 }
 
 void zia::modules::network::BasicNetwork::startAccept(
@@ -106,7 +107,7 @@ void zia::modules::network::BasicNetwork::startReceive(
 {
     std::string delimiter = "\r\n\r\n";
     asio::async_read_until(client.getAsioSocket(),
-        asio::dynamic_buffer(client.getRawRequest()), delimiter,
+        asio::dynamic_buffer(client.getBuffer()), delimiter,
         std::bind(&BasicNetwork::handleReceive, this, std::ref(requests),
             std::ref(client), std::placeholders::_1, std::placeholders::_2));
 }
@@ -120,15 +121,27 @@ void zia::modules::network::BasicNetwork::handleReceive(
     if (error == asio::error::eof) {
         Debug::log("Client disconected");
         client.setConnectionStatut(false);
+        return;
     }
+    if (!client.isConnected()) {
+        return;
+    }
+    client.saveBuffer();
+    client.clearBuffer();
     try {
-        requests.Push(std::make_pair(
-            zia::modules::http::HttpModule::createRequest(client.toString()),
-            client.getContext()));
+        auto req = zia::modules::http::HttpModule::createRequest(
+            client.toString());
+        if (zia::modules::http::HttpModule::isRequestComplete(req)) {
+            client.setProcessingARequest(true);
+            requests.Push(std::make_pair(req, client.getContext()));
+            client.clearRawRequest();
+        }
+        client.setKeepAlive(req);
     } catch (const std::invalid_argument &error) {
         Debug::warn(error.what());
+    } catch (const std::out_of_range &error) {
+        Debug::warn(error.what());
     }
-    client.empty();
     startReceive(requests, client);
 }
 
@@ -137,19 +150,46 @@ void zia::modules::network::BasicNetwork::sendResponses(
 )
 {
     while (_isRunning) {
-        while (responses.Size() > 0) {
-            auto current = responses.Pop();
-            if (!current.has_value()) {
-                continue;
-            }
-            auto response = current.value().first;
-            auto ctx = current.value().second;
-            auto client = std::find_if(_clients.begin(), _clients.end(),
-                [&ctx](const std::unique_ptr<Client> &c) {
-                    return *c == ctx;
-                });
+        responses.Wait();
+        auto current = responses.Pop();
+        if (!current.has_value()) {
+            continue;
+        }
+        auto response = current.value().first;
+        auto ctx = current.value().second;
+        auto client = std::find_if(_clients.begin(), _clients.end(),
+            [&ctx](const std::unique_ptr<Client> &c) {
+                return *c == ctx;
+            });
+        if (client != _clients.cend()) {
             *client->get() << response;
         }
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+}
+
+void zia::modules::network::BasicNetwork::disconnectClient() noexcept
+{
+    while (_isRunning) {
+        _clients.erase(std::find_if(_clients.begin(), _clients.end(),
+            [](const std::unique_ptr<Client> &client) {
+                auto keepAlive = client->getKeepAliveInfos();
+                if (!client->isConnected()) {
+                    return true;
+                }
+                if (!keepAlive.has_value()) {
+                    return true;
+                }
+                if (keepAlive.value().max == 0) {
+                    return true;
+                }
+                auto time = std::chrono::steady_clock::now();
+                const auto &clientTime = client->getTimeLastRequest();
+                if (std::chrono::duration_cast<std::chrono::seconds>(
+                    time - clientTime) >=
+                    std::chrono::seconds(keepAlive.value().timeout)) {
+                    return true;
+                }
+                return false;
+            }), _clients.end());
     }
 }

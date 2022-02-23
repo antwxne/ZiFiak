@@ -25,3 +25,8 @@ std::size_t zia::container::ResponseQueue::Size() const noexcept
 {
     return size();
 }
+
+void zia::container::ResponseQueue::Wait() noexcept
+{
+    while (Size() < 1);
+}
