@@ -51,6 +51,7 @@ bool zia::modules::php::PhpCgi::ShouldHandle(const ziapi::http::Context &ctx, co
 void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res)
 {
     try {
+        res.Bootstrap();
         _env.push_back("REDIRECT_STATUS=200");
         _env.push_back("REQUEST_METHOD=" + req.method);
         _env.push_back("SCRIPT_NAME=" + req.body);
@@ -68,8 +69,24 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         _env.push_back("QUERY_STRING=");
         _env.push_back("REMOTE_ADDR=");
         _env.push_back("REMOTE_USER=");
+        //setenv("REDIRECT_STATUS", res.status_code, 1);
+        //setenv("REQUEST_METHOD", req.method.c_str(), 1);
+        //setenv("SCRIPT_NAME", req.body.c_str(), 1);
+        //setenv("PATH_INFO", "/", 1);
+        //setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
+        //setenv("SERVER_NAME", "Zifiak", 1);
+        //setenv("SERVER_PORT", "", 1);
+        //setenv("SERVER_SOFTWARE", "", 1);
+        //setenv("REMOTE_IDENT","", 1);
+        //setenv("AUTH_TYPE", "", 1);
+        //setenv("CONTENT_LENGTH", "", 1);
+        //setenv("CONTENT_TYPE", "", 1);
+        //setenv("GATEWAY_INTERFACE", "", 1);
+        //setenv("PATH_TRANSLATED", "", 1);
+        //setenv("QUERY_STRING","",1);
+        //setenv("REMOTE_ADDR", "", 1);
+        //setenv("REMOTE_USER", "", 1);
         std::system("./$SCRIPT_FILENAME > tmp");
-        res.Bootstrap();
         std::ifstream tmp("tmp");
         tmp.seekg(0, std::ios::end);
         size_t size = tmp.tellg();

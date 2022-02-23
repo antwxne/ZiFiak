@@ -16,5 +16,21 @@
         "GET"
       ]
     }
-  ]
+  ],
+  "modules": {
+    "PHP-CGI": {
+      "path": "/",
+      "protocol": "HTTP/1.1",
+      "server_name" : "monGrosFiak",
+      "servet_port" : "8080",
+      "server_software" : "Ziapi",
+      "remote_ident" : "10",
+      "auth_type" : "20",
+      "content_type" : "bite",
+      "gateway_interface" : "super",
+      "path_translated" : "translationmagle",
+      "remote_ADDR" : "remote",
+      "remote_User" : "bibi"
+    }
+  }
 }
