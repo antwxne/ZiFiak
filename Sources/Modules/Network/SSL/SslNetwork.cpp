@@ -102,8 +102,12 @@ void zia::modules::network::SSLNetwork::handleAccept(
 )
 {
     Debug::log("SSLClient connected");
-    client.initSSL();
-    startReceive(requests, client);
+    try {
+        client.initSSL();
+        startReceive(requests, client);
+    } catch (const std::runtime_error &error) {
+        Debug::log(error.what());
+    }
     startAccept(requests);
 }
 

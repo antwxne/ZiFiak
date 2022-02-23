@@ -13,6 +13,20 @@ zia::modules::network::SSLClient::SSLClient(
 {
 }
 
+void zia::modules::network::SSLClient::initSSL()
+{
+    _sslSocket = std::make_shared<asio::ssl::stream<asio::ip::tcp::socket>>(
+        std::move(_socket), _sslContext);
+
+    _sslSocket->async_handshake(asio::ssl::stream_base::server,
+        [this](const std::error_code& error) {
+            if (error) {
+                this->_isConnected = false;
+                throw std::runtime_error("Error handshake");
+            }
+    });
+}
+
 int zia::modules::network::SSLClient::getSocketFd()
 {
     return _sslSocket->lowest_layer().native_handle();
@@ -75,8 +89,4 @@ const std::shared_ptr<asio::ssl::stream<asio::ip::tcp::socket>> &zia::modules::n
     return _sslSocket;
 }
 
-void zia::modules::network::SSLClient::initSSL()
-{
-    _sslSocket = std::make_shared<asio::ssl::stream<asio::ip::tcp::socket>>(
-            std::move(_socket), _sslContext);
-}
+
