@@ -51,7 +51,8 @@ bool zia::modules::php::PhpCgi::ShouldHandle(const ziapi::http::Context &ctx, co
 void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res)
 {
     try {
-        setenv("REDIRECT_STATUS", "200", 1);
+        res.Bootstrap();
+        setenv("REDIRECT_STATUS", res.status_code, 1);
         setenv("REQUEST_METHOD", req.method.c_str(), 1);
         setenv("SCRIPT_NAME", req.body.c_str(), 1);
         setenv("PATH_INFO", "/", 1);
@@ -69,7 +70,6 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         setenv("REMOTE_ADDR", "", 1);
         setenv("REMOTE_USER", "", 1);
         std::system("./$SCRIPT_FILENAME > tmp");
-        res.Bootstrap();
         std::ifstream tmp("tmp");
         tmp.seekg(0, std::ios::end);
         size_t size = tmp.tellg();
