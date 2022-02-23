@@ -23,7 +23,7 @@ public:
 
     void Push(std::pair<ziapi::http::Request, ziapi::http::Context> &&req) override;
     [[nodiscard]] std::size_t Size() const noexcept override;
-
+    std::optional<std::pair<ziapi::http::Request, ziapi::http::Context>> Pop();
 private:
     std::mutex _mutex;
 };
