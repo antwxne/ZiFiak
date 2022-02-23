@@ -43,7 +43,11 @@ const std::string zia::server::Server::getPathDirectory() const {
 void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses)
 {
     while (_isRunning) {
-        // auto curr = request;
+        auto curr = request.Pop();
+        if (curr == std::nullopt) {
+            continue;
+        }
+        // pipeline d'olivier
     }
 }
 
