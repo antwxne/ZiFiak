@@ -68,7 +68,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         res.body = buffer;
     }
     catch (const std::exception& e) {
-        res.status_code = kInternalServerError;
+        res.status_code = ziapi::http::Code::kInternalServerError;
         res.reason = "Error in the path or with the cgi.";
     }
 }
