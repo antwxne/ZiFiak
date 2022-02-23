@@ -10,3 +10,5 @@ zia
 *.dylib
 *.dll
 .vscode
+*.exe
+*.pdb
