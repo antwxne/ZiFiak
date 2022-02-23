@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include <cstdlib>
+#include <stdio.h>
 #include "ziapi/Module.hpp"
 
 namespace zia::modules::php {
