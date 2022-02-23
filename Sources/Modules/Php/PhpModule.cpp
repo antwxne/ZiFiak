@@ -62,22 +62,28 @@ bool zia::modules::php::PhpCgi::ShouldHandle(const ziapi::http::Context &ctx, co
 
 void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res)
 {
+    std::string env = "";
+    int i = 0;
+    char buf[100];
+    res.Bootstrap();
+    res.body = "";
+
     try {
-        res.Bootstrap();
         _env.push_back("REDIRECT_STATUS=200");
         _env.push_back("REQUEST_METHOD=" + req.method);
         _env.push_back("SCRIPT_NAME=" + req.body);
         _env.push_back("CONTENT_LENGHT=");
         _env.push_back("QUERY_STRING=");
 
-        std::string env = "";
-        int i = 0;
-
         while (i != _env.size()) {
             env += " " + _env[i];
             i++;
         }
         auto file = popen(("env -i " + env + "./$PATH_INFO").c_str(), 0);
+
+        while (std::fgets(buf, 100, file)) {
+            res.body += buf;
+        }
     }
     catch (const std::exception& e) {
         res.status_code = ziapi::http::Code::kInternalServerError;
