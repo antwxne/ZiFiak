@@ -56,7 +56,18 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         setenv("SCRIPT_NAME", req.body.c_str(), 1);
         setenv("PATH_INFO", "/", 1);
         setenv("SERVER_PROTOCOL", "HTTP/1.1", 1);
-
+        setenv("SERVER_NAME", "Zifiak", 1);
+        setenv("SERVER_PORT", "", 1);
+        setenv("SERVER_SOFTWARE", "", 1);
+        setenv("REMOTE_IDENT","", 1);
+        setenv("AUTH_TYPE", "", 1);
+        setenv("CONTENT_LENGTH", "", 1);
+        setenv("CONTENT_TYPE", "", 1);
+        setenv("GATEWAY_INTERFACE", "", 1);
+        setenv("PATH_TRANSLATED", "", 1);
+        setenv("QUERY_STRING","",1);
+        setenv("REMOTE_ADDR", "", 1);
+        setenv("REMOTE_USER", "", 1);
         std::system("./$SCRIPT_FILENAME > tmp");
         res.Bootstrap();
         std::ifstream tmp("tmp");
