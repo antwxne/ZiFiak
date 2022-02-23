@@ -8,7 +8,7 @@ out/
 .vs/
 zia
 *.dylib
-*.dll
+*.dll*
 .vscode
-*.exe
-*.pdb
+*.exe*
+*.pdb*

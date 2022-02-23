@@ -39,8 +39,14 @@ jobs:
           make
         working-directory: ./
 
-      - name: Build project Windows
+      - name: Install conan libs (Windows)
         if: ${{ matrix.os == 'windows-latest' }}
         run: |
-          mkdir -p build && cd build && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
+          mkdir -p build && cd build && conan install .. --build=missing
         working-directory: ./
+
+      - name: Build project (Windows)
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: |
+          cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
+        working-directory: ./build
