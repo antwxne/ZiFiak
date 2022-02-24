@@ -19,8 +19,10 @@
   ],
   "modules": {
     "PHP-CGI": {
-      "path": "/",
-      "protocol": "HTTP/1.1",
+      "path" : "/",
+      "full_path" : "/php-cgi.ini",
+      "exec_name" : "php-cgi.ini",
+      "protocol" : "HTTP/1.1",
       "server_name" : "ZiFiak",
       "servet_port" : "8080",
       "server_software" : "Ziapi",
@@ -30,7 +32,8 @@
       "gateway_interface" : "super",
       "path_translated" : "translationmagle",
       "remote_addr" : "remote",
-      "remote_user" : "bibicharlie"
+      "remote_user" : "bibicharlie",
+      "server_addr" : "localhost"
     }
   }
 }
