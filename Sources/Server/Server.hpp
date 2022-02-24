@@ -22,7 +22,7 @@ public:
     Server(const Server &&) = delete;
     Server &operator=(const Server &) = delete;
     void init(const std::string &filepath);
-    void run();
+    [[noreturn]] void run();
     const std::string getPathDirectory() const;
 
 private:

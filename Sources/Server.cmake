@@ -11,3 +11,14 @@ set(SRC
         Sources/Modules/Http/HttpModule.cpp Sources/Modules/Http/HttpModule.hpp
         Sources/Watcher/Watcher.cpp Sources/Watcher/Watcher.hpp
         )
+
+set(SRC ${SRC}
+        Sources/Modules/Network/Basic/BasicNetwork.cpp
+        Sources/Modules/Network/Basic/BasicNetwork.hpp
+        Sources/Modules/Network/Basic/Client.hpp
+        Sources/Modules/Network/Basic/Client.cpp
+        Sources/Modules/Network/AClient.hpp
+        Sources/Modules/Network/AClient.cpp
+        Sources/Modules/Http/HttpModule.cpp
+        Sources/Modules/Http/HttpModule.hpp
+        )

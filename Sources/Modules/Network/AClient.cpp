@@ -8,7 +8,7 @@
 #include "Modules/Http/HttpModule.hpp"
 #include "AClient.hpp"
 
-zia::modules::network::AClient::AClient() : _keepAlive(std::nullopt), _processingRequest(false), _isConnected(true), _rawRequest(),
+zia::modules::network::AClient::AClient() : _keepAlive(std::nullopt), _processingRequest(true), _isConnected(true), _rawRequest(),
     _lastRequest(std::chrono::steady_clock::now())
 {
 }

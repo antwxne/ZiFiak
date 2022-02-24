@@ -58,10 +58,10 @@ zia::modules::network::Client &zia::modules::network::Client::genericSend(
             }
             if (!this->_keepAlive.has_value()) {
                 this->_isConnected = false;
+                this->_processingRequest = false;
             } else {
                 this->_keepAlive->max -= 1;
             }
-            this->_processingRequest = false;
             this->updateTime();
             Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
         });

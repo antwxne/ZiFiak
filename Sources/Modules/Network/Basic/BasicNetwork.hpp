@@ -17,6 +17,7 @@ namespace zia::modules::network {
 class BasicNetwork : public ziapi::INetworkModule {
 public:
     BasicNetwork();
+    ~BasicNetwork();
     // IModule
     void Init(const ziapi::config::Node &cfg) override;
     ziapi::Version GetVersion() const noexcept override;
@@ -48,10 +49,9 @@ private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
     asio::signal_set _signalSet;
-    std::vector<std::unique_ptr<Client>> _clients;
     bool _isRunning;
-    std::thread _responseThread;
-    std::thread _disconnectClientThread;
+    std::vector<std::unique_ptr<Client>> _clients;
+    std::thread _thread;
 };
 }
 

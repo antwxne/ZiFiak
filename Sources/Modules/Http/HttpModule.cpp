@@ -88,6 +88,7 @@ ziapi::http::Request HttpModule::createRequest(const std::string &str)
     std::string temp = clear_string(str);
     std::stringstream stream(temp);
 
+    Debug::log("client buffer: " + str);
     try {
         req.version = getVersion(stream);
         req.method = getMethod(stream);

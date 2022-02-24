@@ -7,23 +7,49 @@
 
 #include <iostream>
 #include <regex>
+#include <fstream>
 
 #include "Debug/Debug.hpp"
 #include "Server/Server.hpp"
+#include "nlohmann/json.hpp"
+
+#include "Server/ConfigParser.hpp"
+#include "Modules/Network/Basic/BasicNetwork.hpp"
+#include "Queue/ResponseQueue.hpp"
+#include "Queue/RequestQueue.hpp"
 
 
 int main(int ac, char **av)
 {
-    // if (ac != 2) {
-    //     std::cout << "please provide a port" << std::endl;
-    //     return 84;
-    // }
-    // std::ifstream input(av[1]);
-    // input >> config;
-    zia::server::Server server;
+    if (ac != 2) {
+         std::cout << "please provide a port" << std::endl;
+         return 84;
+    }
+
+    std::string filepath(av[1]);
+    auto cfg = zia::ConfigParser::loadFromFile(filepath);
+//    zia::server::Server server;
+    zia::modules::network::BasicNetwork network;
     try {
-        server.init("./Config/server_cfg.json");
-        server.run();
+//        server.init(av[1]);
+//        server.run();
+        zia::container::ResponseQueue responses;
+        zia::container::RequestQueue requests;
+        ziapi::http::Response res;
+        network.Init(cfg);
+        network.Run(requests, responses);
+        Debug::log("apres le run");
+        network.Terminate();
+//        while(1) {
+////            Debug::log("looop");
+//            if (requests.size() > 0) {
+//                auto plop = requests.Pop();
+//                Debug::log("request poped");
+//                res.Bootstrap();
+//                responses.push_back(std::make_pair(res, plop->second));
+//                Debug::log("response pushed");
+//            }
+//        }
     } catch (const MyException &e) {
         Debug::err(e);
         return 84;
