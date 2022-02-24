@@ -39,17 +39,16 @@ int main(int ac, char **av)
         network.Init(cfg);
         network.Run(requests, responses);
         Debug::log("apres le run");
-        network.Terminate();
-//        while(1) {
-////            Debug::log("looop");
-//            if (requests.size() > 0) {
-//                auto plop = requests.Pop();
-//                Debug::log("request poped");
-//                res.Bootstrap();
-//                responses.push_back(std::make_pair(res, plop->second));
-//                Debug::log("response pushed");
-//            }
-//        }
+//        network.Terminate();
+        while(1) {
+            if (requests.size() > 0) {
+                auto plop = requests.Pop();
+                Debug::log("request poped");
+                res.Bootstrap();
+                responses.push_back(std::make_pair(res, plop->second));
+                Debug::log("response pushed");
+            }
+        }
     } catch (const MyException &e) {
         Debug::err(e);
         return 84;

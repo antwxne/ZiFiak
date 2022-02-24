@@ -18,14 +18,18 @@ zia::modules::network::BasicNetwork::BasicNetwork()
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
 
-    _signalSet.async_wait([](std::error_code ec, int signo) {
-        std::exit(0);
+    _signalSet.async_wait([this](std::error_code ec, int signo) {
+        this->Terminate();
     });
 }
 
 zia::modules::network::BasicNetwork::~BasicNetwork()
 {
+    Debug::log("HTTP network module Destroyed");
+    _signalSet.remove(SIGINT);
+    _signalSet.remove(SIGTERM);
     _isRunning = false;
+    _io_context.stop();
     if (_thread.joinable()) {
         _thread.join();
     }
@@ -33,7 +37,7 @@ zia::modules::network::BasicNetwork::~BasicNetwork()
 
 void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
 {
-    Debug::log("init server");
+    Debug::log("Init HTTP network module");
 
     int port = cfg["http"]["port"].AsInt();
     asio::ip::tcp::endpoint basicEndPoint(
@@ -70,7 +74,7 @@ void zia::modules::network::BasicNetwork::Run(
     ziapi::http::IResponseInputQueue &responses
 )
 {
-    Debug::log("Server Start");
+    Debug::log("HTTP network module Start");
     _isRunning = true;
     startAccept(requests);
 
@@ -91,12 +95,13 @@ void zia::modules::network::BasicNetwork::Run(
 void zia::modules::network::BasicNetwork::Terminate()
 {
     _isRunning = false;
-    Debug::log("server stop");
+    Debug::log("HTTP network module stop");
     _io_context.stop();
-    if (_thread.joinable()) {
-        _thread.join();
-        Debug::log("thread join");
-    }
+//    if (_thread.joinable()) {
+//        _thread.join();
+//    }
+    _signalSet.remove(SIGINT);
+    _signalSet.remove(SIGTERM);
 }
 
 void zia::modules::network::BasicNetwork::startAccept(
@@ -125,7 +130,7 @@ void zia::modules::network::BasicNetwork::startReceive(
     zia::modules::network::Client &client
 )
 {
-    std::string delimiter = "\r\n\r\n";
+    std::string delimiter = "\r\n\n";
     asio::async_read_until(client.getAsioSocket(),
         asio::dynamic_buffer(client.getBuffer()), delimiter,
         std::bind(&BasicNetwork::handleReceive, this, std::ref(requests),
@@ -152,7 +157,7 @@ void zia::modules::network::BasicNetwork::handleReceive(
     }
     Debug::log("client buffer == " + client.toString());
     client.saveBuffer();
-    //    client.clearBuffer();
+    client.clearBuffer();
     try {
         //        auto req = zia::modules::http::HttpModule::createRequest(
         //            client.toString());
@@ -166,7 +171,7 @@ void zia::modules::network::BasicNetwork::handleReceive(
         client.setProcessingARequest(true);
         requests.Push(std::make_pair(req, client.getContext()));
         Debug::log("requests pushed");
-        //        client.clearRawRequest();
+        client.clearRawRequest();
         //        }
         client.setKeepAlive(req);
     } catch (const std::invalid_argument &error) {
