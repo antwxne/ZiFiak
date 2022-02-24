@@ -12,8 +12,7 @@
 #include "Debug/Debug.hpp"
 
 zia::modules::network::BasicNetwork::BasicNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
-    _isRunning(false)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -25,14 +24,13 @@ zia::modules::network::BasicNetwork::BasicNetwork()
 
 zia::modules::network::BasicNetwork::~BasicNetwork()
 {
-    Debug::log("HTTP network module Destroyed");
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
-    _isRunning = false;
     _io_context.stop();
     if (_thread.joinable()) {
         _thread.join();
     }
+    Debug::log("HTTP network module Destroyed");
 }
 
 void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
@@ -56,12 +54,12 @@ ziapi::Version zia::modules::network::BasicNetwork::GetVersion() const noexcept
 
 ziapi::Version zia::modules::network::BasicNetwork::GetCompatibleApiVersion() const noexcept
 {
-    return {3, 0, 0};
+    return {3, 1, 1};
 }
 
 const char *zia::modules::network::BasicNetwork::GetName() const noexcept
 {
-    return "Basic network module";
+    return "HTTP network module";
 }
 
 const char *zia::modules::network::BasicNetwork::GetDescription() const noexcept
@@ -74,45 +72,42 @@ void zia::modules::network::BasicNetwork::Run(
     ziapi::http::IResponseInputQueue &responses
 )
 {
-    Debug::log("HTTP network module Start");
-    _isRunning = true;
     startAccept(requests);
-
     _io_context.post(
-        std::bind(&BasicNetwork::sendResponses, this, std::ref(responses)));
+        std::bind(&BasicNetwork::sendResponses, this, std::ref(responses),
+            std::ref(requests)));
     _io_context.post(std::bind(&BasicNetwork::disconnectClient, this));
-
     if (_thread.joinable()) {
         _thread.join();
     }
+    _io_context.restart();
     _thread = std::thread([&]() {
-        while (_isRunning) {
+        while (!_io_context.stopped()) {
             _io_context.run_one();
         }
     });
+    Debug::log("HTTP network module Start");
 }
 
 void zia::modules::network::BasicNetwork::Terminate()
 {
-    _isRunning = false;
-    Debug::log("HTTP network module stop");
     _io_context.stop();
-//    if (_thread.joinable()) {
-//        _thread.join();
-//    }
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
+    Debug::log("HTTP network module stop");
 }
 
 void zia::modules::network::BasicNetwork::startAccept(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-    _clients.emplace_back(
-        std::make_unique<zia::modules::network::Client>(Client(_io_context)));
-    _acceptor.async_accept(_clients.back()->getAsioSocket(),
+    auto newClient = std::make_unique<zia::modules::network::Client>(
+        Client(_io_context));
+
+    _acceptor.async_accept(newClient->getAsioSocket(),
         std::bind(&BasicNetwork::handleAccept, this, std::ref(requests),
-            std::ref(*_clients.back().get())));
+            std::ref(*newClient)));
+    _clients.push_back(std::move(newClient));
 }
 
 void zia::modules::network::BasicNetwork::handleAccept(
@@ -120,7 +115,7 @@ void zia::modules::network::BasicNetwork::handleAccept(
     zia::modules::network::Client &client
 )
 {
-    Debug::log("Client connected");
+    Debug::log("HTTP Client connected");
     startReceive(requests, client);
     startAccept(requests);
 }
@@ -130,7 +125,7 @@ void zia::modules::network::BasicNetwork::startReceive(
     zia::modules::network::Client &client
 )
 {
-    std::string delimiter = "\r\n\n";
+    std::string delimiter = "\r\n\r\n";
     asio::async_read_until(client.getAsioSocket(),
         asio::dynamic_buffer(client.getBuffer()), delimiter,
         std::bind(&BasicNetwork::handleReceive, this, std::ref(requests),
@@ -143,51 +138,46 @@ void zia::modules::network::BasicNetwork::handleReceive(
     std::size_t bytes_transfered
 )
 {
-    Debug::log("handle receive");
     client.setProcessingARequest(true);
     if (error == asio::error::eof) {
-        Debug::log("Client disconected");
+        Debug::log("HTTP Client disconnected");
         client.setConnectionStatut(false);
         return;
     }
-    Debug::log("client status " + std::to_string(client.isConnected()));
     if (!client.isConnected()) {
-        Debug::log("ce client est pas connecté");
         return;
     }
-    Debug::log("client buffer == " + client.toString());
     client.saveBuffer();
     client.clearBuffer();
     try {
-        //        auto req = zia::modules::http::HttpModule::createRequest(
-        //            client.toString());
-        ziapi::http::Request req;
-        req.headers = {{ziapi::http::header::kAIM, "aada"}};
-        req.method = ziapi::http::method::kGet;
-        req.version = ziapi::http::Version::kV1;
-        req.target = "/";
-        req.body = "toto";
-        //        if (zia::modules::http::HttpModule::isRequestComplete(req)) {
-        client.setProcessingARequest(true);
-        requests.Push(std::make_pair(req, client.getContext()));
-        Debug::log("requests pushed");
-        client.clearRawRequest();
-        //        }
-        client.setKeepAlive(req);
+        auto req = zia::modules::http::HttpModule::createRequest(
+            client.toString());
+        //        ziapi::http::Request req;
+        //        req.headers = {{ziapi::http::header::kAIM, "aada"}};
+        //        req.method = ziapi::http::method::kGet;
+        //        req.version = ziapi::http::Version::kV1;
+        //        req.target = "/";
+        //        req.body = "toto";
+        if (zia::modules::http::HttpModule::isRequestComplete(req)) {
+            client.setProcessingARequest(true);
+            requests.Push(std::make_pair(req, client.getContext()));
+            client.clearRawRequest();
+            client.setKeepAlive(req);
+        } else {
+            startReceive(requests, client);
+        }
     } catch (const std::invalid_argument &error) {
         Debug::warn(error.what());
     } catch (const std::out_of_range &error) {
         Debug::warn(error.what());
     }
-    startReceive(requests, client);
 }
 
 void zia::modules::network::BasicNetwork::sendResponses(
-    ziapi::http::IResponseInputQueue &responses
+    ziapi::http::IResponseInputQueue &responses,
+    ziapi::http::IRequestOutputQueue &requests
 )
 {
-    //    Debug::log("init thread send response");
-
     if (responses.Size() > 0) {
         auto current = responses.Pop();
         if (current.has_value()) {
@@ -198,39 +188,34 @@ void zia::modules::network::BasicNetwork::sendResponses(
                     return *c == ctx;
                 });
             if (client != _clients.cend()) {
-                *client->get() << response;
+                auto data = zia::modules::http::HttpModule::readResponse(
+                    response);
+                genericSend(**client, &*data.begin(),
+                    data.size() * sizeof(*data.begin()), responses, requests);
             }
         }
     }
     _io_context.post(
-        std::bind(&BasicNetwork::sendResponses, this, std::ref(responses)));
+        std::bind(&BasicNetwork::sendResponses, this, std::ref(responses),
+            std::ref(requests)));
 }
 
 void zia::modules::network::BasicNetwork::disconnectClient() noexcept
 {
-    //    Debug::log("init thread disconnect client");
-
-    if (_clients.size() > 0) {
-        _clients.erase(std::find_if(_clients.begin(), _clients.end(),
+    if (!_clients.empty()) {
+        auto toDelete = std::find_if(_clients.begin(), _clients.end(),
             [](const std::unique_ptr<Client> &client) {
-                if (client == nullptr) {
-                    Debug::warn("client null");
-                    return false;
-                }
                 if (client->isProcessingARequest()) {
                     return false;
                 }
                 if (!client->isConnected()) {
-                    Debug::log("Erase client bc he is disconnected");
                     return true;
                 }
                 auto keepAlive = client->getKeepAliveInfos();
                 if (!keepAlive.has_value()) {
-                    Debug::log("Erase client bc no keep alive");
                     return true;
                 }
                 if (keepAlive.value().max == 0) {
-                    Debug::log("Erase client bc max keep alive");
                     return true;
                 }
                 auto time = std::chrono::steady_clock::now();
@@ -238,13 +223,40 @@ void zia::modules::network::BasicNetwork::disconnectClient() noexcept
                 if (std::chrono::duration_cast<std::chrono::seconds>(
                     time - clientTime) >=
                     std::chrono::seconds(keepAlive.value().timeout)) {
-                    Debug::log("Erase client bc timeout");
                     return true;
                 }
                 return false;
-            }), _clients.end());
+            });
+        if (toDelete != _clients.cend()) {
+            _clients.erase(toDelete);
+        }
     }
     _io_context.post(std::bind(&BasicNetwork::disconnectClient, this));
+}
+
+void zia::modules::network::BasicNetwork::genericSend(
+    zia::modules::network::Client &client, const void *data,
+    const std::size_t &size, ziapi::http::IResponseInputQueue &responses,
+    ziapi::http::IRequestOutputQueue &requests
+)
+{
+    client.getAsioSocket().async_send(asio::buffer(data, size),
+        [&, this](const asio::error_code &errorCode,
+            std::size_t bytesTransferred
+        ) {
+            if (errorCode) {
+                throw MyException(errorCode.message(), __PRETTY_FUNCTION__,
+                    __FILE__, __LINE__);
+            }
+            if (!client.getKeepAliveInfos().has_value()) {
+                client.setConnectionStatut(false);
+                client.setProcessingARequest(false);
+            } else {
+                this->startReceive(requests, client);
+            }
+            client.updateTime();
+            Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
+        });
 }
 
 

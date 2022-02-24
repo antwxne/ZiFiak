@@ -42,14 +42,14 @@ private:
         Client &client, const std::error_code &error,
         std::size_t bytes_transfered
     );
-    void sendResponses(ziapi::http::IResponseInputQueue &responses);
+    void sendResponses(ziapi::http::IResponseInputQueue &responses, ziapi::http::IRequestOutputQueue &requests);
     void disconnectClient() noexcept;
+    void genericSend(Client &client, const void *data, const std::size_t &size, ziapi::http::IResponseInputQueue &responses, ziapi::http::IRequestOutputQueue &requests);
 
 private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
     asio::signal_set _signalSet;
-    bool _isRunning;
     std::vector<std::unique_ptr<Client>> _clients;
     std::thread _thread;
 };
