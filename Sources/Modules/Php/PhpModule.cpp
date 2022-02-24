@@ -81,8 +81,14 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         }
         auto file = popen(("env -i " + env + "./$PATH_INFO").c_str(), 0);
 
-        while (std::fgets(buf, 100, file)) {
-            res.body += buf;
+        if (file != NULL) {
+            while (std::fgets(buf, 100, file)) {
+                res.body += buf;
+            }
+        }
+        else {
+            res.status_code = ziapi::http::Code::kInternalServerError;
+            res.reason = "Error in the path or with the cgi.";    
         }
     }
     catch (const std::exception& e) {
