@@ -5,7 +5,7 @@
   },
   "https": {
     "port": 443,
-    "certificat_file_path": "plop.perm"
+    "certificate_path": "./Certificat/key.pem"
   },
   "AllowMethods": [
     {

@@ -49,12 +49,12 @@ void zia::modules::network::BasicNetwork::Init(const ziapi::config::Node &cfg)
 
 ziapi::Version zia::modules::network::BasicNetwork::GetVersion() const noexcept
 {
-    return {1, 0, 0};
+    return {2, 0, 0};
 }
 
 ziapi::Version zia::modules::network::BasicNetwork::GetCompatibleApiVersion() const noexcept
 {
-    return {3, 1, 1};
+    return {4, 0, 0};
 }
 
 const char *zia::modules::network::BasicNetwork::GetName() const noexcept
@@ -86,7 +86,9 @@ void zia::modules::network::BasicNetwork::Run(
             _io_context.run_one();
         }
     });
-    Debug::log("HTTP network module Start");
+    _signalSet.add(SIGINT);
+    _signalSet.add(SIGTERM);
+    Debug::log("HTTP network module started");
 }
 
 void zia::modules::network::BasicNetwork::Terminate()
@@ -94,7 +96,7 @@ void zia::modules::network::BasicNetwork::Terminate()
     _io_context.stop();
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
-    Debug::log("HTTP network module stop");
+    Debug::log("HTTP network module stopped");
 }
 
 void zia::modules::network::BasicNetwork::startAccept(
@@ -240,23 +242,29 @@ void zia::modules::network::BasicNetwork::genericSend(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-    client.getAsioSocket().async_send(asio::buffer(data, size),
-        [&, this](const asio::error_code &errorCode,
-            std::size_t bytesTransferred
-        ) {
-            if (errorCode) {
-                throw MyException(errorCode.message(), __PRETTY_FUNCTION__,
-                    __FILE__, __LINE__);
-            }
-            if (!client.getKeepAliveInfos().has_value()) {
-                client.setConnectionStatut(false);
-                client.setProcessingARequest(false);
-            } else {
-                this->startReceive(requests, client);
-            }
-            client.updateTime();
-            Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
-        });
+    try {
+        client.getAsioSocket().async_send(asio::buffer(data, size),
+            [&, this](const asio::error_code &errorCode,
+                std::size_t bytesTransferred
+            ) {
+                if (errorCode) {
+                    throw MyException(errorCode.message(), __PRETTY_FUNCTION__,
+                        __FILE__, __LINE__);
+                }
+                if (!client.getKeepAliveInfos().has_value()) {
+                    client.setConnectionStatut(false);
+                    client.setProcessingARequest(false);
+                } else {
+                    this->startReceive(requests, client);
+                }
+                client.updateTime();
+                Debug::log(
+                    std::to_string(bytesTransferred) + " bytes transferred");
+            });
+    }  catch (const MyException &e) {
+        client.setConnectionStatut(false);
+        Debug::log(e);
+    }
 }
 
 

@@ -13,10 +13,10 @@ set(SRC
         )
 
 set(SRC ${SRC}
-        Sources/Modules/Network/Basic/BasicNetwork.cpp
-        Sources/Modules/Network/Basic/BasicNetwork.hpp
-        Sources/Modules/Network/Basic/Client.hpp
-        Sources/Modules/Network/Basic/Client.cpp
+        Sources/Modules/Network/SSL/SslNetwork.cpp
+        Sources/Modules/Network/SSL/SslNetwork.hpp
+        Sources/Modules/Network/SSL/SSLClient.hpp
+        Sources/Modules/Network/SSL/SSLClient.cpp
         Sources/Modules/Network/AClient.hpp
         Sources/Modules/Network/AClient.cpp
         Sources/Modules/Http/HttpModule.cpp

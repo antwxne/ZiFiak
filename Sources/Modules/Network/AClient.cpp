@@ -38,7 +38,7 @@ void zia::modules::network::AClient::setKeepAlive(
 ) noexcept
 {
     try {
-        const auto &keepAliveValue = req.headers.at("Keep-Alive");
+        const auto &keepAliveValue = req.headers.at(ziapi::http::header::kKeepAlive);
         auto values = zia::modules::http::HttpModule::parseKeepAliveInfos(keepAliveValue);
         _keepAlive = KeepAliveInfos(values.first, values.second);
     } catch (...){
