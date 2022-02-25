@@ -6,7 +6,9 @@
 */
 
 #include "Modules/Php/PhpModule.hpp"
-
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
+#endif
 
 void zia::modules::php::PhpCgi::Init(const ziapi::config::Node &cfg)
 {
@@ -99,6 +101,40 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         //_env.push_back("REMOTE_PORT=" + ctx[client.socket.port]);
         //_env.push_back("REMOTE_HOST=" + ctx[client.socket]);
 
+#if defined(_WIN32) || defined(_WIN64)
+
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+
+    while (i != _env.size()) {
+        env += " " + _env[i] + 0;
+        i++;
+    }
+    env += 0;
+    if (!CreateProcess(
+            NULL,
+            "./$SCRIPT_NAME",
+            NULL,
+            NULL,
+            FALSE,
+            0,
+            env,
+            NULL,
+            &si,
+            &pi
+            )
+    ) else {
+        throw runtime_error("error CreateProces");
+    }
+    WaitForSingleObject( pi.hProcess, INFINITE );
+    CloseHandle( pi.hProcess );
+    CloseHandle( pi.hThread );
+#else
+
         while (i != _env.size()) {
             env += " " + _env[i];
             i++;
@@ -119,4 +155,5 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         res.status_code = ziapi::http::Code::kInternalServerError;
         res.reason = "Error in the path or with the cgi.";
     }
+#endif
 }
