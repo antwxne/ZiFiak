@@ -11,6 +11,11 @@
 #include "Debug/Debug.hpp"
 #include "Modules/Network/HTTPParser/HTTPParser.hpp"
 
+DYLIB_API ziapi::IModule *LoadZiaModule()
+{
+    return new zia::modules::network::HTTPNetwork;
+}
+
 zia::modules::network::HTTPNetwork::HTTPNetwork()
     : _io_context(), _acceptor(_io_context), _signalSet(_io_context)
 {
@@ -49,7 +54,7 @@ void zia::modules::network::HTTPNetwork::Init(const ziapi::config::Node &cfg)
 
 ziapi::Version zia::modules::network::HTTPNetwork::GetVersion() const noexcept
 {
-    return {2, 0, 0};
+    return {1, 0, 0};
 }
 
 ziapi::Version zia::modules::network::HTTPNetwork::GetCompatibleApiVersion() const noexcept
@@ -258,5 +263,3 @@ void zia::modules::network::HTTPNetwork::genericSend(
             Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
         });
 }
-
-

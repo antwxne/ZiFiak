@@ -7,10 +7,15 @@
 
 #include <thread>
 
+#include "ziapi/Http.hpp"
 #include "HTTPSNetwork.hpp"
 #include "Modules/Network/HTTPParser/HTTPParser.hpp"
 
-zia::modules::network::SSLNetwork::SSLNetwork()
+DYLIB_API ziapi::IModule *LoadZiaModule()
+{
+    return new zia::modules::network::HTTPSNetwork;
+}
+zia::modules::network::HTTPSNetwork::HTTPSNetwork()
     : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
     _sslContext(asio::ssl::context::sslv23)
 {
@@ -22,7 +27,7 @@ zia::modules::network::SSLNetwork::SSLNetwork()
     });
 }
 
-zia::modules::network::SSLNetwork::~SSLNetwork()
+zia::modules::network::HTTPSNetwork::~HTTPSNetwork()
 {
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
@@ -33,7 +38,7 @@ zia::modules::network::SSLNetwork::~SSLNetwork()
     Debug::log("HTTPS network module Destroyed");
 }
 
-void zia::modules::network::SSLNetwork::Init(const ziapi::config::Node &cfg)
+void zia::modules::network::HTTPSNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("Init HTTPS network module");
     std::string certificate_path = cfg["https"]["certificate_path"].AsString();
@@ -54,36 +59,36 @@ void zia::modules::network::SSLNetwork::Init(const ziapi::config::Node &cfg)
     _acceptor.listen();
 }
 
-ziapi::Version zia::modules::network::SSLNetwork::GetVersion() const noexcept
+ziapi::Version zia::modules::network::HTTPSNetwork::GetVersion() const noexcept
 {
     return {1, 0, 0};
 }
 
-ziapi::Version zia::modules::network::SSLNetwork::GetCompatibleApiVersion() const noexcept
+ziapi::Version zia::modules::network::HTTPSNetwork::GetCompatibleApiVersion() const noexcept
 {
-    return {3, 0, 0};
+    return {4, 0, 0};
 }
 
-const char *zia::modules::network::SSLNetwork::GetName() const noexcept
+const char *zia::modules::network::HTTPSNetwork::GetName() const noexcept
 {
     return "HTTPS network module";
 }
 
-const char *zia::modules::network::SSLNetwork::GetDescription() const noexcept
+const char *zia::modules::network::HTTPSNetwork::GetDescription() const noexcept
 {
     return "Only fan in bio";
 }
 
-void zia::modules::network::SSLNetwork::Run(
+void zia::modules::network::HTTPSNetwork::Run(
     ziapi::http::IRequestOutputQueue &requests,
     ziapi::http::IResponseInputQueue &responses
 )
 {
     startAccept(requests);
     _io_context.post(
-        std::bind(&SSLNetwork::sendResponses, this, std::ref(responses),
+        std::bind(&HTTPSNetwork::sendResponses, this, std::ref(responses),
             std::ref(requests)));
-    _io_context.post(std::bind(&SSLNetwork::disconnectClient, this));
+    _io_context.post(std::bind(&HTTPSNetwork::disconnectClient, this));
     _io_context.restart();
     _thread = std::thread([&]() {
         while (!_io_context.stopped()) {
@@ -95,7 +100,7 @@ void zia::modules::network::SSLNetwork::Run(
     Debug::log("HTTP network module started");
 }
 
-void zia::modules::network::SSLNetwork::Terminate()
+void zia::modules::network::HTTPSNetwork::Terminate()
 {
     _io_context.stop();
     _signalSet.remove(SIGINT);
@@ -103,7 +108,7 @@ void zia::modules::network::SSLNetwork::Terminate()
     Debug::log("HTTP network module stopped");
 }
 
-void zia::modules::network::SSLNetwork::startAccept(
+void zia::modules::network::HTTPSNetwork::startAccept(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
@@ -111,12 +116,12 @@ void zia::modules::network::SSLNetwork::startAccept(
         HTTPSClient(_io_context, _sslContext));
 
     _acceptor.async_accept(newClient->getAsioSocket(),
-        std::bind(&SSLNetwork::handleAccept, this, std::ref(requests),
+        std::bind(&HTTPSNetwork::handleAccept, this, std::ref(requests),
             std::ref(*newClient)));
     _clients.push_back(std::move(newClient));
 }
 
-void zia::modules::network::SSLNetwork::handleAccept(
+void zia::modules::network::HTTPSNetwork::handleAccept(
     ziapi::http::IRequestOutputQueue &requests,
     zia::modules::network::HTTPSClient &client
 )
@@ -135,7 +140,7 @@ void zia::modules::network::SSLNetwork::handleAccept(
     startAccept(requests);
 }
 
-void zia::modules::network::SSLNetwork::startReceive(
+void zia::modules::network::HTTPSNetwork::startReceive(
     ziapi::http::IRequestOutputQueue &requests,
     zia::modules::network::HTTPSClient &client
 )
@@ -143,11 +148,11 @@ void zia::modules::network::SSLNetwork::startReceive(
     std::string delimiter = "\r\n\r\n";
     asio::async_read_until(*client.getAsioSSLSocket(),
         asio::dynamic_buffer(client.getRawRequest()), delimiter,
-        std::bind(&SSLNetwork::handleReceive, this, std::ref(requests),
+        std::bind(&HTTPSNetwork::handleReceive, this, std::ref(requests),
             std::ref(client), std::placeholders::_1, std::placeholders::_2));
 }
 
-void zia::modules::network::SSLNetwork::handleReceive(
+void zia::modules::network::HTTPSNetwork::handleReceive(
     ziapi::http::IRequestOutputQueue &requests,
     zia::modules::network::HTTPSClient &client, const std::error_code &error,
     std::size_t bytes_transfered
@@ -188,7 +193,7 @@ void zia::modules::network::SSLNetwork::handleReceive(
     }
 }
 
-void zia::modules::network::SSLNetwork::sendResponses(
+void zia::modules::network::HTTPSNetwork::sendResponses(
     ziapi::http::IResponseInputQueue &responses,
     ziapi::http::IRequestOutputQueue &requests
 )
@@ -211,11 +216,11 @@ void zia::modules::network::SSLNetwork::sendResponses(
         }
     }
     _io_context.post(
-        std::bind(&SSLNetwork::sendResponses, this, std::ref(responses),
+        std::bind(&HTTPSNetwork::sendResponses, this, std::ref(responses),
             std::ref(requests)));
 }
 
-void zia::modules::network::SSLNetwork::disconnectClient() noexcept
+void zia::modules::network::HTTPSNetwork::disconnectClient() noexcept
 {
     if (!_clients.empty()) {
         auto toDelete = std::find_if(_clients.begin(), _clients.end(),
@@ -246,10 +251,10 @@ void zia::modules::network::SSLNetwork::disconnectClient() noexcept
             _clients.erase(toDelete);
         }
     }
-    _io_context.post(std::bind(&SSLNetwork::disconnectClient, this));
+    _io_context.post(std::bind(&HTTPSNetwork::disconnectClient, this));
 }
 
-void zia::modules::network::SSLNetwork::genericSend(
+void zia::modules::network::HTTPSNetwork::genericSend(
     zia::modules::network::HTTPSClient &client, const void *data,
     const size_t &size, ziapi::http::IResponseInputQueue &responses,
     ziapi::http::IRequestOutputQueue &requests

@@ -11,15 +11,14 @@
 #include <asio/ssl.hpp>
 
 #include "ziapi/Module.hpp"
-#include "ziapi/Http.hpp"
-
 #include "HTTPSClient.hpp"
+#include "dylib/dylib.hpp"
 
 namespace zia::modules::network {
-class SSLNetwork : public ziapi::INetworkModule {
+class HTTPSNetwork : public ziapi::INetworkModule {
 public:
-    SSLNetwork();
-    ~SSLNetwork();
+    HTTPSNetwork();
+    ~HTTPSNetwork();
     // IModule
     void Init(const ziapi::config::Node &cfg) override;
     ziapi::Version GetVersion() const noexcept override;
@@ -57,4 +56,7 @@ private:
     std::thread _thread;
 };
 }
+
+DYLIB_API ziapi::IModule *LoadZiaModule();
+
 #endif //ZIA_HTTPSNETWORK_HPP

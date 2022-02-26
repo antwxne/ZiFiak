@@ -12,6 +12,7 @@
 
 #include "HTTPClient.hpp"
 #include "ziapi/Module.hpp"
+#include "dylib/dylib.hpp"
 
 namespace zia::modules::network {
 class HTTPNetwork : public ziapi::INetworkModule {
@@ -54,5 +55,7 @@ private:
     std::thread _thread;
 };
 }
+
+DYLIB_API ziapi::IModule *LoadZiaModule();
 
 #endif //ZIA_HTTPNETWORK_HPP
