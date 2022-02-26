@@ -5,15 +5,15 @@
 ** Created by antoine,
 */
 
-#ifndef ZIA_SSLNETWORK_HPP
-#define ZIA_SSLNETWORK_HPP
+#ifndef ZIA_HTTPSNETWORK_HPP
+#define ZIA_HTTPSNETWORK_HPP
 
 #include <asio/ssl.hpp>
 
 #include "ziapi/Module.hpp"
 #include "ziapi/Http.hpp"
 
-#include "SSLClient.hpp"
+#include "HTTPSClient.hpp"
 
 namespace zia::modules::network {
 class SSLNetwork : public ziapi::INetworkModule {
@@ -35,26 +35,26 @@ public:
 private:
     void startAccept(ziapi::http::IRequestOutputQueue &requests);
     void handleAccept(ziapi::http::IRequestOutputQueue &requests,
-        SSLClient &client
+        HTTPSClient &client
     );
     void startReceive(ziapi::http::IRequestOutputQueue &requests,
-        SSLClient &client
+        HTTPSClient &client
     );
     void handleReceive(ziapi::http::IRequestOutputQueue &requests,
-        SSLClient &client, const std::error_code &error,
+        HTTPSClient &client, const std::error_code &error,
         std::size_t bytes_transfered
     );
     void sendResponses(ziapi::http::IResponseInputQueue &responses, ziapi::http::IRequestOutputQueue &requests);
     void disconnectClient() noexcept;
-    void genericSend(SSLClient &client, const void *data, const std::size_t &size, ziapi::http::IResponseInputQueue &responses, ziapi::http::IRequestOutputQueue &requests);
+    void genericSend(HTTPSClient &client, const void *data, const std::size_t &size, ziapi::http::IResponseInputQueue &responses, ziapi::http::IRequestOutputQueue &requests);
 
 private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
     asio::signal_set _signalSet;
-    std::vector<std::unique_ptr<SSLClient>> _clients;
+    std::vector<std::unique_ptr<HTTPSClient>> _clients;
     asio::ssl::context _sslContext;
     std::thread _thread;
 };
 }
-#endif //ZIA_SSLNETWORK_HPP
+#endif //ZIA_HTTPSNETWORK_HPP

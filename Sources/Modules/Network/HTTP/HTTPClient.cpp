@@ -5,22 +5,22 @@
 ** Created by antoine,
 */
 
-#include "Client.hpp"
+#include "HTTPClient.hpp"
 
-zia::modules::network::Client::Client(
+zia::modules::network::HTTPClient::HTTPClient(
     asio::io_context &ioContext
 ) : AClient(), _socket(ioContext)
 {
 }
 
 
-int zia::modules::network::Client::getSocketFd()
+int zia::modules::network::HTTPClient::getSocketFd()
 {
     return _socket.native_handle();
 }
 
 
-ziapi::http::Context zia::modules::network::Client::getContext() const noexcept
+ziapi::http::Context zia::modules::network::HTTPClient::getContext() const noexcept
 {
     ziapi::http::Context ctx;
 
@@ -29,7 +29,7 @@ ziapi::http::Context zia::modules::network::Client::getContext() const noexcept
     return ctx;
 }
 
-bool zia::modules::network::Client::operator==(const ziapi::http::Context &ctx
+bool zia::modules::network::HTTPClient::operator==(const ziapi::http::Context &ctx
 ) const
 {
     bool dest = true;
@@ -41,12 +41,12 @@ bool zia::modules::network::Client::operator==(const ziapi::http::Context &ctx
     return dest;
 }
 
-bool zia::modules::network::Client::operator==(int fd) noexcept
+bool zia::modules::network::HTTPClient::operator==(int fd) noexcept
 {
     return fd == getSocketFd();
 }
 
-zia::modules::network::Client &zia::modules::network::Client::genericSend(
+zia::modules::network::HTTPClient &zia::modules::network::HTTPClient::genericSend(
     const void *obj, const std::size_t &size
 )
 {
@@ -68,7 +68,7 @@ zia::modules::network::Client &zia::modules::network::Client::genericSend(
     return *this;
 }
 
-asio::ip::tcp::socket &zia::modules::network::Client::getAsioSocket() noexcept
+asio::ip::tcp::socket &zia::modules::network::HTTPClient::getAsioSocket() noexcept
 {
     return _socket;
 }

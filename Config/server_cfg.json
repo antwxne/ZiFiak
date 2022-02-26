@@ -4,9 +4,9 @@
     "port": 8080
   },
   "https": {
-    "port": 443,
-    "certificate_path": "./Certificat/key.pem",
-    "private_key_file": "clement a troll"
+    "port": 8081,
+    "certificate_path": "./Certificat/cert.pem",
+    "private_key_file": "./Certificat/key.pem"
   },
   "AllowMethods": [
     {

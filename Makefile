@@ -17,11 +17,6 @@ all:
 debug:
 	mkdir -p $(BUILD_DIR) && cd $(BUILD_DIR) && conan install .. --build=missing && cmake -DCMAKE_BUILD_TYPE=Debug -G "Unix Makefiles" .. && cmake --build .
 
-# Clean build
-.PHONY: clean
-clean:
-	$(RM) -r $(BUILD_DIR)
-
 .PHONY: doc-clean
 doc-clean:
 	$(RM) -r $(DOC_DIR)/html/
@@ -30,8 +25,8 @@ doc-clean:
 
 # Clean build and binaries
 .PHONY: fclean
-fclean: clean doc-clean
-	$(RM) $(NAME)
+fclean: doc-clean
+	cmake --build $(BUILD_DIR) --target clean
 
 .PHONY: re
 re: fclean all

@@ -17,7 +17,7 @@
 #include "Exceptions/MyException.hpp"
 #include "ziapi/Http.hpp"
 
-namespace zia::modules::http {
+namespace zia::modules::network {
 
     static const std::map<std::string, ziapi::http::Version> _versions {
         {"KV1", ziapi::http::Version::kV1},
@@ -40,10 +40,10 @@ namespace zia::modules::http {
         ziapi::http::method::kHead,
     };
 
-    class HttpModule {
+    class HTTPParser {
         public:
-            HttpModule() = default;
-            ~HttpModule() = default;
+            HTTPParser() = default;
+            ~HTTPParser() = default;
 
             static ziapi::http::Request createRequest(const std::string &str);
             static std::string readResponse(const ziapi::http::Response &res) noexcept;

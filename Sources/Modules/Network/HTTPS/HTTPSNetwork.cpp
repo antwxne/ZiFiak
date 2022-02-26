@@ -7,11 +7,12 @@
 
 #include <thread>
 
-#include "Modules/Http/HttpModule.hpp"
-#include "SslNetwork.hpp"
+#include "HTTPSNetwork.hpp"
+#include "Modules/Network/HTTPParser/HTTPParser.hpp"
 
 zia::modules::network::SSLNetwork::SSLNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context), _sslContext(asio::ssl::context::sslv23)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
+    _sslContext(asio::ssl::context::sslv23)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -79,8 +80,9 @@ void zia::modules::network::SSLNetwork::Run(
 )
 {
     startAccept(requests);
-    _io_context.post(std::bind(&SSLNetwork::sendResponses, this,
-        std::ref(responses), std::ref(requests)));
+    _io_context.post(
+        std::bind(&SSLNetwork::sendResponses, this, std::ref(responses),
+            std::ref(requests)));
     _io_context.post(std::bind(&SSLNetwork::disconnectClient, this));
     _io_context.restart();
     _thread = std::thread([&]() {
@@ -99,15 +101,14 @@ void zia::modules::network::SSLNetwork::Terminate()
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
     Debug::log("HTTP network module stopped");
-
 }
 
 void zia::modules::network::SSLNetwork::startAccept(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-    auto newClient = std::make_unique<zia::modules::network::SSLClient>(
-        SSLClient(_io_context, _sslContext));
+    auto newClient = std::make_unique<zia::modules::network::HTTPSClient>(
+        HTTPSClient(_io_context, _sslContext));
 
     _acceptor.async_accept(newClient->getAsioSocket(),
         std::bind(&SSLNetwork::handleAccept, this, std::ref(requests),
@@ -117,22 +118,26 @@ void zia::modules::network::SSLNetwork::startAccept(
 
 void zia::modules::network::SSLNetwork::handleAccept(
     ziapi::http::IRequestOutputQueue &requests,
-    zia::modules::network::SSLClient &client
+    zia::modules::network::HTTPSClient &client
 )
 {
     Debug::log("HTTPS Client connected");
-    try {
-        client.initSSL();
-        startReceive(requests, client);
-    } catch (const std::runtime_error &error) {
-        Debug::log(error.what());
-    }
+    client.initSSL();
+    client.getAsioSSLSocket()->async_handshake(asio::ssl::stream_base::server,
+        [&](const std::error_code &error) {
+            if (!error) {
+                startReceive(requests, client);
+            }
+            if (error) {
+                client.setConnectionStatut(false);
+            }
+        });
     startAccept(requests);
 }
 
 void zia::modules::network::SSLNetwork::startReceive(
     ziapi::http::IRequestOutputQueue &requests,
-    zia::modules::network::SSLClient &client
+    zia::modules::network::HTTPSClient &client
 )
 {
     std::string delimiter = "\r\n\r\n";
@@ -144,7 +149,7 @@ void zia::modules::network::SSLNetwork::startReceive(
 
 void zia::modules::network::SSLNetwork::handleReceive(
     ziapi::http::IRequestOutputQueue &requests,
-    zia::modules::network::SSLClient &client, const std::error_code &error,
+    zia::modules::network::HTTPSClient &client, const std::error_code &error,
     std::size_t bytes_transfered
 )
 {
@@ -160,7 +165,7 @@ void zia::modules::network::SSLNetwork::handleReceive(
     client.saveBuffer();
     client.clearBuffer();
     try {
-        auto req = zia::modules::http::HttpModule::createRequest(
+        auto req = zia::modules::network::HTTPParser::createRequest(
             client.toString());
         //        ziapi::http::Request req;
         //        req.headers = {{ziapi::http::header::kAIM, "aada"}};
@@ -168,7 +173,7 @@ void zia::modules::network::SSLNetwork::handleReceive(
         //        req.version = ziapi::http::Version::kV1;
         //        req.target = "/";
         //        req.body = "toto";
-        if (zia::modules::http::HttpModule::isRequestComplete(req)) {
+        if (zia::modules::network::HTTPParser::isRequestComplete(req)) {
             client.setProcessingARequest(true);
             requests.Push(std::make_pair(req, client.getContext()));
             client.clearRawRequest();
@@ -184,7 +189,8 @@ void zia::modules::network::SSLNetwork::handleReceive(
 }
 
 void zia::modules::network::SSLNetwork::sendResponses(
-    ziapi::http::IResponseInputQueue &responses, ziapi::http::IRequestOutputQueue &requests
+    ziapi::http::IResponseInputQueue &responses,
+    ziapi::http::IRequestOutputQueue &requests
 )
 {
     if (responses.Size() > 0) {
@@ -193,11 +199,11 @@ void zia::modules::network::SSLNetwork::sendResponses(
             auto response = current.value().first;
             auto ctx = current.value().second;
             auto client = std::find_if(_clients.begin(), _clients.end(),
-                [&ctx](const std::unique_ptr<SSLClient> &c) {
+                [&ctx](const std::unique_ptr<HTTPSClient> &c) {
                     return *c == ctx;
                 });
             if (client != _clients.cend()) {
-                auto data = zia::modules::http::HttpModule::readResponse(
+                auto data = zia::modules::network::HTTPParser::readResponse(
                     response);
                 genericSend(**client, &*data.begin(),
                     data.size() * sizeof(*data.begin()), responses, requests);
@@ -213,7 +219,7 @@ void zia::modules::network::SSLNetwork::disconnectClient() noexcept
 {
     if (!_clients.empty()) {
         auto toDelete = std::find_if(_clients.begin(), _clients.end(),
-            [](const std::unique_ptr<SSLClient> &client) {
+            [](const std::unique_ptr<HTTPSClient> &client) {
                 if (client->isProcessingARequest()) {
                     return false;
                 }
@@ -244,21 +250,21 @@ void zia::modules::network::SSLNetwork::disconnectClient() noexcept
 }
 
 void zia::modules::network::SSLNetwork::genericSend(
-    zia::modules::network::SSLClient &client, const void *data,
+    zia::modules::network::HTTPSClient &client, const void *data,
     const size_t &size, ziapi::http::IResponseInputQueue &responses,
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-    try {
-        client.getAsioSocket().async_send(asio::buffer(data, size),
+
+    asio::async_write(*client.getAsioSSLSocket(), asio::buffer(data, size),
+        asio::bind_executor(client.getStrand(),
             [&, this](const asio::error_code &errorCode,
                 std::size_t bytesTransferred
             ) {
                 if (errorCode) {
-                    throw MyException(errorCode.message(), __PRETTY_FUNCTION__,
-                        __FILE__, __LINE__);
+                    client.setConnectionStatut(false);
                 }
-                if (!client.getKeepAliveInfos().has_value()) {
+                else if (!client.getKeepAliveInfos().has_value()) {
                     client.setConnectionStatut(false);
                     client.setProcessingARequest(false);
                 } else {
@@ -267,9 +273,5 @@ void zia::modules::network::SSLNetwork::genericSend(
                 client.updateTime();
                 Debug::log(
                     std::to_string(bytesTransferred) + " bytes transferred");
-            });
-    } catch (const MyException &e) {
-        client.setConnectionStatut(false);
-        Debug::log(e);
-    }
+            }));
 }
