@@ -35,17 +35,15 @@ zia::modules::network::SSLNetwork::~SSLNetwork()
 void zia::modules::network::SSLNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("Init HTTPS network module");
-    std::string certificatePath = cfg["https"]["certificate_path"].AsString();
-//    std::string private_key_file = cfg["https"]["private_key_file"].AsString();
-//    std::string dh_file = cfg["https"]["dh_file"].AsString();
+    std::string certificate_path = cfg["https"]["certificate_path"].AsString();
+    std::string private_key_file = cfg["https"]["private_key_file"].AsString();
     int port = cfg["https"]["port"].AsInt();
 
     _sslContext.set_options(
         asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
             asio::ssl::context::single_dh_use);
-    _sslContext.use_certificate_chain_file(certificatePath);
-    _sslContext.use_private_key_file(certificatePath, asio::ssl::context::pem);
-//    _sslContext.use_tmp_dh_file(dh_file);
+    _sslContext.use_certificate_chain_file(certificate_path);
+    _sslContext.use_private_key_file(private_key_file, asio::ssl::context::pem);
     asio::ip::tcp::endpoint basicEndPoint(
         asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
 

@@ -5,7 +5,8 @@
   },
   "https": {
     "port": 443,
-    "certificate_path": "./Certificat/key.pem"
+    "certificate_path": "./Certificat/key.pem",
+    "private_key_file": "clement a troll"
   },
   "AllowMethods": [
     {
