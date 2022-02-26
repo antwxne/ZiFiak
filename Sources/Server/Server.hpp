@@ -11,6 +11,8 @@
 #include "ziapi/Config.hpp"
 #include "LoadLibs/LoadLibs.hpp"
 #include "Watcher/Watcher.hpp"
+#include "Queue/RequestQueue.hpp"
+#include "Queue/ResponseQueue.hpp"
 
 namespace zia::server {
 class Server {
@@ -23,19 +25,25 @@ public:
     Server &operator=(const Server &) = delete;
     void init(const std::string &filepath);
     void run();
-    void threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses);
     const std::string getPathDirectory() const;
 
 private:
+    // template<typename T, typename Y, typename U>
+    // void handleModule(std::function<void(T, Y)> &module, U &req)
+    // {
+    //     std::scoped_lock lock(_mutex);
+
+    //     module(req.second, req.first);
+    // }
+    void handleModule(const std::unique_ptr<ziapi::IHandlerModule> &process, std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &handlerResponses);
+    void threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses);
+    void pipeLine(std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &responses);
     Node _serverConfig;
     LoadLibs _loadLibs;
     bool _isModuleChange;
     Watcher::Watcher _moduleWatcher;
-    std::vector<std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string>> _allPreProcessorModules;
-    std::vector<std::pair<std::unique_ptr<ziapi::INetworkModule>, std::string>> _allNetWorkModules;
-    std::vector<std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string>> _allHandlerModules;
-    std::vector<std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string>>_allPostProcessorModules;
     std::vector<std::thread> _threadPool;
+    std::mutex _mutex;
     bool _isRunning;
 
 public:

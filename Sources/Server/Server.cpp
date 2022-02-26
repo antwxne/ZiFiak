@@ -9,8 +9,6 @@
 #include "Debug/Debug.hpp"
 #include "ConfigParser.hpp"
 #include "Server.hpp"
-#include "Queue/RequestQueue.hpp"
-#include "Queue/ResponseQueue.hpp"
 #include <iostream>
 
 zia::server::Server::Server() : _isModuleChange(false), _moduleWatcher(Watcher::ModulesPath, _isModuleChange), _isRunning(false) {
@@ -40,6 +38,36 @@ const std::string zia::server::Server::getPathDirectory() const {
     }
 }
 
+void zia::server::Server::handleModule(const std::unique_ptr<ziapi::IHandlerModule> &process, std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &handlerResponses)
+{
+    std::scoped_lock lock(_mutex);
+    ziapi::http::Response response;
+
+    process->Handle(req.second, req.first, response);
+    handlerResponses.push_back(std::make_pair(response, req.second));
+}
+
+void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &responses)
+{
+    for (auto &module : _loadLibs.getPreProcessorModules()) {
+        if (module.first->ShouldPreProcess(req.second, req.first)) {
+            module.first->PreProcess(req.second, req.first);
+        }
+    }
+    for (auto &module : _loadLibs.getHandlerModules()) {
+        if (module.first->ShouldHandle(req.second, req.first)) {
+            handleModule(module.first, req, responses);
+        }
+    }
+    for (auto &module : _loadLibs.getPostProcessorModules()) {
+        for (auto &response : responses) {
+            if (module.first->ShouldPostProcess(req.second, response.first)) {
+                module.first->PostProcess(response.second, response.first);
+            }
+        }
+    }
+}
+
 void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses)
 {
     while (_isRunning) {
@@ -47,7 +75,7 @@ void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia:
         if (curr == std::nullopt) {
             continue;
         }
-        // pipeline d'olivier
+        std::thread(&zia::server::Server::pipeLine, this, std::ref(curr.value()), std::ref(responses));
     }
 }
 
@@ -56,10 +84,10 @@ void zia::server::Server::run() {
     zia::container::ResponseQueue responses;
 
     _isRunning = true;
-    for (auto &module : _allNetWorkModules) {
+    for (auto &module : _loadLibs.getNetWorkModules()) {
         module.first->Run(requests, responses);
     }
-    _threadPool.emplace_back(std::thread(&threadPool, this, requests, responses));
+    _threadPool.emplace_back(std::thread(&zia::server::Server::threadPool, this, std::ref(requests), std::ref(responses)));
     while (1) {
 
         if (_isModuleChange) {
