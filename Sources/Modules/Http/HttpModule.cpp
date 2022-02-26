@@ -16,48 +16,43 @@ void getHeaderBody(ziapi::http::Request &req, std::stringstream &stream)
     std::string temp;
     std::string mod;
 
-    while (std::getline(stream, str, ' ')) {
-        mod = str;
+    std::getline(stream, str);
+    while (std::getline(stream, str, '\r')) {
+        std::stringstream temp_stream(str);
+        std::getline(temp_stream, mod, ' ');
         mod.resize(mod.size() - 1);
         if (std::find(_headers.begin(), _headers.end(), mod) !=
             _headers.end()) {
-            std::getline(stream, temp, ' ');
+            std::getline(temp_stream, temp);
             req.headers[mod] = temp;
-        } else
+        } else {
             req.body += ' ' + str;
+        }
+        std::getline(stream, str);
     }
 }
 
-std::string getTarget(std::stringstream &stream)
+std::string getTarget(std::string &target)
 {
-    std::string str;
-
-    std::getline(stream, str, ' ');
-    if (str.empty())
+    if (target.empty())
         throw std::invalid_argument(
-            "getTarget - Http request Usage: {Version} {Method} {target} {header} {body}");
-    return str;
+            "getTarget - Http request Usage:\n{Method}\\r\\n{target}\\r\\n{version}\\r\\n{header}\\r\\n{body}");
+    return target;
 }
 
-std::string getMethod(std::stringstream &stream)
+std::string getMethod(std::string &method)
 {
-    std::string method;
-
-    std::getline(stream, method, ' ');
     if (std::find(_methods.begin(), _methods.end(), method) == _methods.end())
         throw std::invalid_argument(
-            "getMethod - Http request Usage: {Version} {Method} {target} {header} {body}");
+            "getMethod - Http request Usage:\n{Method}\\r\\n{target}\\r\\n{version}\\r\\n{header}\\r\\n{body}");
     return method;
 }
 
-ziapi::http::Version getVersion(std::stringstream &stream)
+ziapi::http::Version getVersion(std::string &version)
 {
-    std::string version;
-
-    std::getline(stream, version, ' ');
     if (_versions.find(version) == _versions.end())
         throw std::invalid_argument(
-            "getVersion - Http request Usage: {Version} {Method} {target} {header} {body}");
+            "getVersion - Http request Usage:\n{Method}\\r\\n{target}\\r\\n{version}\\r\\n{header}\\r\\n{body}");
     return _versions.at(version);
 }
 
@@ -65,7 +60,7 @@ std::string clear_string(const std::string &str)
 {
     std::string cleared;
     std::string temp = str;
-    std::regex spaces(R"(\s+)");
+    std::regex spaces("( +)");
 
     temp = std::regex_replace(temp, spaces, " ");
     while (temp[0] && temp[0] == ' ')
@@ -83,15 +78,17 @@ std::string clear_string(const std::string &str)
 
 ziapi::http::Request HttpModule::createRequest(const std::string &str)
 {
-    //ex of string : KV1 GET target Content-Type: text/html Content-length: 345 body
     ziapi::http::Request req;
-    std::string temp = clear_string(str);
-    std::stringstream stream(temp);
+    std::stringstream stream(clear_string(str));
+    std::string temp;
 
     try {
-        req.version = getVersion(stream);
-        req.method = getMethod(stream);
-        req.target = getTarget(stream);
+        std::getline(stream, temp, ' ');
+        req.method = getMethod(temp);
+        std::getline(stream, temp, ' ');
+        req.target = getTarget(temp);
+        std::getline(stream, temp, '\r');
+        req.version = getVersion(temp);
         getHeaderBody(req, stream);
     } catch (std::invalid_argument &e) {
         std::cout << e.what() << std::endl;
