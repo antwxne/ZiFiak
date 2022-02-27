@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <fstream>
 #include <cstdlib>
+#include "dylib/dylib.hpp"
 #include <stdio.h>
 #include "ziapi/Module.hpp"
 
@@ -41,3 +42,4 @@ class PhpCgi : public ziapi::IHandlerModule {
 
 };
 }
+DYLIB_API ziapi::IModule *LoadZiaModule();

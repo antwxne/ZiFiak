@@ -1,12 +1,11 @@
 {
+  "directory" : "Modules",
   "http": {
-    "port": "80",
-    "timeout_s": 5
+    "port": "8080"
   },
   "https": {
     "port": "443",
-    "perm_file_path": "plop.perm",
-    "timeout_s": 5
+    "certificat_file_path": "plop.perm"
   },
   "AllowMethods": [
     {
@@ -19,11 +18,11 @@
   ],
   "modules": {
     "PHP-CGI": {
-      "path_info" : "/",
-      "full_path" : "/php-cgi.ini",
+      "path_info" : "/lol.php",
+      "full_path" : "/opt/homebrew/bin/php-cgi",
       "remote_host" : "wsh",
       "ip_client" : "127.0.0.1",
-      "exec_name" : "php-cgi.ini",
+      "exec_name" : "php-cgi",
       "protocol" : "HTTP/1.1",
       "server_name" : "ZiFiak",
       "servet_port" : "8080",

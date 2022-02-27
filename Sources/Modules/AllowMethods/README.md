@@ -14,13 +14,13 @@ To implement this module correctly you need to add a variable in you server conf
       "path": "/",
       "methods": [
         "POST",
-        "GET",
+        "GET"
       ]
     },
     {
       "path": "/coucou",
       "methods": [
-        "GET",
+        "GET"
       ]
     }
   ]

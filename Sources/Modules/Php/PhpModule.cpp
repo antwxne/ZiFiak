@@ -6,6 +6,7 @@
 */
 
 #include "Modules/Php/PhpModule.hpp"
+
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
@@ -182,4 +183,9 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         res.reason = "Error in the path or with the cgi.";
     }
 #endif
+}
+
+DYLIB_API ziapi::IModule *LoadZiaModule()
+{
+    return new zia::modules::php::PhpCgi;
 }

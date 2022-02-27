@@ -85,3 +85,8 @@ bool AllowMethods::ShouldPreProcess(const ziapi::http::Context &context, const z
     }
     return true;
 }
+
+DYLIB_API ziapi::IModule *LoadZiaModule()
+{
+    return new AllowMethods;
+}

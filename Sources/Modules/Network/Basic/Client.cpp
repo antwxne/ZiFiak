@@ -56,9 +56,12 @@ zia::modules::network::Client &zia::modules::network::Client::genericSend(
                 throw MyException(errorCode.message(), __PRETTY_FUNCTION__,
                     __FILE__, __LINE__);
             }
-            if (!this->_keepAlive) {
+            if (!this->_keepAlive.has_value()) {
                 this->_isConnected = false;
+            } else {
+                this->_keepAlive->max -= 1;
             }
+            this->_processingRequest = false;
             this->updateTime();
             Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
         });

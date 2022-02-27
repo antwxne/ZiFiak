@@ -16,7 +16,7 @@
 #include "SSLClient.hpp"
 
 namespace zia::modules::network {
-class SSLNetwork: public ziapi::INetworkModule {
+class SSLNetwork : public ziapi::INetworkModule {
 public:
     SSLNetwork();
     // IModule
@@ -44,6 +44,7 @@ private:
         std::size_t bytes_transfered
     );
     void sendResponses(ziapi::http::IResponseInputQueue &responses);
+    void disconnectClient() noexcept;
 
 private:
     asio::io_context _io_context;
@@ -53,7 +54,7 @@ private:
     std::vector<std::unique_ptr<SSLClient>> _clients;
     std::thread _responseThread;
     asio::ssl::context _sslContext;
-    int _timeout_s;
+    std::thread _disconnectClientThread;
 };
 }
 #endif //ZIA_SSLNETWORK_HPP

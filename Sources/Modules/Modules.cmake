@@ -41,6 +41,13 @@ add_library(php_cgi SHARED ${BASE_MODULE}
         )
 conan_target_link_libraries(php_cgi ${CONAN_LIBS})
 add_dependencies(php_cgi ziapi)
+# Delegate MODULE
+add_library(deflate SHARED ${BASE_MODULE}
+        Sources/Modules/Deflate/Deflate.hpp
+        Sources/Modules/Deflate/Deflate.cpp
+        )
+conan_target_link_libraries(deflate ${CONAN_LIBS})
+add_dependencies(deflate ziapi)
 
 # SSL NETWORK MODULE
 add_library(SSL_network SHARED ${BASE_MODULE}

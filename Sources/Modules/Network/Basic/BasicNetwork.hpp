@@ -42,6 +42,7 @@ private:
         std::size_t bytes_transfered
     );
     void sendResponses(ziapi::http::IResponseInputQueue &responses);
+    void disconnectClient() noexcept;
 
 private:
     asio::io_context _io_context;
@@ -49,8 +50,8 @@ private:
     asio::signal_set _signalSet;
     std::vector<std::unique_ptr<Client>> _clients;
     bool _isRunning;
-    std::thread _horreurDeSqueezieChien;
-    int _timeout_s;
+    std::thread _responseThread;
+    std::thread _disconnectClientThread;
 };
 }
 
