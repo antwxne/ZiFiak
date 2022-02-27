@@ -25,12 +25,12 @@ void Deflate::Init([[maybe_unused]] const ziapi::config::Node &)
 
 [[nodiscard]] ziapi::Version Deflate::GetVersion() const noexcept
 {
-    return ziapi::Version{3, 0, 0};
+    return ziapi::Version{4, 0, 0};
 }
 
 [[nodiscard]] ziapi::Version Deflate::GetCompatibleApiVersion() const noexcept
 {
-    return ziapi::Version{3, 0, 0};
+    return ziapi::Version{4, 0, 0};
 }
 
 [[nodiscard]] const char *Deflate::GetName() const noexcept
@@ -59,12 +59,11 @@ void Deflate::PostProcess(ziapi::http::Context &context, ziapi::http::Response &
     return 0.1f;
 }
 
-bool Deflate::ShouldPostProcess(const ziapi::http::Context &context, const ziapi::http::Response &res) const
+bool Deflate::ShouldPostProcess(const ziapi::http::Context &context, const ziapi::http::Request &req, const ziapi::http::Response &res) const
 {
-    // if (req.find("Accept-Encoding") != req.end() && context["Accept-Encoding"] == "gzip")
-    //     return true;
-    // return false;
-    return true;
+    if (req.headers.find("Accept-Encoding") != req.headers.end() && std::any_cast<std::string>(context.at("Accept-Encoding")) == "gzip")
+        return true;
+    return false;
 }
 
 
