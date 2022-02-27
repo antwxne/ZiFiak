@@ -1,4 +1,4 @@
-# SSLNetwork
+# HTTPSNetwork
 
 ## Description
 
@@ -17,8 +17,8 @@ It will fill up `ziapi::http::IRequestOutputQueue` with incoming request.
 ```cpp
 const ziapi::config::Node &cfg; // server configuration
 int port = cfg["https"]["port"].AsInt(); // port to listen
-std::string permFilePath = cfg["https"]["certificat_file_path"].AsString(); // path to the certificate
-
+std::string certificate_path = cfg["https"]["certificate_path"].AsString(); // path to certificat
+    std::string private_key_file = cfg["https"]["private_key_file"].AsString(); // path to private key
 ```
 
 ## Context

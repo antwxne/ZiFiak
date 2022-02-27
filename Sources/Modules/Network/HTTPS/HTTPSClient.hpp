@@ -14,9 +14,9 @@
 #include "Modules/Network/AClient.hpp"
 
 namespace zia::modules::network {
-class SSLClient : public AClient {
+class HTTPSClient : public AClient {
 public:
-    SSLClient(asio::io_context &ioContext, asio::ssl::context& sslContext);
+    HTTPSClient(asio::io_context &ioContext, asio::ssl::context& sslContext);
     int getSocketFd() override;
     bool operator==(int fd) noexcept override;
     bool operator==(const ziapi::http::Context &ctx) const override;
@@ -24,13 +24,15 @@ public:
     const std::shared_ptr<asio::ssl::stream<asio::ip::tcp::socket>> &getAsioSSLSocket() const noexcept;
     asio::ip::tcp::socket &getAsioSocket() noexcept;
     void initSSL();
+    asio::io_context::strand &getStrand();
 private:
-    SSLClient &genericSend(const void *obj, const std::size_t &size) override;
+    HTTPSClient &genericSend(const void *obj, const std::size_t &size) override;
 
 private:
     asio::ip::tcp::socket _socket;
     std::shared_ptr<asio::ssl::stream<asio::ip::tcp::socket>> _sslSocket;
     asio::ssl::context &_sslContext;
+    asio::io_context::strand _strand;
 };
 }
 

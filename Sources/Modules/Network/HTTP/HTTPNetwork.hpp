@@ -5,18 +5,20 @@
 ** Created by antoine,
 */
 
-#ifndef ZIA_BASICNETWORK_HPP
-#define ZIA_BASICNETWORK_HPP
+#ifndef ZIA_HTTPNETWORK_HPP
+#define ZIA_HTTPNETWORK_HPP
 
 #include <asio.hpp>
 
-#include "Client.hpp"
+#include "HTTPClient.hpp"
 #include "ziapi/Module.hpp"
+#include "dylib/dylib.hpp"
 
 namespace zia::modules::network {
-class BasicNetwork : public ziapi::INetworkModule {
+class HTTPNetwork : public ziapi::INetworkModule {
 public:
-    BasicNetwork();
+    HTTPNetwork();
+    ~HTTPNetwork();
     // IModule
     void Init(const ziapi::config::Node &cfg) override;
     ziapi::Version GetVersion() const noexcept override;
@@ -32,27 +34,28 @@ public:
 private:
     void startAccept(ziapi::http::IRequestOutputQueue &requests);
     void handleAccept(ziapi::http::IRequestOutputQueue &requests,
-        Client &client
+        HTTPClient &client
     );
     void startReceive(ziapi::http::IRequestOutputQueue &requests,
-        Client &client
+        HTTPClient &client
     );
     void handleReceive(ziapi::http::IRequestOutputQueue &requests,
-        Client &client, const std::error_code &error,
+        HTTPClient &client, const std::error_code &error,
         std::size_t bytes_transfered
     );
-    void sendResponses(ziapi::http::IResponseInputQueue &responses);
+    void sendResponses(ziapi::http::IResponseInputQueue &responses, ziapi::http::IRequestOutputQueue &requests);
     void disconnectClient() noexcept;
+    void genericSend(HTTPClient &client, const void *data, const std::size_t &size, ziapi::http::IResponseInputQueue &responses, ziapi::http::IRequestOutputQueue &requests);
 
 private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
     asio::signal_set _signalSet;
-    std::vector<std::unique_ptr<Client>> _clients;
-    bool _isRunning;
-    std::thread _responseThread;
-    std::thread _disconnectClientThread;
+    std::vector<std::unique_ptr<HTTPClient>> _clients;
+    std::thread _thread;
 };
 }
 
-#endif //ZIA_BASICNETWORK_HPP
+DYLIB_API ziapi::IModule *LoadZiaModule();
+
+#endif //ZIA_HTTPNETWORK_HPP

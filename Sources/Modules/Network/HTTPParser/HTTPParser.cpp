@@ -5,10 +5,10 @@
 ** HttpModule
 */
 
-#include "HttpModule.hpp"
+#include "HTTPParser.hpp"
 #include "Debug/Debug.hpp"
 
-namespace zia::modules::http {
+namespace zia::modules::network {
 
 void getHeaderBody(ziapi::http::Request &req, std::stringstream &stream)
 {
@@ -76,12 +76,13 @@ std::string clear_string(const std::string &str)
     return cleared;
 }
 
-ziapi::http::Request HttpModule::createRequest(const std::string &str)
+ziapi::http::Request HTTPParser::createRequest(const std::string &str)
 {
     ziapi::http::Request req;
     std::stringstream stream(clear_string(str));
     std::string temp;
 
+    Debug::log("client buffer: " + str);
     try {
         std::getline(stream, temp, ' ');
         req.method = getMethod(temp);
@@ -96,7 +97,7 @@ ziapi::http::Request HttpModule::createRequest(const std::string &str)
     return req;
 }
 
-std::string HttpModule::readResponse(const ziapi::http::Response &res) noexcept
+std::string HTTPParser::readResponse(const ziapi::http::Response &res) noexcept
 {
     std::string str;
 
@@ -114,7 +115,7 @@ std::string HttpModule::readResponse(const ziapi::http::Response &res) noexcept
     return str;
 }
 
-bool HttpModule::isRequestComplete(const ziapi::http::Request &req) noexcept
+bool HTTPParser::isRequestComplete(const ziapi::http::Request &req) noexcept
 {
     if (req.method != ziapi::http::method::kPatch &&
         req.method != ziapi::http::method::kPost &&
@@ -136,7 +137,7 @@ bool HttpModule::isRequestComplete(const ziapi::http::Request &req) noexcept
     }
 }
 
-std::pair<int, int> HttpModule::parseKeepAliveInfos(const std::string &value)
+std::pair<int, int> HTTPParser::parseKeepAliveInfos(const std::string &value)
 {
     auto replace_char = [](std::string &str, const std::string &substr, char c) {
         for (auto &i: str) {

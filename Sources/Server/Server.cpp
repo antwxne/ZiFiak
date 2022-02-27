@@ -6,10 +6,10 @@
 */
 
 #include <exception>
+#include <iostream>
 #include "Debug/Debug.hpp"
 #include "ConfigParser.hpp"
 #include "Server.hpp"
-#include <iostream>
 
 zia::server::Server::Server() : _isModuleChange(false), _moduleWatcher(Watcher::ModulesPath, _isModuleChange) {
 }
@@ -38,8 +38,8 @@ const std::string zia::server::Server::getPathDirectory() const {
     }
 }
 
-void zia::server::Server::run() {
-    while (1) {
+[[noreturn]] void zia::server::Server::run() {
+    while (true) {
         if (_isModuleChange) {
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
             _isModuleChange = false;

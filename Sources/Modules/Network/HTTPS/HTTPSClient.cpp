@@ -5,29 +5,43 @@
 ** Created by antoine,
 */
 
-#include "SSLClient.hpp"
+#include "HTTPSClient.hpp"
 
-zia::modules::network::SSLClient::SSLClient(
+zia::modules::network::HTTPSClient::HTTPSClient(
     asio::io_context &ioContext, asio::ssl::context &sslContext
-) : AClient(), _socket(ioContext), _sslContext(sslContext)
+) : AClient(), _socket(ioContext), _sslContext(sslContext), _strand(ioContext)
 {
 }
 
-int zia::modules::network::SSLClient::getSocketFd()
+void zia::modules::network::HTTPSClient::initSSL()
+{
+    _sslSocket = std::make_shared<asio::ssl::stream<asio::ip::tcp::socket>>(
+        std::move(_socket), _sslContext);
+
+//    _sslSocket->async_handshake(asio::ssl::stream_base::server,
+//        [this](const std::error_code& error) {
+//            if (error) {
+//                this->_isConnected = false;
+//                throw std::runtime_error("Error handshake");
+//            }
+//    });
+}
+
+int zia::modules::network::HTTPSClient::getSocketFd()
 {
     return _sslSocket->lowest_layer().native_handle();
 }
 
-ziapi::http::Context zia::modules::network::SSLClient::getContext() const noexcept
+ziapi::http::Context zia::modules::network::HTTPSClient::getContext() const noexcept
 {
     ziapi::http::Context ctx;
 
-    ctx["client.socket.address"] = _sslSocket->lowest_layer().remote_endpoint().address();
+    ctx["client.socket.address"] = _sslSocket->lowest_layer().remote_endpoint().address().to_string();
     ctx["client.socket.port"] = static_cast<std::uint16_t>(_sslSocket->lowest_layer().remote_endpoint().port());
     return ctx;
 }
 
-bool zia::modules::network::SSLClient::operator==(
+bool zia::modules::network::HTTPSClient::operator==(
     const ziapi::http::Context &ctx
 ) const
 {
@@ -40,12 +54,12 @@ bool zia::modules::network::SSLClient::operator==(
     return dest;
 }
 
-bool zia::modules::network::SSLClient::operator==(int fd) noexcept
+bool zia::modules::network::HTTPSClient::operator==(int fd) noexcept
 {
     return fd == getSocketFd();
 }
 
-zia::modules::network::SSLClient &zia::modules::network::SSLClient::genericSend(
+zia::modules::network::HTTPSClient &zia::modules::network::HTTPSClient::genericSend(
     const void *obj, const std::size_t &size
 )
 {
@@ -65,18 +79,19 @@ zia::modules::network::SSLClient &zia::modules::network::SSLClient::genericSend(
     return *this;
 }
 
-asio::ip::tcp::socket &zia::modules::network::SSLClient::getAsioSocket() noexcept
+asio::ip::tcp::socket &zia::modules::network::HTTPSClient::getAsioSocket() noexcept
 {
     return _socket;
 }
 
-const std::shared_ptr<asio::ssl::stream<asio::ip::tcp::socket>> &zia::modules::network::SSLClient::getAsioSSLSocket() const noexcept
+const std::shared_ptr<asio::ssl::stream<asio::ip::tcp::socket>> &zia::modules::network::HTTPSClient::getAsioSSLSocket() const noexcept
 {
     return _sslSocket;
 }
 
-void zia::modules::network::SSLClient::initSSL()
+asio::io_context::strand &zia::modules::network::HTTPSClient::getStrand()
 {
-    _sslSocket = std::make_shared<asio::ssl::stream<asio::ip::tcp::socket>>(
-            std::move(_socket), _sslContext);
+    return _strand;
 }
+
+

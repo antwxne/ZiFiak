@@ -34,7 +34,7 @@ struct KeepAliveInfos {
 class AClient {
 public:
     AClient();
-
+    virtual ~AClient() = default;
     template<typename T>
     AClient &operator<<(const T &obj)
     {

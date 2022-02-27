@@ -11,16 +11,16 @@
 #include "Modules/Network/AClient.hpp"
 
 namespace zia::modules::network {
-class Client : public AClient {
+class HTTPClient : public AClient {
 public:
-    Client(asio::io_context &ioContext);
+    HTTPClient(asio::io_context &ioContext);
     int getSocketFd() override;
     bool operator==(int fd) noexcept override;
     bool operator==(const ziapi::http::Context &ctx) const override;
     [[nodiscard]] ziapi::http::Context getContext() const noexcept override;
     asio::ip::tcp::socket &getAsioSocket() noexcept;
 private:
-    Client &genericSend(const void *obj, const std::size_t &size) override;
+    HTTPClient &genericSend(const void *obj, const std::size_t &size) override;
 
 private:
     asio::ip::tcp::socket _socket;

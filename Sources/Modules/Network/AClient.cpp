@@ -5,10 +5,10 @@
 ** Created by antoine,
 */
 
-#include "Modules/Http/HttpModule.hpp"
 #include "AClient.hpp"
+#include "Modules/Network/HTTPParser/HTTPParser.hpp"
 
-zia::modules::network::AClient::AClient() : _keepAlive(std::nullopt), _processingRequest(false), _isConnected(true), _rawRequest(),
+zia::modules::network::AClient::AClient() : _keepAlive(std::nullopt), _processingRequest(true), _isConnected(true), _rawRequest(),
     _lastRequest(std::chrono::steady_clock::now())
 {
 }
@@ -38,8 +38,8 @@ void zia::modules::network::AClient::setKeepAlive(
 ) noexcept
 {
     try {
-        const auto &keepAliveValue = req.headers.at("Keep-Alive");
-        auto values = zia::modules::http::HttpModule::parseKeepAliveInfos(keepAliveValue);
+        const auto &keepAliveValue = req.headers.at(ziapi::http::header::kKeepAlive);
+        auto values = zia::modules::network::HTTPParser::parseKeepAliveInfos(keepAliveValue);
         _keepAlive = KeepAliveInfos(values.first, values.second);
     } catch (...){
         _keepAlive = std::nullopt;
@@ -110,7 +110,7 @@ zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
     const ziapi::http::Response &response
 )
 {
-    std::string res = zia::modules::http::HttpModule::readResponse(response);
+    std::string res = zia::modules::network::HTTPParser::readResponse(response);
     return genericSend(res.c_str(), res.size() * sizeof(*res.c_str()));
 }
 

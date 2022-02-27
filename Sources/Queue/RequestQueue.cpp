@@ -20,3 +20,18 @@ std::size_t zia::container::RequestQueue::Size() const noexcept
 {
     return size();
 }
+
+std::optional<std::pair<ziapi::http::Request, ziapi::http::Context>> zia::container::RequestQueue::Pop()
+{
+    _mutex.lock();
+    if (!empty()) {
+        std::optional<std::pair<ziapi::http::Request, ziapi::http::Context>> dest = *begin();
+
+        erase(cbegin());
+        _mutex.unlock();
+        return dest;
+    }
+    _mutex.unlock();
+    return std::nullopt;
+}
+

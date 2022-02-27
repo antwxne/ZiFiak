@@ -1,11 +1,12 @@
 {
   "directory" : "Modules",
   "http": {
-    "port": "80"
+    "port": 8080
   },
   "https": {
-    "port": "443",
-    "certificat_file_path": "plop.perm"
+    "port": 8081,
+    "certificate_path": "./Certificat/cert.pem",
+    "private_key_file": "./Certificat/key.pem"
   },
   "AllowMethods": [
     {
