@@ -122,9 +122,31 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         EnvSetUp(req);
 
 #if defined(_WIN32) || defined(_WIN64)
-
+    HANDLE g_hChildStd_IN_Rd = NULL;
+    HANDLE g_hChildStd_IN_Wr = NULL;
+    HANDLE g_hChildStd_OUT_Rd = NULL;
+    HANDLE g_hChildStd_OUT_Wr = NULL;
+    HANDLE g_hInputFile = NULL;
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
+    SECURITY_ATTRIBUTES saAttr; 
+ 
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES); 
+    saAttr.bInheritHandle = TRUE; 
+    saAttr.lpSecurityDescriptor = NULL;
+
+    DWORD dwRead, dwWritten; 
+    CHAR chBuf[BUFSIZE];
+    BOOL bSuccess = FALSE;
+ 
+    if (!CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0)) 
+        throw std::runtime_error("error CreateProces");
+    if (!SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0))
+        throw std::runtime_error("error CreateProces");
+    if (!CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0)) 
+        throw std::runtime_error("error CreateProces");
+    if (!SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0))
+        throw std::runtime_error("error CreateProces");
 
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
@@ -135,24 +157,47 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         i++;
     }
     env += 0;
-    if (!CreateProcess(
-            NULL,
-            "./$SCRIPT_NAME",
-            NULL,
-            NULL,
-            FALSE,
-            0,
-            env,
-            NULL,
-            &si,
-            &pi
-            )
-    ) else {
+    if (!CreateProcess(NULL, _cgi, NULL, NULL, FALSE, 0, env, NULL, &si, &pi)) {
+        g_hInputFile = CreateFile("tmp", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
+        if (g_hInputFile == INVALID_HANDLE_VALUE) {
+            throw std::runtime_error("error CreateProces");
+        }
+ 
+        for (;;) 
+        { 
+            bSuccess = ReadFile(g_hInputFile, chBuf, BUFSIZE, &dwRead, NULL);
+            if (!bSuccess || dwRead == 0) {
+                break; 
+            }
+            bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwRead, &dwWritten, NULL);
+            if (!bSuccess) {
+                break; 
+            }
+        }
+        if (!CloseHandle(g_hChildStd_IN_Wr)) 
+            throw std::runtime_error("error CreateProces");
+
+        bSuccess = FALSE;
+        HANDLE hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
+        for (;;) 
+        { 
+            bSuccess = ReadFile( g_hChildStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
+            if (!bSuccess || dwRead == 0 ) {
+                break;
+            }
+            bSuccess = WriteFile(hParentStdOut, chBuf, dwRead, &dwWritten, NULL);
+            if (!bSuccess ) {
+                break;
+            }
+        }
+    }
+    else {
         throw std::runtime_error("error CreateProces");
     }
-    WaitForSingleObject( pi.hProcess, INFINITE );
-    CloseHandle( pi.hProcess );
-    CloseHandle( pi.hThread );
+    WaitForSingleObject(pi.hProcess, INFINITE);
+    CloseHandle(pi.hProcess);
+    CloseHandle(pi.hThread);
 #else
 
         while (i != _env.size()) {
