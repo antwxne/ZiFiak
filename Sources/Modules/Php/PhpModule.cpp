@@ -16,6 +16,8 @@ void zia::modules::php::PhpCgi::Init(const ziapi::config::Node &cfg)
     try {
 //IMPORTANT
         //
+        _cgi = cfg["modules"]["PHP-CGI"]["exec_name"].AsString();
+        _env.push_back("SCRIPT_FILENAME=" + cfg["modules"]["PHP-CGI"]["script_filename"].AsString());
         _env.push_back("CONTENT_TYPE=" + cfg["modules"]["PHP-CGI"]["content_type"].AsString());
         _env.push_back("GATEWAY_INTERFACE=" + cfg["modules"]["PHP-CGI"]["gateway_interface"].AsString());
         _env.push_back("PATH_INFO=" + cfg["modules"]["PHP-CGI"]["path_info"].AsString());
@@ -30,6 +32,7 @@ void zia::modules::php::PhpCgi::Init(const ziapi::config::Node &cfg)
         _env.push_back("REMOTE_HOST=" + cfg["modules"]["PHP-CGI"]["remote_host"].AsString());
         _env.push_back("REMOTE_ADDR=" + cfg["modules"]["PHP-CGI"]["ip_client"].AsString());
         _env.push_back("AUTH_TYPE=" + cfg["modules"]["PHP-CGI"]["auth_type"].AsString());
+        _env.push_back("REDIRECT_STATUS=200");
         //PAS IMPORTANT
         /*_env.push_back("SCRIPT_FILENAME=" + cfg["modules"]["PHP-CGI"]["exec_name"].AsString());
         _env.push_back("SERVER_ADDR=" + cfg["modules"]["PHP-CGI"]["server_addr"].AsString());
@@ -107,7 +110,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     int i = 0;
     int pos = 0;
     int tokenPos = 0;
-    char buf[100];
+    std::array<char, 128> buf;
     res.body = "";
     res.Bootstrap();
     std::string env = "";
@@ -157,11 +160,11 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
             i++;
         }
 
-        auto file = popen(("env -i " + env + "./$PATH_INFO").c_str(), 0);
+        auto file = popen(("env -i " + env + " " + _cgi).c_str(), "r");
 
         if (file != NULL) {
-            while (std::fgets(buf, 100, file)) {
-                resp += buf;
+            while (std::fgets(buf.data(), 128, file)) {
+                resp += buf.data();
             }
             while ((pos = resp.find("\r\n")) != std::string::npos) {
                 token = resp.substr(0, pos);

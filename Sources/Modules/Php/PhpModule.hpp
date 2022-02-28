@@ -38,6 +38,7 @@ class PhpCgi : public ziapi::IHandlerModule {
     private:
             bool _initSetUp = true;
             std::vector<std::string> _env;
+            std::string _cgi;
     protected:
 
 };

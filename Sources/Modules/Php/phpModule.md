@@ -1,22 +1,15 @@
-{
-  "directory" : "Modules",
-  "http": {
-    "port": "8080"
-  },
-  "https": {
-    "port": "443",
-    "certificat_file_path": "plop.perm"
-  },
-  "AllowMethods": [
-    {
-      "path": "/",
-      "methods": [
-        "POSTS",
-        "GET"
-      ]
-    }
-  ],
-  "modules": {
+# PHP-CGI Module
+
+## Description
+
+This module is execute php by request.
+
+The type of request method can be GET or POST.
+
+## Description
+
+You have a configFile like this 
+```
     "PHP-CGI": {
       "path_info" : "/",
       "full_path" : "/opt/homebrew/bin/php-cgi",
@@ -37,5 +30,5 @@
       "remote_user" : "bibicharlie",
       "server_addr" : "localhost"
     }
-  }
-}
+```
+And you must enter good information
