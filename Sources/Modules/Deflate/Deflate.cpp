@@ -47,7 +47,7 @@ void Deflate::Init([[maybe_unused]] const ziapi::config::Node &)
 void Deflate::PostProcess(ziapi::http::Context &context, ziapi::http::Response &res)
 {
     res.body = this->_compressString(res.body);
-    context.insert({"Content-Encoding", "gzip"});
+    context.insert({"Content-Encoding", "deflate"});
     if (context.find("Content-Lenght") != context.end()) {
         context["Content-Length"] = res.body.size();
     } else {

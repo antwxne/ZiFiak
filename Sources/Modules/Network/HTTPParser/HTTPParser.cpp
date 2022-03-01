@@ -118,10 +118,12 @@ std::string HTTPParser::readResponse(const ziapi::http::Response &res) noexcept
         }
     }
     str += ' ' + _codes.at(res.status_code);
-    str += ' ' + res.reason;
+    str += ' ' + res.reason + "\r\n";
     for (const auto &f: res.headers)
-        str += ' ' + f.first + ": " + f.second;
-    str += ' ' + res.body;
+        str += f.first + ": " + f.second + "\r\n";
+    str += "\r\n";
+    str += res.body;
+    str += "\r\n";
     return str;
 }
 

@@ -42,7 +42,7 @@ void FallBack::Init([[maybe_unused]] const ziapi::config::Node &)
 
 void FallBack::PostProcess(ziapi::http::Context &context, ziapi::http::Response &res)
 {
-    auto errorOccured = std::any_cast<std::pair<ziapi::http::Code, std::string>>(context["ErrorOccured"]);
+    auto errorOccured = std::any_cast<std::pair<ziapi::http::Code,const char *>>(context["ErrorOccured"]);
     res.Bootstrap(errorOccured.first, errorOccured.second);
 }
 
