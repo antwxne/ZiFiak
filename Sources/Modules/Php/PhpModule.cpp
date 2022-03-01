@@ -110,6 +110,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     int i = 0;
     int pos = 0;
     int tokenPos = 0;
+    FILE *file;
     std::array<char, 128> buf;
     res.body = "";
     res.Bootstrap();
@@ -205,7 +206,12 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
             i++;
         }
 
-        auto file = popen(("env -i " + env + " " + _cgi).c_str(), "r");
+        if (req.body.size() != 0) {
+           file = popen(("env -i" + env + " " + req.body + " | " + _cgi).c_str(), "r");
+        }
+        else {
+            file = popen(("env -i " + env + " " + _cgi).c_str(), "r");
+        }
 
         if (file != NULL) {
             while (std::fgets(buf.data(), 128, file)) {
