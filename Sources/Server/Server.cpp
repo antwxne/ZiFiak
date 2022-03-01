@@ -57,6 +57,8 @@ void zia::server::Server::handleModule(const std::unique_ptr<ziapi::IHandlerModu
 
 void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &responses)
 {
+    ziapi::http::Response response;
+
     for (auto &module : _loadLibs.getPreProcessorModules()) {
         if (module.first->ShouldPreProcess(req.second, req.first)) {
             module.first->PreProcess(req.second, req.first);
@@ -64,16 +66,22 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
     }
     for (auto &module : _loadLibs.getHandlerModules()) {
         if (module.first->ShouldHandle(req.second, req.first)) {
-            handleModule(module.first, req, responses);
+            module.first->Handle(req.second, req.first, response);
+            // handleModule(module.first, req, response);
         }
     }
     for (auto &module : _loadLibs.getPostProcessorModules()) {
-        for (auto &response : responses) {
-            if (module.first->ShouldPostProcess(req.second, req.first, response.first)) {
-                module.first->PostProcess(response.second, response.first);
+        // for (auto &response : responses) {
+            if (module.first->ShouldPostProcess(req.second, req.first, response)) {
+                module.first->PostProcess(req.second, response);
             }
-        }
+        // }
     }
+    // std::cout << "XXX: " << std::any_cast<std::string>(req.second["client.socket.address"]) << " " << std::any_cast<std::uint16_t>(req.second["client.socket.port"])  << std::endl;
+    // for (auto &elem : req.second) {
+    //     std::cout << "MAP: " << elem.first << std::endl;
+    // }
+    responses.emplace_back(std::make_pair(response, req.second));
 }
 
 void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses)
@@ -83,7 +91,8 @@ void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia:
         if (curr == std::nullopt) {
             continue;
         }
-        std::thread(&zia::server::Server::pipeLine, this, std::ref(curr.value()), std::ref(responses));
+        pipeLine(curr.value(), responses);
+        // std::thread(&zia::server::Server::pipeLine, this, std::ref(curr.value()), std::ref(responses));
     }
 }
 

@@ -19,17 +19,21 @@ void getHeaderBody(ziapi::http::Request &req, std::stringstream &stream)
     std::getline(stream, str);
     while (std::getline(stream, str, '\r')) {
         std::stringstream temp_stream(str);
+        if (str.empty())
+            break;
         std::getline(temp_stream, mod, ' ');
         mod.resize(mod.size() - 1);
-        if (std::find(_headers.begin(), _headers.end(), mod) !=
-            _headers.end()) {
+        // if (std::find(_headers.begin(), _headers.end(), mod) !=
+        //     _headers.end()) {
             std::getline(temp_stream, temp);
             req.headers[mod] = temp;
-        } else {
-            req.body += ' ' + str;
-        }
+        // } else {
+        //     req.body += ' ' + str;
+        // }
         std::getline(stream, str);
     }
+    std::getline(stream, str);
+    req.body = str;
 }
 
 std::string getTarget(std::string &target)
@@ -94,6 +98,12 @@ ziapi::http::Request HTTPParser::createRequest(const std::string &str)
     } catch (std::invalid_argument &e) {
         std::cout << e.what() << std::endl;
     }
+    std::cout << "HEADER:\n";
+    for (auto &elem : req.headers) {
+        std::cout << elem.first << " " << elem.second << std::endl;
+    }
+    std::cout << "BODY:\n";
+    std::cout << "|" << req.body << "|" << std::endl;
     return req;
 }
 

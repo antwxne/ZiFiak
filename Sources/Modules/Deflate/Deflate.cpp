@@ -5,6 +5,7 @@
 ** Deflate
 */
 
+#include <iostream>
 #include <string.h>
 #include "Deflate.hpp"
 #include "zlib.h"
@@ -61,7 +62,7 @@ void Deflate::PostProcess(ziapi::http::Context &context, ziapi::http::Response &
 
 bool Deflate::ShouldPostProcess(const ziapi::http::Context &context, const ziapi::http::Request &req, const ziapi::http::Response &res) const
 {
-    if (req.headers.find("Accept-Encoding") != req.headers.end() && std::any_cast<std::string>(context.at("Accept-Encoding")) == "gzip")
+    if (req.headers.find("Accept-Encoding") != req.headers.end() && req.headers.at("Accept-Encoding").find("gzip") != std::string::npos)
         return true;
     return false;
 }

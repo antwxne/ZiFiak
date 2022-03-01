@@ -24,10 +24,10 @@ namespace zia::modules::network {
         {"KV1_1", ziapi::http::Version::kV1_1},
         {"KV2", ziapi::http::Version::kV2},
         {"KV3", ziapi::http::Version::kV3},
-        {"10", ziapi::http::Version::kV1},
-        {"11", ziapi::http::Version::kV1_1},
-        {"20", ziapi::http::Version::kV2},
-        {"30", ziapi::http::Version::kV3},
+        {"HTTP/1.0", ziapi::http::Version::kV1},
+        {"HTTP/1.1", ziapi::http::Version::kV1_1},
+        {"HTTP/2.0", ziapi::http::Version::kV2},
+        {"HTTP/3.0", ziapi::http::Version::kV3},
     };
 
     static const std::vector<std::string> _methods {

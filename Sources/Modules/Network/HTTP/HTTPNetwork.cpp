@@ -187,6 +187,7 @@ void zia::modules::network::HTTPNetwork::sendResponses(
 {
     if (responses.Size() > 0) {
         auto current = responses.Pop();
+        std::cout << "RESPONSE" << std::endl;
         if (current.has_value()) {
             auto response = current.value().first;
             auto ctx = current.value().second;
