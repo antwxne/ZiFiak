@@ -248,10 +248,13 @@ void zia::modules::network::HTTPNetwork::genericSend(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
+    Debug::log("PLOP");
+    Debug::log("Want to send == " + std::string(static_cast<const char *>(data)));
     client.getAsioSocket().async_send(asio::buffer(data, size),
         [&, this](const asio::error_code &errorCode,
             std::size_t bytesTransferred
         ) {
+            Debug::log("ca a envoyé");
             if (errorCode) {
                 client.setConnectionStatut(false);
             } else if (!client.getKeepAliveInfos().has_value()) {

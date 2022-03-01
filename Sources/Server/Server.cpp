@@ -58,7 +58,18 @@ void zia::server::Server::handleModule(const std::unique_ptr<ziapi::IHandlerModu
 void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &responses)
 {
     ziapi::http::Response response;
-
+    response.Bootstrap();
+    std::string plop("<!DOCTYPE html>\n"
+                     "<html>\n"
+                     "    <head>\n"
+                     "        <title>Example</title>\n"
+                     "    </head>\n"
+                     "    <body>\n"
+                     "        <p>This is an example of a simple HTML page with one paragraph.</p>\n"
+                     "    </body>\n"
+                     "</html>");
+    response.body = plop;
+    response.headers[ziapi::http::header::kContentLength] = std::to_string(plop.size());
     for (auto &module : _loadLibs.getPreProcessorModules()) {
         if (module.first->ShouldPreProcess(req.second, req.first)) {
             module.first->PreProcess(req.second, req.first);
