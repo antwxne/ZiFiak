@@ -97,7 +97,7 @@ void zia::modules::network::HTTPSNetwork::Run(
     });
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
-    Debug::log("HTTP network module started");
+    Debug::log("HTTPS network module started");
 }
 
 void zia::modules::network::HTTPSNetwork::Terminate()
@@ -105,7 +105,7 @@ void zia::modules::network::HTTPSNetwork::Terminate()
     _io_context.stop();
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
-    Debug::log("HTTP network module stopped");
+    Debug::log("HTTPS network module stopped");
 }
 
 void zia::modules::network::HTTPSNetwork::startAccept(
