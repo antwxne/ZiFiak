@@ -8,6 +8,6 @@ set(SRC
         Sources/Server/ConfigParser.cpp Sources/Server/ConfigParser.hpp
         Sources/Queue/RequestQueue.cpp Sources/Queue/RequestQueue.hpp
         Sources/Queue/ResponseQueue.cpp Sources/Queue/ResponseQueue.hpp
-        Sources/Modules/Http/HttpModule.cpp Sources/Modules/Http/HttpModule.hpp
+        Sources/Modules/Network/HTTPParser/HTTPParser.cpp Sources/Modules/Network/HTTPParser/HTTPParser.hpp
         Sources/Watcher/Watcher.cpp Sources/Watcher/Watcher.hpp
         )

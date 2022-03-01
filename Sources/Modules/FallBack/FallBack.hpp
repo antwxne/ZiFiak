@@ -31,7 +31,7 @@ class FallBack : public ziapi::IPostProcessorModule
 
     [[nodiscard]] double GetPostProcessorPriority() const noexcept override;
 
-    [[nodiscard]] bool ShouldPostProcess(const ziapi::http::Context &, const ziapi::http::Response &) const override;
+    [[nodiscard]] bool ShouldPostProcess(const ziapi::http::Context &, const ziapi::http::Request &, const ziapi::http::Response &) const override;
 
     protected:
     private:

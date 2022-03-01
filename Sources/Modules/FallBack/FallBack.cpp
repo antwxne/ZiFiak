@@ -22,12 +22,12 @@ void FallBack::Init([[maybe_unused]] const ziapi::config::Node &)
 
 [[nodiscard]] ziapi::Version FallBack::GetVersion() const noexcept
 {
-    return ziapi::Version{3, 0, 0};
+    return ziapi::Version{4, 0, 0};
 }
 
 [[nodiscard]] ziapi::Version FallBack::GetCompatibleApiVersion() const noexcept
 {
-    return ziapi::Version{3, 0, 0};
+    return ziapi::Version{4, 0, 0};
 }
 
 [[nodiscard]] const char *FallBack::GetName() const noexcept
@@ -51,7 +51,7 @@ void FallBack::PostProcess(ziapi::http::Context &context, ziapi::http::Response 
     return 0.0f;
 }
 
-bool FallBack::ShouldPostProcess(const ziapi::http::Context &context, const ziapi::http::Response &res) const
+bool FallBack::ShouldPostProcess(const ziapi::http::Context &context, const ziapi::http::Request &req, const ziapi::http::Response &res) const
 {
     if (context.find("ErrorOccured") != context.end())
         return true;

@@ -6,13 +6,21 @@
 */
 
 #include <exception>
+#include <iostream>
 #include "Debug/Debug.hpp"
 #include "ConfigParser.hpp"
 #include "Server.hpp"
-#include <iostream>
 
 zia::server::Server::Server() : _isModuleChange(false), _moduleWatcher(Watcher::ModulesPath, _isModuleChange), _isRunning(false) {
 }
+
+zia::server::Server::~Server()
+{
+    for (auto &it : _threadPool) {
+        it.join();
+    }
+}
+
 
 void zia::server::Server::init(const std::string &filepath) {
     Debug::log("init server");
@@ -61,7 +69,7 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
     }
     for (auto &module : _loadLibs.getPostProcessorModules()) {
         for (auto &response : responses) {
-            if (module.first->ShouldPostProcess(req.second, response.first)) {
+            if (module.first->ShouldPostProcess(req.second, req.first, response.first)) {
                 module.first->PostProcess(response.second, response.first);
             }
         }
@@ -89,7 +97,6 @@ void zia::server::Server::run() {
     }
     _threadPool.emplace_back(std::thread(&zia::server::Server::threadPool, this, std::ref(requests), std::ref(responses)));
     while (1) {
-
         if (_isModuleChange) {
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
             _isModuleChange = false;
