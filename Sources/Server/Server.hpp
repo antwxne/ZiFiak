@@ -30,6 +30,7 @@ public:
 private:
     void handleModule(const std::unique_ptr<ziapi::IHandlerModule> &process, std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &handlerResponses);
     void threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses);
+    void threadPoolNetwork(const std::unique_ptr<ziapi::INetworkModule> &network);
     void pipeLine(std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &responses);
     Node _serverConfig;
     LoadLibs _loadLibs;

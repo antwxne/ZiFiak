@@ -107,15 +107,23 @@ void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia:
     }
 }
 
-void zia::server::Server::run() {
+void zia::server::Server::threadPoolNetwork(const std::unique_ptr<ziapi::INetworkModule> &network)
+{
     zia::container::RequestQueue requests;
     zia::container::ResponseQueue responses;
 
+    network->Run(requests, responses);
+    while (_isRunning) {
+        threadPool(requests, responses);
+    }
+}
+
+void zia::server::Server::run() {
     _isRunning = true;
     for (auto &module : _loadLibs.getNetWorkModules()) {
-        module.first->Run(requests, responses);
+        // module.first->Run(requests, responses);
+        _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first)));
     }
-    _threadPool.emplace_back(std::thread(&zia::server::Server::threadPool, this, std::ref(requests), std::ref(responses)));
     while (1) {
         if (_isModuleChange) {
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
