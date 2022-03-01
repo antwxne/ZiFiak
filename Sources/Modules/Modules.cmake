@@ -45,15 +45,15 @@ conan_target_link_libraries(deflate ${CONAN_LIBS})
 add_dependencies(deflate ziapi)
 
 # HTTPS NETWORK MODULE
-#add_library(HTTPS_network SHARED ${BASE_MODULE}
-#        Sources/Modules/Network/HTTPS/HTTPSClient.hpp
-#        Sources/Modules/Network/HTTPS/HTTPSClient.cpp
-#        Sources/Modules/Network/AClient.hpp
-#        Sources/Modules/Network/AClient.cpp
-#        Sources/Modules/Network/HTTPS/HTTPSNetwork.cpp
-#        Sources/Modules/Network/HTTPS/HTTPSNetwork.hpp
-#        Sources/Modules/Network/HTTPParser/HTTPParser.cpp
-#        Sources/Modules/Network/HTTPParser/HTTPParser.hpp
-#        )
-#conan_target_link_libraries(HTTPS_network ${CONAN_LIBS})
-#add_dependencies(HTTPS_network ziapi)
+add_library(HTTPS_network SHARED ${BASE_MODULE}
+        Sources/Modules/Network/HTTPS/HTTPSClient.hpp
+        Sources/Modules/Network/HTTPS/HTTPSClient.cpp
+        Sources/Modules/Network/AClient.hpp
+        Sources/Modules/Network/AClient.cpp
+        Sources/Modules/Network/HTTPS/HTTPSNetwork.cpp
+        Sources/Modules/Network/HTTPS/HTTPSNetwork.hpp
+        Sources/Modules/Network/HTTPParser/HTTPParser.cpp
+        Sources/Modules/Network/HTTPParser/HTTPParser.hpp
+        )
+conan_target_link_libraries(HTTPS_network ${CONAN_LIBS})
+add_dependencies(HTTPS_network ziapi)

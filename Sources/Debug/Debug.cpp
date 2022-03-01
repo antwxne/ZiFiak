@@ -35,7 +35,7 @@ void Debug::warn(const std::string &str) noexcept
 
 void Debug::err(const std::string &str) noexcept
 {
-    std::cerr << RED << UNDERLINED << BOLD << "[ERROR]"<< RESET << " : " << str
+    std::cerr << RED << UNDERLINED << BOLD << "[ERROR]"<< RESET << " " << str
         << std::endl;
 }
 
@@ -51,7 +51,7 @@ void Debug::warn(const MyException &e) noexcept
 
 void Debug::err(const MyException &e) noexcept
 {
-    std::cerr << RED << UNDERLINED << BOLD << "[ERROR]" << RESET << " : " << e << std::endl;
+    std::cerr << RED << UNDERLINED << BOLD << "[ERROR]" << RESET << " "  << e << std::endl;
 }
 
 #else

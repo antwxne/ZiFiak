@@ -17,7 +17,7 @@ DYLIB_API ziapi::IModule *LoadZiaModule()
 }
 
 zia::modules::network::HTTPNetwork::HTTPNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context), _init(false)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -40,16 +40,24 @@ zia::modules::network::HTTPNetwork::~HTTPNetwork()
 
 void zia::modules::network::HTTPNetwork::Init(const ziapi::config::Node &cfg)
 {
-    Debug::log("Init HTTP network module");
+    Debug::log("Init HTTP network module...");
 
-    int port = cfg["http"]["port"].AsInt();
-    asio::ip::tcp::endpoint basicEndPoint(
-        asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
+    try {
+        int port = cfg["http"]["port"].AsInt();
+        asio::ip::tcp::endpoint basicEndPoint(
+            asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
 
-    _acceptor.open(basicEndPoint.protocol());
-    _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
-    _acceptor.bind(basicEndPoint);
-    _acceptor.listen();
+        _acceptor.open(basicEndPoint.protocol());
+        _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
+        _acceptor.bind(basicEndPoint);
+        _acceptor.listen();
+        _init = true;
+    } catch (const std::out_of_range &e) {
+        Debug::err("Can't init HTTP module, please check the config file");
+        _init = false;
+        Terminate();
+    }
+
 }
 
 ziapi::Version zia::modules::network::HTTPNetwork::GetVersion() const noexcept
@@ -77,6 +85,11 @@ void zia::modules::network::HTTPNetwork::Run(
     ziapi::http::IResponseInputQueue &responses
 )
 {
+    if (!_init) {
+        Debug::err("HTTP Network not init");
+        Terminate();
+        return;
+    }
     startAccept(requests);
     _io_context.post(
         std::bind(&HTTPNetwork::sendResponses, this, std::ref(responses),
@@ -101,7 +114,7 @@ void zia::modules::network::HTTPNetwork::Terminate()
     _io_context.stop();
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
-    Debug::log("HTTP network module stopped");
+    Debug::log("HTTP network module terminated");
 }
 
 void zia::modules::network::HTTPNetwork::startAccept(
@@ -147,7 +160,6 @@ void zia::modules::network::HTTPNetwork::handleReceive(
 {
     client.setProcessingARequest(true);
     if (error == asio::error::eof) {
-        Debug::log("HTTP Client disconnected");
         client.setConnectionStatut(false);
         return;
     }
@@ -159,12 +171,6 @@ void zia::modules::network::HTTPNetwork::handleReceive(
     try {
         auto req = zia::modules::network::HTTPParser::createRequest(
             client.toString());
-        //        ziapi::http::Request req;
-        //        req.headers = {{ziapi::http::header::kAIM, "aada"}};
-        //        req.method = ziapi::http::method::kGet;
-        //        req.version = ziapi::http::Version::kV1;
-        //        req.target = "/";
-        //        req.body = "toto";
         if (zia::modules::network::HTTPParser::isRequestComplete(req)) {
             client.setProcessingARequest(true);
             requests.Push(std::make_pair(req, client.getContext()));
@@ -187,7 +193,6 @@ void zia::modules::network::HTTPNetwork::sendResponses(
 {
     if (responses.Size() > 0) {
         auto current = responses.Pop();
-        std::cout << "RESPONSE" << std::endl;
         if (current.has_value()) {
             auto response = current.value().first;
             auto ctx = current.value().second;
@@ -248,13 +253,11 @@ void zia::modules::network::HTTPNetwork::genericSend(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-    Debug::log("PLOP");
-    Debug::log("Want to send == " + std::string(static_cast<const char *>(data)));
+//   Debug::log("Want to send == " + std::string(static_cast<const char *>(data)));
     client.getAsioSocket().async_send(asio::buffer(data, size),
         [&, this](const asio::error_code &errorCode,
             std::size_t bytesTransferred
         ) {
-            Debug::log("ca a envoyé");
             if (errorCode) {
                 client.setConnectionStatut(false);
             } else if (!client.getKeepAliveInfos().has_value()) {

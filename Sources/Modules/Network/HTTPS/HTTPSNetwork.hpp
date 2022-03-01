@@ -51,6 +51,7 @@ private:
     asio::io_context _io_context;
     asio::ip::tcp::acceptor _acceptor;
     asio::signal_set _signalSet;
+    bool _init;
     std::vector<std::unique_ptr<HTTPSClient>> _clients;
     asio::ssl::context _sslContext;
     std::thread _thread;

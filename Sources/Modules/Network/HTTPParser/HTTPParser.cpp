@@ -23,13 +23,8 @@ void getHeaderBody(ziapi::http::Request &req, std::stringstream &stream)
             break;
         std::getline(temp_stream, mod, ' ');
         mod.resize(mod.size() - 1);
-        // if (std::find(_headers.begin(), _headers.end(), mod) !=
-        //     _headers.end()) {
-            std::getline(temp_stream, temp);
-            req.headers[mod] = temp;
-        // } else {
-        //     req.body += ' ' + str;
-        // }
+        std::getline(temp_stream, temp);
+        req.headers[mod] = temp;
         std::getline(stream, str);
     }
     std::getline(stream, str);
@@ -86,7 +81,7 @@ ziapi::http::Request HTTPParser::createRequest(const std::string &str)
     std::stringstream stream(clear_string(str));
     std::string temp;
 
-    Debug::log("client buffer: " + str);
+    //    Debug::log("client buffer: " + str);
     try {
         std::getline(stream, temp, ' ');
         req.method = getMethod(temp);
@@ -98,12 +93,9 @@ ziapi::http::Request HTTPParser::createRequest(const std::string &str)
     } catch (std::invalid_argument &e) {
         std::cout << e.what() << std::endl;
     }
-    std::cout << "HEADER:\n";
-    for (auto &elem : req.headers) {
+    for (auto &elem: req.headers) {
         std::cout << elem.first << " " << elem.second << std::endl;
     }
-    std::cout << "BODY:\n";
-    std::cout << "|" << req.body << "|" << std::endl;
     return req;
 }
 
@@ -151,7 +143,8 @@ bool HTTPParser::isRequestComplete(const ziapi::http::Request &req) noexcept
 
 std::pair<int, int> HTTPParser::parseKeepAliveInfos(const std::string &value)
 {
-    auto replace_char = [](std::string &str, const std::string &substr, char c) {
+    auto replace_char = [](std::string &str, const std::string &substr, char c
+    ) {
         for (auto &i: str) {
             for (const auto &a: substr) {
                 if (i == a) {
@@ -161,7 +154,8 @@ std::pair<int, int> HTTPParser::parseKeepAliveInfos(const std::string &value)
         }
     };
     std::string cpyValue(value);
-    char *timeout = std::strstr(&*cpyValue.begin(), "timeout=") + std::strlen("timeout=");
+    char *timeout =
+        std::strstr(&*cpyValue.begin(), "timeout=") + std::strlen("timeout=");
     char *max = std::strstr(&*cpyValue.begin(), "max=") + std::strlen("max=");
     std::pair<int, int> dest;
 

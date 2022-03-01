@@ -15,8 +15,9 @@ DYLIB_API ziapi::IModule *LoadZiaModule()
 {
     return new zia::modules::network::HTTPSNetwork;
 }
+
 zia::modules::network::HTTPSNetwork::HTTPSNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context), _init(false),
     _sslContext(asio::ssl::context::sslv23)
 {
     _signalSet.add(SIGINT);
@@ -41,22 +42,30 @@ zia::modules::network::HTTPSNetwork::~HTTPSNetwork()
 void zia::modules::network::HTTPSNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("Init HTTPS network module");
-    std::string certificate_path = cfg["https"]["certificate_path"].AsString();
-    std::string private_key_file = cfg["https"]["private_key_file"].AsString();
-    int port = cfg["https"]["port"].AsInt();
 
-    _sslContext.set_options(
-        asio::ssl::context::default_workarounds | asio::ssl::context::no_sslv2 |
-            asio::ssl::context::single_dh_use);
-    _sslContext.use_certificate_chain_file(certificate_path);
-    _sslContext.use_private_key_file(private_key_file, asio::ssl::context::pem);
-    asio::ip::tcp::endpoint basicEndPoint(
-        asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
+    try {
+        std::string certificate_path = cfg["https"]["certificate_path"].AsString();
+        std::string private_key_file = cfg["https"]["private_key_file"].AsString();
+        int port = cfg["https"]["port"].AsInt();
 
-    _acceptor.open(basicEndPoint.protocol());
-    _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
-    _acceptor.bind(basicEndPoint);
-    _acceptor.listen();
+        _sslContext.set_options(asio::ssl::context::default_workarounds |
+            asio::ssl::context::no_sslv2 | asio::ssl::context::single_dh_use);
+        _sslContext.use_certificate_chain_file(certificate_path);
+        _sslContext.use_private_key_file(private_key_file,
+            asio::ssl::context::pem);
+        asio::ip::tcp::endpoint basicEndPoint(
+            asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
+
+        _acceptor.open(basicEndPoint.protocol());
+        _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
+        _acceptor.bind(basicEndPoint);
+        _acceptor.listen();
+        _init = true;
+    } catch (const std::out_of_range &e) {
+        Debug::err("Can't init HTTPS module, please check the config file");
+        _init = false;
+        Terminate();
+    }
 }
 
 ziapi::Version zia::modules::network::HTTPSNetwork::GetVersion() const noexcept
@@ -84,6 +93,11 @@ void zia::modules::network::HTTPSNetwork::Run(
     ziapi::http::IResponseInputQueue &responses
 )
 {
+    if (!_init) {
+        Debug::err("HTTPS Network not init");
+        Terminate();
+        return;
+    }
     startAccept(requests);
     _io_context.post(
         std::bind(&HTTPSNetwork::sendResponses, this, std::ref(responses),
@@ -97,7 +111,7 @@ void zia::modules::network::HTTPSNetwork::Run(
     });
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
-    Debug::log("HTTP network module started");
+    Debug::log("HTTPS network module started");
 }
 
 void zia::modules::network::HTTPSNetwork::Terminate()
@@ -105,7 +119,7 @@ void zia::modules::network::HTTPSNetwork::Terminate()
     _io_context.stop();
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
-    Debug::log("HTTP network module stopped");
+    Debug::log("HTTPS network module terminated");
 }
 
 void zia::modules::network::HTTPSNetwork::startAccept(
@@ -126,7 +140,6 @@ void zia::modules::network::HTTPSNetwork::handleAccept(
     zia::modules::network::HTTPSClient &client
 )
 {
-    Debug::log("HTTPS Client connected");
     client.initSSL();
     client.getAsioSSLSocket()->async_handshake(asio::ssl::stream_base::server,
         [&](const std::error_code &error) {
@@ -160,7 +173,6 @@ void zia::modules::network::HTTPSNetwork::handleReceive(
 {
     client.setProcessingARequest(true);
     if (error == asio::error::eof) {
-        Debug::log("HTTPS Client disconnected");
         client.setConnectionStatut(false);
         return;
     }
@@ -172,12 +184,6 @@ void zia::modules::network::HTTPSNetwork::handleReceive(
     try {
         auto req = zia::modules::network::HTTPParser::createRequest(
             client.toString());
-        //        ziapi::http::Request req;
-        //        req.headers = {{ziapi::http::header::kAIM, "aada"}};
-        //        req.method = ziapi::http::method::kGet;
-        //        req.version = ziapi::http::Version::kV1;
-        //        req.target = "/";
-        //        req.body = "toto";
         if (zia::modules::network::HTTPParser::isRequestComplete(req)) {
             client.setProcessingARequest(true);
             requests.Push(std::make_pair(req, client.getContext()));
