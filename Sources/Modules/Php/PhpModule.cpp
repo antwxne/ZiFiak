@@ -255,11 +255,6 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         resp.erase(0, pos + 2);
     }
     res.body = resp;
-
-    catch (const std::exception& e) {
-        res.status_code = ziapi::http::Code::kInternalServerError;
-        res.reason = "Error in the path or with the cgi.";
-    }
 }
 
 DYLIB_API ziapi::IModule *LoadZiaModule()
