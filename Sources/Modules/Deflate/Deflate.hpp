@@ -27,7 +27,7 @@ class Deflate : public ziapi::IPostProcessorModule
 
     [[nodiscard]] const char *GetDescription() const noexcept override;
 
-    void PostProcess(ziapi::http::Context &, ziapi::http::Response &res) override;
+    void PostProcess(ziapi::http::Context &, const ziapi::http::Request &,ziapi::http::Response &res) override;
 
     [[nodiscard]] double GetPostProcessorPriority() const noexcept override;
 

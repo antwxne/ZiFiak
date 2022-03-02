@@ -44,14 +44,15 @@ void Deflate::Init([[maybe_unused]] const ziapi::config::Node &)
     return "Compress the response body before sending it back to the network";
 }
 
-void Deflate::PostProcess(ziapi::http::Context &context, ziapi::http::Response &res)
+void Deflate::PostProcess(ziapi::http::Context &context, const ziapi::http::Request &,ziapi::http::Response &res)
 {
     res.body = this->_compressString(res.body);
-    context.insert({"Content-Encoding", "deflate"});
-    if (context.find("Content-Lenght") != context.end()) {
-        context["Content-Length"] = res.body.size();
+    std::cout << res.body << std::endl;
+    res.headers.insert({"Content-Encoding", "deflate"});
+    if (res.headers.find("Content-Lenght") != res.headers.end()) {
+        res.headers["Content-Length"] = res.body.size();
     } else {
-        context.insert({"Content-Length", res.body.size()});
+        res.headers.insert({"Content-Length", std::to_string(res.body.size())});
     }
 }
 
