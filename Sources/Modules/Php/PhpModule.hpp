@@ -14,6 +14,17 @@
 #include <stdio.h>
 #include "ziapi/Module.hpp"
 
+#if defined(_WIN32) || defined(_WIN64)
+
+#include <windows.h> 
+#include <tchar.h>
+#include <stdio.h> 
+#include <strsafe.h>
+#define BUFSIZE 4096
+
+#endif
+
+
 namespace zia::modules::php {
 
 class PhpCgi : public ziapi::IHandlerModule {
@@ -35,12 +46,23 @@ class PhpCgi : public ziapi::IHandlerModule {
 
         void EnvSetUp(const ziapi::http::Request &req) noexcept;
 
+#if defined(_WIN32) || defined(_WIN64)
+
+        void WriteToPipe() noexcept;
+        std::string GetFromPipe() noexcept;
+        void CreateChildProcess(std::string env, std::string exec);
+
+#endif
+
     private:
             bool _initSetUp = true;
             std::vector<std::string> _env;
             std::string _cgi;
-    protected:
-
+            HANDLE g_hChildStd_IN_Rd = nullptr;
+            HANDLE g_hChildStd_IN_Wr = nullptr;
+            HANDLE g_hChildStd_OUT_Rd = nullptr;
+            HANDLE g_hChildStd_OUT_Wr = nullptr;
+            HANDLE g_hInputFile = nullptr;
 };
 }
 DYLIB_API ziapi::IModule *LoadZiaModule();

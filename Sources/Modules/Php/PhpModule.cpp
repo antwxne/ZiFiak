@@ -105,6 +105,75 @@ void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req) noexce
         //_env.push_back("REMOTE_HOST=" + ctx[client.socket]);
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+void zia::modules::php::PhpCgi::WriteToPipe()
+{
+    DWORD dwRead;
+    DWORD dwWritten;
+    char chBuf[BUFSIZE];
+    bool bSuccess = false;
+
+    while (1) {
+        bSuccess = ReadFile(g_hInputFile, chBuf, BUFSIZE, &dwRead, nullptr);
+        if (!bSuccess || dwRead == 0) {
+            break;
+        }
+        bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwRead, &dwWritten, nullptr);
+        if (!bSuccess) {
+            break;
+        }
+    }
+    CloseHandle(g_hChildStd_IN_Wr);
+}
+
+std::string zia::modules::php::PhpCgi::GetFromPipe()
+{
+    int i = 0;
+    DWORD dwRead;
+    DWORD dwWritten;
+    char chBuf[BUFSIZE];
+    bool bSuccess = false;
+    std::string tmp = {};
+
+    while (1) {
+        bSuccess = ReadFile(g_hChildStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
+        while (i != dwRead) {
+            tmp += chBuf[i];
+            i++;
+        }
+        i = 0;
+        if (!bSuccess || dwRead == 0) {
+            break;
+        }
+    }
+    return (tmp);
+}
+
+
+void zia::modules::php::PhpCgi::CreateChildProcess(std::string env, std::string exec)
+{
+    TCHAR szCmdline[] = TEXT("child");
+    PROCESS_INFORMATION piProcInfo;
+    STARTUPINFOA siStartInfo;
+    bool bSuccess = false;
+
+    ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+    ZeroMemory(&siStartInfo, sizeof(STARTUPINFOA));
+
+    siStartInfo.cb = sizeof(STARTUPINFOA);
+    siStartInfo.hStdOutput = g_hChildStd_OUT_Wr;
+    siStartInfo.hStdInput = g_hChildStd_IN_Rd;
+    siStartInfo.dwFlags = STARTF_USESTDHANDLES;
+
+    bSuccess = CreateProcessA(nullptr, _strdup(exec.c_str()), nullptr, nullptr, true, 0, (LPVOID)env.data(), nullptr, &siStartInfo, &piProcInfo);
+    CloseHandle(piProcInfo.hProcess);
+    CloseHandle(piProcInfo.hThread);
+    CloseHandle(g_hChildStd_OUT_Wr);
+    CloseHandle(g_hChildStd_IN_Rd);
+}
+#endif
+
+
 void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res)
 {
     int i = 0;
@@ -113,91 +182,44 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     std::array<char, 128> buf;
     res.body = "";
     res.Bootstrap();
-    std::string env = "";
-    std::string resp = "";
+    std::string env = {};
+    std::string resp = {};
     std::string token;
     std::string lilToken;
 
-    try {
-        EnvSetUp(req);
+    EnvSetUp(req);
 
 #if defined(_WIN32) || defined(_WIN64)
-    HANDLE g_hChildStd_IN_Rd = NULL;
-    HANDLE g_hChildStd_IN_Wr = NULL;
-    HANDLE g_hChildStd_OUT_Rd = NULL;
-    HANDLE g_hChildStd_OUT_Wr = NULL;
-    HANDLE g_hInputFile = NULL;
-    STARTUPINFO si;
-    PROCESS_INFORMATION pi;
-    SECURITY_ATTRIBUTES saAttr; 
- 
-    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES); 
-    saAttr.bInheritHandle = TRUE; 
-    saAttr.lpSecurityDescriptor = NULL;
 
-    DWORD dwRead, dwWritten; 
-    CHAR chBuf[BUFSIZE];
-    BOOL bSuccess = FALSE;
- 
-    if (!CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0)) 
-        throw std::runtime_error("error CreateProces");
-    if (!SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0))
-        throw std::runtime_error("error CreateProces");
-    if (!CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0)) 
-        throw std::runtime_error("error CreateProces");
-    if (!SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0))
-        throw std::runtime_error("error CreateProces");
+    std::string exec = _cgi;
 
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
+    SECURITY_ATTRIBUTES saAttr;
 
     while (i != _env.size()) {
-        env += " " + _env[i] + 0;
+        env += {(_env[i] + '\0')};
         i++;
     }
-    env += 0;
-    if (!CreateProcess(NULL, _cgi, NULL, NULL, FALSE, 0, env, NULL, &si, &pi)) {
-        g_hInputFile = CreateFile("tmp", GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, NULL);
-        if (g_hInputFile == INVALID_HANDLE_VALUE) {
-            throw std::runtime_error("error CreateProces");
-        }
- 
-        for (;;) 
-        { 
-            bSuccess = ReadFile(g_hInputFile, chBuf, BUFSIZE, &dwRead, NULL);
-            if (!bSuccess || dwRead == 0) {
-                break; 
-            }
-            bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwRead, &dwWritten, NULL);
-            if (!bSuccess) {
-                break; 
-            }
-        }
-        if (!CloseHandle(g_hChildStd_IN_Wr)) 
-            throw std::runtime_error("error CreateProces");
+    env += '\0';
 
-        bSuccess = FALSE;
-        HANDLE hParentStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = true;
+    saAttr.lpSecurityDescriptor = nullptr;
 
-        for (;;) 
-        { 
-            bSuccess = ReadFile( g_hChildStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
-            if (!bSuccess || dwRead == 0 ) {
-                break;
-            }
-            bSuccess = WriteFile(hParentStdOut, chBuf, dwRead, &dwWritten, NULL);
-            if (!bSuccess ) {
-                break;
-            }
-        }
+    CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0);
+    SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0);
+    CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0);
+    SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0);
+
+    if (req.boddy.size() != 0) {
+        exec += " | " + req.body;
     }
-    else {
-        throw std::runtime_error("error CreateProces");
-    }
-    WaitForSingleObject(pi.hProcess, INFINITE);
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
+
+    CreateChildProcess(env, exec);
+    std::string tmp = "tmp";
+
+    g_hInputFile = CreateFile((LPCWSTR)tmp.data(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, nullptr);
+    WriteToPipe();
+    resp = GetFromPipe();
 #else
 
         while (i != _env.size()) {
@@ -211,26 +233,27 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
             while (std::fgets(buf.data(), 128, file)) {
                 resp += buf.data();
             }
-            while ((pos = resp.find("\r\n")) != std::string::npos) {
-                token = resp.substr(0, pos);
-                while ((tokenPos = token.find(":")) != std::string::npos) {
-                    lilToken = token.substr(0, tokenPos);
-                    token.erase(0, tokenPos + 1);
-                    res.headers.insert({lilToken, token});
-                }
-                resp.erase(0, pos + 2);
-            }
-            res.body = resp;
-        }
         else {
             throw std::runtime_error("error CreateProces");
         }
+
+#endif
+
+    while ((pos = resp.find("\r\n")) != std::string::npos) {
+        token = resp.substr(0, pos);
+        while ((tokenPos = token.find(":")) != std::string::npos) {
+            lilToken = token.substr(0, tokenPos);
+            token.erase(0, tokenPos + 1);
+            res.headers.insert({lilToken, token});
+        }
+        resp.erase(0, pos + 2);
     }
+    res.body = resp;
+
     catch (const std::exception& e) {
         res.status_code = ziapi::http::Code::kInternalServerError;
         res.reason = "Error in the path or with the cgi.";
     }
-#endif
 }
 
 DYLIB_API ziapi::IModule *LoadZiaModule()
