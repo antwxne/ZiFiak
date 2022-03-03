@@ -14,7 +14,16 @@ You have a configFile like this
       "path_info" : "/",
       "full_path" : "/opt/homebrew/bin/php-cgi",
       "remote_host" : "wsh",
-      "script_filename" : "lol.php",
+      "script_filename" : [
+        {
+          "url": "/toto",
+          "filePath": "./lol.php"
+        },
+        {
+          "url": "/pipi",
+          "filePath": "./lol.php"
+        }
+      ],
       "ip_client" : "127.0.0.1",
       "exec_name" : "lol.php",
       "protocol" : "HTTP/1.1",

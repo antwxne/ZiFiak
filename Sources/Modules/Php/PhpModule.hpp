@@ -58,6 +58,7 @@ class PhpCgi : public ziapi::IHandlerModule {
             bool _initSetUp = true;
             std::vector<std::string> _env;
             std::string _cgi;
+            std::vector<std::pair<std::string, std::string>> _paths;
 
 #if defined(_WIN32) || defined(_WIN64)
 

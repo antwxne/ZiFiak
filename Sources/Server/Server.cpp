@@ -68,7 +68,7 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
                      "        <p>This is an example of a simple HTML page with one paragraph.</p>\n"
                      "    </body>\n"
                      "</html>");
-    response.body = plop;
+    //response.body = plop;
     response.headers[ziapi::http::header::kContentLength] = std::to_string(plop.size());
     for (auto &module : _loadLibs.getPreProcessorModules()) {
         if (module.first->ShouldPreProcess(req.second, req.first)) {

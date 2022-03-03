@@ -6,6 +6,7 @@
 */
 
 #include "Modules/Php/PhpModule.hpp"
+#include <iostream>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
@@ -16,8 +17,12 @@ void zia::modules::php::PhpCgi::Init(const ziapi::config::Node &cfg)
     try {
 //IMPORTANT
         //
-        _cgi = cfg["modules"]["PHP-CGI"]["exec_name"].AsString();
-        _env.push_back("SCRIPT_FILENAME=" + cfg["modules"]["PHP-CGI"]["script_filename"].AsString());
+        _cgi = cfg["modules"]["PHP-CGI"]["full_path"].AsString();
+        for (const auto& e : cfg["modules"]["PHP-CGI"]["script_filename"].AsArray()) {
+            auto obj = e->AsDict();
+            _paths.push_back({obj["url"]->AsString(),obj["filePath"]->AsString()});
+        }
+        //_env.push_back("SCRIPT_FILENAME=" + cfg["modules"]["PHP-CGI"]["script_filename"].AsString());
         _env.push_back("CONTENT_TYPE=" + cfg["modules"]["PHP-CGI"]["content_type"].AsString());
         _env.push_back("GATEWAY_INTERFACE=" + cfg["modules"]["PHP-CGI"]["gateway_interface"].AsString());
         _env.push_back("PATH_INFO=" + cfg["modules"]["PHP-CGI"]["path_info"].AsString());
@@ -79,20 +84,32 @@ double zia::modules::php::PhpCgi::GetHandlerPriority() const noexcept
 
 bool zia::modules::php::PhpCgi::ShouldHandle(const ziapi::http::Context &ctx, const ziapi::http::Request &req) const
 {
-    return _initSetUp;
+    for (auto elem : _paths) {
+        if (req.target.find(elem.first) == 0) {
+            return _initSetUp;
+        }
+    }
+    return false;
 }
 
 void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req) noexcept
 {
        //important
+        for (auto elem : _paths) {
+            if (req.target.find(elem.first) == 0) {
+                _env.push_back("SCRIPT_FILENAME=" + elem.second);
+                break;
+            }
+        }
         _env.push_back("REQUEST_METHOD=" + req.method);
         _env.push_back("QUERY_STRING=" + req.target);
         _env.push_back("CONTENT_LENGTH" + std::to_string(req.body.length()));
         _env.push_back("HTTP_ACCEPT=" + req.headers.at(ziapi::http::header::kAccept));
         _env.push_back("HTTP_ACCEPT_LANGUAGE=" + req.headers.at(ziapi::http::header::kAcceptLanguage));
-        _env.push_back("HTTP_USER_AGENT=" + req.headers.at(ziapi::http::header::kUserAgent));
-        _env.push_back("HTTP_COOKIE=" + req.headers.at(ziapi::http::header::kCookie));
-        _env.push_back("HTTP_REFERER=" + req.headers.at(ziapi::http::header::kReferer));
+        //_env.push_back("HTTP_USER_AGENT=" + req.headers.at(ziapi::http::header::kUserAgent));
+        //_env.push_back("HTTP_COOKIE=" + req.headers.at(ziapi::http::header::kCookie));
+        //_env.push_back("HTTP_REFERER=" + req.headers.at(ziapi::http::header::kReferer));
+        std::cout << "ZEUBBBB\n";
         //important
         //_env.push_back("REDIRECT_STATUS=200");
         //_env.push_back("REQUEST_TIME=" + req.headers.at(ziapi::http::header::kDate));//[]);
@@ -256,6 +273,8 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         resp.erase(0, pos + 2);
     }
     res.body = resp;
+    std::cout << res.body;
+    res.headers["Content-Length"] = resp.size();
 }
 
 DYLIB_API ziapi::IModule *LoadZiaModule()
