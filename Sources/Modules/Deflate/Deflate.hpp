@@ -37,6 +37,7 @@ class Deflate : public ziapi::IPostProcessorModule
     protected:
     private:
         std::string _compressString(const std::string &str) const noexcept;
+        bool _activated;
 };
 
 DYLIB_API ziapi::IModule *LoadZiaModule();

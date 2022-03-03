@@ -10,7 +10,7 @@
 #include "Deflate.hpp"
 #include "zlib.h"
 
-Deflate::Deflate()
+Deflate::Deflate() : _activated(false)
 {
 }
 
@@ -19,19 +19,25 @@ Deflate::~Deflate()
 }
 
 
-void Deflate::Init([[maybe_unused]] const ziapi::config::Node &)
+void Deflate::Init([[maybe_unused]] const ziapi::config::Node &config)
 {
-    // Don't need anything to configure in this implementation
+    try {
+        if (config["Deflate"]["activated"].AsBool()) {
+            this->_activated = true;
+        }
+    } catch(const std::exception& e) {
+    }
+    
 }
 
 [[nodiscard]] ziapi::Version Deflate::GetVersion() const noexcept
 {
-    return ziapi::Version{4, 0, 0};
+    return ziapi::Version{5, 0, 0};
 }
 
 [[nodiscard]] ziapi::Version Deflate::GetCompatibleApiVersion() const noexcept
 {
-    return ziapi::Version{4, 0, 0};
+    return ziapi::Version{5, 0, 0};
 }
 
 [[nodiscard]] const char *Deflate::GetName() const noexcept
@@ -63,6 +69,8 @@ void Deflate::PostProcess(ziapi::http::Context &context, const ziapi::http::Requ
 
 bool Deflate::ShouldPostProcess(const ziapi::http::Context &context, const ziapi::http::Request &req, const ziapi::http::Response &res) const
 {
+    if (!this->_activated)
+        return false;
     if (req.headers.find("Accept-Encoding") != req.headers.end() && req.headers.at("Accept-Encoding").find("gzip") != std::string::npos)
         return true;
     return false;
