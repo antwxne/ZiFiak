@@ -239,6 +239,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
             while (std::fgets(buf.data(), 128, file)) {
                 resp += buf.data();
             }
+        }
         else {
             throw std::runtime_error("error CreateProces");
         }

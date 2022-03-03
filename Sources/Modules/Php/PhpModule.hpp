@@ -58,11 +58,17 @@ class PhpCgi : public ziapi::IHandlerModule {
             bool _initSetUp = true;
             std::vector<std::string> _env;
             std::string _cgi;
+
+#if defined(_WIN32) || defined(_WIN64)
+
             HANDLE g_hChildStd_IN_Rd = nullptr;
             HANDLE g_hChildStd_IN_Wr = nullptr;
             HANDLE g_hChildStd_OUT_Rd = nullptr;
             HANDLE g_hChildStd_OUT_Wr = nullptr;
             HANDLE g_hInputFile = nullptr;
+
+#endif
+
 };
 }
 DYLIB_API ziapi::IModule *LoadZiaModule();
