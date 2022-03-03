@@ -27,16 +27,16 @@ class Deflate : public ziapi::IPostProcessorModule
 
     [[nodiscard]] const char *GetDescription() const noexcept override;
 
-    void PostProcess(ziapi::http::Context &, ziapi::http::Response &res) override;
+    void PostProcess(ziapi::http::Context &, const ziapi::http::Request &,ziapi::http::Response &res) override;
 
     [[nodiscard]] double GetPostProcessorPriority() const noexcept override;
 
-    [[nodiscard]] bool ShouldPostProcess(const ziapi::http::Context &, const ziapi::http::Response &) const override;
+    [[nodiscard]] bool ShouldPostProcess(const ziapi::http::Context &, const ziapi::http::Request &, const ziapi::http::Response &) const override;
 
+        std::string _uncompressString(const std::string &str) const noexcept;
     protected:
     private:
         std::string _compressString(const std::string &str) const noexcept;
-        std::string _uncompressString(const std::string &str) const noexcept;
 };
 
 DYLIB_API ziapi::IModule *LoadZiaModule();

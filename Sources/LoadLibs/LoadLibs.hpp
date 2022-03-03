@@ -21,15 +21,10 @@ public:
     void getType();
     void loadLibByFiles(const std::vector<Watcher::FileState> &files, ziapi::config::Node config);
     void loadSingleModule(const std::string &path);
+    void sortModules(void);
     void deleteModule(const Watcher::FileState &e);
     void replaceModule(const Watcher::FileState &e);
 
-protected:
-    std::vector<std::pair<std::unique_ptr<ziapi::IModule>, std::string>> _listLib;
-
-protected:
-    std::vector<std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string>> _handlerModules;
-    std::vector<std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string>>_postProcessorModules;
 public:
     const std::vector<std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string>> &getHandlerModules() const;
 
@@ -45,4 +40,7 @@ protected:
     std::vector<std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string>> _preProcessorModules;
     std::vector<std::pair<std::unique_ptr<ziapi::INetworkModule>, std::string>> _netWorkModules;
     std::vector<dylib> _tmp;
+    std::vector<std::pair<std::unique_ptr<ziapi::IModule>, std::string>> _listLib;
+    std::vector<std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string>> _handlerModules;
+    std::vector<std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string>>_postProcessorModules;
 };

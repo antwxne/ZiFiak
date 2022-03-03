@@ -40,12 +40,12 @@ void AllowMethods::Init(const ziapi::config::Node &config)
 
 ziapi::Version AllowMethods::GetVersion() const noexcept
 {
-    return {3, 0, 0};
+    return {4, 0, 0};
 }
 
 ziapi::Version AllowMethods::GetCompatibleApiVersion() const noexcept
 {
-    return {3, 0, 0};
+    return {4, 0, 0};
 }
 
 const char *AllowMethods::GetName() const noexcept

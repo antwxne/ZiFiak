@@ -1,11 +1,12 @@
 {
   "directory" : "Modules",
   "http": {
-    "port": "8080"
+    "port": 8080
   },
   "https": {
-    "port": "443",
-    "certificat_file_path": "plop.perm"
+    "port": 7777,
+    "certificate_path": "./Certificat/cert.pem",
+    "private_key_file": "./Certificat/key.pem"
   },
   "AllowMethods": [
     {
@@ -13,6 +14,14 @@
       "methods": [
         "POSTS",
         "GET"
+      ]
+    },
+    {
+      "path": "/caca",
+      "methods": [
+        "POSTS",
+        "GET",
+        "PUT"
       ]
     }
   ],

@@ -34,6 +34,31 @@ void LoadLibs::deleteModule(const Watcher::FileState &e) {
     ), _netWorkModules.end());
 }
 
+bool compareHandlerPriority(std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string> const &mod1,
+std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string> const &mod2)
+{
+    return(mod1.first.get()->GetHandlerPriority() < mod2.first.get()->GetHandlerPriority());
+}
+
+bool comparePrePriority(std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string> const &mod1,
+std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string> const &mod2)
+{
+    return(mod1.first.get()->GetPreProcessorPriority() < mod2.first.get()->GetPreProcessorPriority());
+}
+
+bool comparePostPriority(std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string> const & mod1,
+std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string> const &mod2)
+{
+    return(mod1.first.get()->GetPostProcessorPriority() < mod2.first.get()->GetPostProcessorPriority());
+}
+
+void LoadLibs::sortModules(void)
+{
+    std::sort(_handlerModules.begin(), _handlerModules.end(), compareHandlerPriority);
+    std::sort(_preProcessorModules.begin(), _preProcessorModules.end(), comparePrePriority);
+    std::sort(_postProcessorModules.begin(), _postProcessorModules.end(), comparePostPriority);
+}
+
 void LoadLibs::loadSingleModule(const std::string &path) {
     _listLib.clear();
     try {
@@ -63,6 +88,7 @@ void LoadLibs::loadLibByFiles(const std::vector<Watcher::FileState> &files, ziap
             getType();
         }
     }
+    sortModules();
 }
 
 void LoadLibs::openFilesAndStore(const std::string &file) {

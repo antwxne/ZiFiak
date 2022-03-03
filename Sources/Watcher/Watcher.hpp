@@ -38,6 +38,7 @@ class Watcher {
 
     private:
         void setUpdatedFiles(std::vector<FileState> &files);
+        void searchFiles();
         std::vector<FileState> getFilesInFolder(const std::string &path);
         std::vector<FileState> checkDeletedFiles();
         std::string _basicPath;

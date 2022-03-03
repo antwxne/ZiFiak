@@ -12,6 +12,7 @@ namespace Watcher {
 
 Watcher::Watcher(const std::string &path, bool &changes) : _basicPath(path), _changes(changes)
 {
+    searchFiles();
     _thread = std::thread(&Watcher::update, this);
 }
 
@@ -78,16 +79,21 @@ std::vector<FileState> Watcher::getChanges()
     return (tmp);
 }
 
+void Watcher::searchFiles()
+{
+    auto modifiedFiles = getFilesInFolder(_basicPath);
+    auto deletedFiles = checkDeletedFiles();
+
+    modifiedFiles.insert(modifiedFiles.end(), deletedFiles.begin(), deletedFiles.end());
+    if (!modifiedFiles.empty()) {
+        setUpdatedFiles(modifiedFiles);
+    }
+}
+
 void Watcher::update()
 {
     while (1) {
-        auto modifiedFiles = getFilesInFolder(_basicPath);
-        auto deletedFiles = checkDeletedFiles();
-
-        modifiedFiles.insert(modifiedFiles.end(), deletedFiles.begin(), deletedFiles.end());
-        if (!modifiedFiles.empty()) {
-            setUpdatedFiles(modifiedFiles);
-        }
+        searchFiles();
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
