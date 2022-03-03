@@ -26,14 +26,14 @@ void zia::modules::php::PhpCgi::Init(const ziapi::config::Node &cfg)
         _env.push_back("CONTENT_TYPE=" + cfg["modules"]["PHP-CGI"]["content_type"].AsString());
         _env.push_back("GATEWAY_INTERFACE=" + cfg["modules"]["PHP-CGI"]["gateway_interface"].AsString());
         _env.push_back("PATH_INFO=" + cfg["modules"]["PHP-CGI"]["path_info"].AsString());
-        _env.push_back("PATH_TRANSLATED=" + cfg["modules"]["PHP-CGI"]["path_info"].AsString());
+        _env.push_back("PATH_TRANSLATED=" + cfg["modules"]["PHP-CGI"]["path_translated"].AsString());
         _env.push_back("REMOTE_IDENT=" + cfg["modules"]["PHP-CGI"]["remote_ident"].AsString());
         _env.push_back("REMOTE_USER=" + cfg["modules"]["PHP-CGI"]["remote_user"].AsString());
         _env.push_back("SCRIPT_NAME=" + cfg["modules"]["PHP-CGI"]["exec_name"].AsString());
         _env.push_back("SERVER_NAME=" + cfg["modules"]["PHP-CGI"]["server_name"].AsString());
         _env.push_back("SERVER_PORT=" + cfg["modules"]["PHP-CGI"]["server_port"].AsString());
         _env.push_back("SERVER_PROTOCOL=" + cfg["modules"]["PHP-CGI"]["protocol"].AsString());
-        _env.push_back("SERVER_SOFTWARE" + cfg["modules"]["PHP-CGI"]["server_software"].AsString());
+        _env.push_back("SERVER_SOFTWARE=" + cfg["modules"]["PHP-CGI"]["server_software"].AsString());
         _env.push_back("REMOTE_HOST=" + cfg["modules"]["PHP-CGI"]["remote_host"].AsString());
         _env.push_back("REMOTE_ADDR=" + cfg["modules"]["PHP-CGI"]["ip_client"].AsString());
         _env.push_back("AUTH_TYPE=" + cfg["modules"]["PHP-CGI"]["auth_type"].AsString());
@@ -98,18 +98,18 @@ void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req) noexce
         for (auto elem : _paths) {
             if (req.target.find(elem.first) == 0) {
                 _env.push_back("SCRIPT_FILENAME=" + elem.second);
+            std::cout << "ENV: " << elem.second << std::endl;
                 break;
             }
         }
         _env.push_back("REQUEST_METHOD=" + req.method);
-        _env.push_back("QUERY_STRING=" + req.target);
-        _env.push_back("CONTENT_LENGTH" + std::to_string(req.body.length()));
+        _env.push_back("QUERY_STRING=");
+        // _env.push_back("CONTENT_LENGTH=" + std::to_string(req.body.length()));
         _env.push_back("HTTP_ACCEPT=" + req.headers.at(ziapi::http::header::kAccept));
-        _env.push_back("HTTP_ACCEPT_LANGUAGE=" + req.headers.at(ziapi::http::header::kAcceptLanguage));
+        // _env.push_back("HTTP_ACCEPT_LANGUAGE=" + req.headers.at(ziapi::http::header::kAcceptLanguage));
         //_env.push_back("HTTP_USER_AGENT=" + req.headers.at(ziapi::http::header::kUserAgent));
         //_env.push_back("HTTP_COOKIE=" + req.headers.at(ziapi::http::header::kCookie));
         //_env.push_back("HTTP_REFERER=" + req.headers.at(ziapi::http::header::kReferer));
-        std::cout << "ZEUBBBB\n";
         //important
         //_env.push_back("REDIRECT_STATUS=200");
         //_env.push_back("REQUEST_TIME=" + req.headers.at(ziapi::http::header::kDate));//[]);
@@ -198,8 +198,8 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     int tokenPos = 0;
     FILE *file;
     std::array<char, 128> buf;
-    res.body = "";
-    res.Bootstrap();
+    // res.body = "";
+    // res.Bootstrap();
     std::string env = {};
     std::string resp = {};
     std::string token;
@@ -245,8 +245,8 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
             i++;
         }
 
-        if (req.body.size() != 0) {
-           file = popen(("env -i" + env + " " + req.body + " | " + _cgi).c_str(), "r");
+        if (req.body.size() == 0) {
+            file = popen(("env -i" + env + " " + req.body + " | " + _cgi).c_str(), "r");
         }
         else {
             file = popen(("env -i " + env + " " + _cgi).c_str(), "r");
@@ -255,6 +255,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         if (file != NULL) {
             while (std::fgets(buf.data(), 128, file)) {
                 resp += buf.data();
+                // std::cout << "buf: " << buf.data() << std::endl;
             }
         }
         else {
@@ -263,18 +264,21 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
 
 #endif
 
-    while ((pos = resp.find("\r\n")) != std::string::npos) {
+    while ((pos = resp.find("\n")) != std::string::npos) {
         token = resp.substr(0, pos);
+        std::cout << "token=== " << token << std::endl;
         while ((tokenPos = token.find(":")) != std::string::npos) {
             lilToken = token.substr(0, tokenPos);
             token.erase(0, tokenPos + 1);
             res.headers.insert({lilToken, token});
         }
-        resp.erase(0, pos + 2);
+        resp.erase(0, pos + 1);
     }
     res.body = resp;
-    std::cout << res.body;
-    res.headers["Content-Length"] = resp.size();
+    std::cout << "BODY: " << res.body << std::endl;
+    std::cout << "BODY_LENGTH: " << res.body.size() << std::endl;
+    res.headers["Content-Length"] = std::to_string(res.body.size());
+    std::cout << "FIN DU CACA\n";
 }
 
 DYLIB_API ziapi::IModule *LoadZiaModule()
