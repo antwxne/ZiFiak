@@ -36,6 +36,13 @@ add_library(fall_back SHARED ${BASE_MODULE}
 conan_target_link_libraries(fall_back ${CONAN_LIBS})
 add_dependencies(fall_back ziapi)
 
+# Php-cgi MODULE
+add_library(php_cgi SHARED ${BASE_MODULE}
+        Sources/Modules/Php/PhpModule.hpp
+        Sources/Modules/Php/PhpModule.cpp
+        )
+conan_target_link_libraries(php_cgi ${CONAN_LIBS})
+add_dependencies(php_cgi ziapi)
 # Delegate MODULE
 add_library(deflate SHARED ${BASE_MODULE}
         Sources/Modules/Deflate/Deflate.hpp

@@ -71,7 +71,7 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
                      "        <p>This is an example of a simple HTML page with one paragraph.</p>\n"
                      "    </body>\n"
                      "</html>");
-    response.body = plop;
+    //response.body = plop;
     response.headers[ziapi::http::header::kContentLength] = std::to_string(plop.size());
     for (auto &module : _loadLibs.getPreProcessorModules()) {
         if (module.first->ShouldPreProcess(req.second, req.first)) {
@@ -84,9 +84,9 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
         }
     }
     for (auto &module : _loadLibs.getPostProcessorModules()) {
-            if (module.first->ShouldPostProcess(req.second, req.first, response)) {
-                module.first->PostProcess(req.second, req.first, response);
-            }
+        if (module.first->ShouldPostProcess(req.second, req.first, response)) {
+            module.first->PostProcess(req.second, req.first, response);
+        }
     }
     // std::cout << "XXX: " << std::any_cast<std::string>(req.second["client.socket.address"]) << " " << std::any_cast<std::uint16_t>(req.second["client.socket.port"])  << std::endl;
     // for (auto &elem : req.second) {
@@ -125,36 +125,51 @@ void zia::server::Server::terminateNetwork()
     for (auto &it: _threadPool) {
         it.join();
     }
-    setIsRunning(true);
+    _threadPool.clear();
 }
 
 void zia::server::Server::initNetwork()
 {
+    setIsRunning(true);
     for (auto &module : _loadLibs.getNetWorkModules()) {
         _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first)));
-    }    
+    }
 }
 
 void zia::server::Server::run() {
-    setIsRunning(true);
     initNetwork();
     while (1) {
         if (_isConfigChange) {
-            if (_configWatcher.getChanges()[0].state == Watcher::DEL)
+            auto newConfig = _configWatcher.getChanges();
+            if (newConfig[0].state == Watcher::DEL)
                 continue;
             terminateNetwork();
+            try {
+                _serverConfig = ConfigParser::loadFromFile(newConfig[0].filepath);
+            } catch (const std::exception &e) {
+                Debug::warn("failed to load config file: " + std::string(e.what()));
+                this->_serverConfig = Node(ziapi::config::Undefined{});
+            }
             _loadLibs.openFilesAndStore(zia::server::Server::getPathDirectory());
             _loadLibs.initLibs(_serverConfig);
             _loadLibs.getType();
             _loadLibs.sortModules();
             initNetwork();
             _isConfigChange = false;
+            // std::cout << _loadLibs.getHandlerModules().size() << std::endl;
+            // std::cout << _loadLibs.getNetWorkModules().size() << std::endl;
+            // std::cout << _loadLibs.getPostProcessorModules().size() << std::endl;
+            // std::cout << _loadLibs.getPreProcessorModules().size() << std::endl;
         }
         if (_isModuleChange) {
             terminateNetwork();
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
             initNetwork();
             _isModuleChange = false;
+            std::cout << _loadLibs.getHandlerModules().size() << std::endl;
+            std::cout << _loadLibs.getPreProcessorModules().size() << std::endl;
+            std::cout << _loadLibs.getPostProcessorModules().size() << std::endl;
+            std::cout << _loadLibs.getNetWorkModules().size() << std::endl;
         }
     }
     Debug::log("server running");
