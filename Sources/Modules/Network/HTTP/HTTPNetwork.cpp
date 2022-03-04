@@ -17,7 +17,8 @@ DYLIB_API ziapi::IModule *LoadZiaModule()
 }
 
 zia::modules::network::HTTPNetwork::HTTPNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context), _init(false)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
+    _init(false)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -57,7 +58,6 @@ void zia::modules::network::HTTPNetwork::Init(const ziapi::config::Node &cfg)
         _init = false;
         Terminate();
     }
-
 }
 
 ziapi::Version zia::modules::network::HTTPNetwork::GetVersion() const noexcept
@@ -228,6 +228,9 @@ void zia::modules::network::HTTPNetwork::disconnectClient() noexcept
                 if (!keepAlive.has_value()) {
                     return true;
                 }
+                if (keepAlive.value().always) {
+                    return false;
+                }
                 if (keepAlive.value().max == 0) {
                     return true;
                 }
@@ -241,6 +244,7 @@ void zia::modules::network::HTTPNetwork::disconnectClient() noexcept
                 return false;
             });
         if (toDelete != _clients.cend()) {
+            Debug::log("HTTP Client disconnected");
             _clients.erase(toDelete);
         }
     }
@@ -253,19 +257,16 @@ void zia::modules::network::HTTPNetwork::genericSend(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-//   Debug::log("Want to send == " + std::string(static_cast<const char *>(data)));
     client.getAsioSocket().async_send(asio::buffer(data, size),
         [&, this](const asio::error_code &errorCode,
             std::size_t bytesTransferred
         ) {
-            if (errorCode) {
+            if (errorCode || !client.getKeepAliveInfos().has_value()) {
                 client.setConnectionStatut(false);
-            } else if (!client.getKeepAliveInfos().has_value()) {
-                client.setConnectionStatut(false);
-                client.setProcessingARequest(false);
             } else {
                 this->startReceive(requests, client);
             }
+            client.setProcessingARequest(false);
             client.updateTime();
             Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
         });

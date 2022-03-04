@@ -8,7 +8,8 @@
 #include "AClient.hpp"
 #include "Modules/Network/HTTPParser/HTTPParser.hpp"
 
-zia::modules::network::AClient::AClient() : _keepAlive(std::nullopt), _processingRequest(true), _isConnected(true), _rawRequest(),
+zia::modules::network::AClient::AClient() : _keepAlive(std::nullopt),
+    _processingRequest(true), _isConnected(true), _rawRequest(),
     _lastRequest(std::chrono::steady_clock::now())
 {
 }
@@ -38,11 +39,33 @@ void zia::modules::network::AClient::setKeepAlive(
 ) noexcept
 {
     try {
-        const auto &keepAliveValue = req.headers.at(ziapi::http::header::kKeepAlive);
-        auto values = zia::modules::network::HTTPParser::parseKeepAliveInfos(keepAliveValue);
-        _keepAlive = KeepAliveInfos(values.first, values.second);
-    } catch (...){
-        _keepAlive = std::nullopt;
+        const auto &connectionValue = req.headers.at(
+            ziapi::http::header::kConnection);
+        if (connectionValue == "keep-alive") {
+            _keepAlive = KeepAliveInfos(true);
+        } else {
+            _keepAlive = KeepAliveInfos(false);
+        }
+    } catch (...) {
+        if (!_keepAlive.has_value()) {
+            _keepAlive = std::nullopt;
+        }
+    }
+    try {
+        const auto &keepAliveValue = req.headers.at(
+            ziapi::http::header::kKeepAlive);
+        auto values = zia::modules::network::HTTPParser::parseKeepAliveInfos(
+            keepAliveValue);
+        if (_keepAlive.has_value()) {
+            _keepAlive = KeepAliveInfos(_keepAlive.value().always, values.first,
+                values.second);
+        } else {
+            _keepAlive = KeepAliveInfos(false, values.first, values.second);
+        }
+    } catch (...) {
+        if (!_keepAlive.has_value()) {
+            _keepAlive = std::nullopt;
+        }
     }
 }
 
@@ -66,7 +89,7 @@ zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
     std::string &str
 )
 {
-    return genericSend(str.c_str(), str.size() * sizeof (*str.c_str()));
+    return genericSend(str.c_str(), str.size() * sizeof(*str.c_str()));
 }
 
 zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
@@ -78,14 +101,16 @@ zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
 
 void zia::modules::network::AClient::operator>>(std::string &str) const
 {
-    str.resize(_rawRequest.size()  * sizeof(*_rawRequest.begin()));
-    std::memcpy(&*str.begin(), &*_rawRequest.begin(), _rawRequest.size() * sizeof(*_rawRequest.begin()));
+    str.resize(_rawRequest.size() * sizeof(*_rawRequest.begin()));
+    std::memcpy(&*str.begin(), &*_rawRequest.begin(),
+        _rawRequest.size() * sizeof(*_rawRequest.begin()));
 }
 
 void zia::modules::network::AClient::operator>>(std::vector<uint8_t> &arr) const
 {
     arr.resize(_rawRequest.size() * sizeof(*_rawRequest.begin()));
-    std::memcpy(&*arr.begin(), &*_rawRequest.begin(), _rawRequest.size() * sizeof(*_rawRequest.begin()));
+    std::memcpy(&*arr.begin(), &*_rawRequest.begin(),
+        _rawRequest.size() * sizeof(*_rawRequest.begin()));
 }
 
 zia::modules::network::AClient &zia::modules::network::AClient::operator+=(

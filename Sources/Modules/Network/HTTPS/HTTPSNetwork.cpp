@@ -17,8 +17,8 @@ DYLIB_API ziapi::IModule *LoadZiaModule()
 }
 
 zia::modules::network::HTTPSNetwork::HTTPSNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context), _init(false),
-    _sslContext(asio::ssl::context::sslv23)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
+    _init(false), _sslContext(asio::ssl::context::sslv23)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -241,6 +241,9 @@ void zia::modules::network::HTTPSNetwork::disconnectClient() noexcept
                 if (!keepAlive.has_value()) {
                     return true;
                 }
+                if (keepAlive.value().always) {
+                    return false;
+                }
                 if (keepAlive.value().max == 0) {
                     return true;
                 }
@@ -254,6 +257,7 @@ void zia::modules::network::HTTPSNetwork::disconnectClient() noexcept
                 return false;
             });
         if (toDelete != _clients.cend()) {
+            Debug::log("HTTPS Client disconnected");
             _clients.erase(toDelete);
         }
     }
@@ -272,15 +276,12 @@ void zia::modules::network::HTTPSNetwork::genericSend(
             [&, this](const asio::error_code &errorCode,
                 std::size_t bytesTransferred
             ) {
-                if (errorCode) {
+                if (errorCode || !client.getKeepAliveInfos().has_value()) {
                     client.setConnectionStatut(false);
-                }
-                else if (!client.getKeepAliveInfos().has_value()) {
-                    client.setConnectionStatut(false);
-                    client.setProcessingARequest(false);
                 } else {
                     this->startReceive(requests, client);
                 }
+                client.setProcessingARequest(false);
                 client.updateTime();
                 Debug::log(
                     std::to_string(bytesTransferred) + " bytes transferred");
