@@ -10,7 +10,7 @@
 #include "Deflate.hpp"
 #include "zlib.h"
 
-Deflate::Deflate() : _activated(false)
+Deflate::Deflate() : _activated(true)
 {
 }
 
@@ -53,7 +53,6 @@ void Deflate::Init([[maybe_unused]] const ziapi::config::Node &config)
 void Deflate::PostProcess(ziapi::http::Context &context, const ziapi::http::Request &,ziapi::http::Response &res)
 {
     res.body = this->_compressString(res.body);
-    std::cout << res.body << std::endl;
     res.headers.insert({"Content-Encoding", "deflate"});
     if (res.headers.find("Content-Lenght") != res.headers.end()) {
         res.headers["Content-Length"] = res.body.size();

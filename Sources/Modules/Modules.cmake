@@ -44,6 +44,14 @@ add_library(deflate SHARED ${BASE_MODULE}
 conan_target_link_libraries(deflate ${CONAN_LIBS})
 add_dependencies(deflate ziapi)
 
+# Log MODULE
+add_library(log SHARED ${BASE_MODULE}
+        Sources/Modules/Log/Log.hpp
+        Sources/Modules/Log/Log.cpp
+        )
+conan_target_link_libraries(log ${CONAN_LIBS})
+add_dependencies(log ziapi)
+
 # HTTPS NETWORK MODULE
 add_library(HTTPS_network SHARED ${BASE_MODULE}
         Sources/Modules/Network/HTTPS/HTTPSClient.hpp

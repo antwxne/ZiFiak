@@ -37,19 +37,19 @@ void LoadLibs::deleteModule(const Watcher::FileState &e) {
 bool compareHandlerPriority(std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string> const &mod1,
 std::pair<std::unique_ptr<ziapi::IHandlerModule>, std::string> const &mod2)
 {
-    return(mod1.first.get()->GetHandlerPriority() < mod2.first.get()->GetHandlerPriority());
+    return(mod1.first.get()->GetHandlerPriority() > mod2.first.get()->GetHandlerPriority());
 }
 
 bool comparePrePriority(std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string> const &mod1,
 std::pair<std::unique_ptr<ziapi::IPreProcessorModule>, std::string> const &mod2)
 {
-    return(mod1.first.get()->GetPreProcessorPriority() < mod2.first.get()->GetPreProcessorPriority());
+    return(mod1.first.get()->GetPreProcessorPriority() > mod2.first.get()->GetPreProcessorPriority());
 }
 
 bool comparePostPriority(std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string> const & mod1,
 std::pair<std::unique_ptr<ziapi::IPostProcessorModule>, std::string> const &mod2)
 {
-    return(mod1.first.get()->GetPostProcessorPriority() < mod2.first.get()->GetPostProcessorPriority());
+    return(mod1.first.get()->GetPostProcessorPriority() > mod2.first.get()->GetPostProcessorPriority());
 }
 
 void LoadLibs::sortModules(void)

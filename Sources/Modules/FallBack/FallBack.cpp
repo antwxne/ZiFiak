@@ -43,11 +43,11 @@ void FallBack::Init([[maybe_unused]] const ziapi::config::Node &)
 void FallBack::PostProcess(ziapi::http::Context &context, const ziapi::http::Request &, ziapi::http::Response &res)
 {
     auto errorOccured = std::any_cast<std::pair<ziapi::http::Code,const char *>>(context["ErrorOccured"]);
-    res.Bootstrap(errorOccured.first, errorOccured.second);
-    if (res.headers.find("Content-Length") != res.headers.end()) {
-        res.headers["Content-Length"] = "0";
-    }
-    res.body = "";
+    res.headers.clear();
+    res.status_code = errorOccured.first;
+    res.reason = errorOccured.second;
+    res.body = res.reason;
+    res.headers.insert({"Content-Length", std::to_string(res.body.size())});
 }
 
 [[nodiscard]] double FallBack::GetPostProcessorPriority() const noexcept
