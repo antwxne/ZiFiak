@@ -22,9 +22,7 @@ Deflate::~Deflate()
 void Deflate::Init([[maybe_unused]] const ziapi::config::Node &config)
 {
     try {
-        if (config["Deflate"]["activated"].AsBool()) {
-            this->_activated = true;
-        }
+        this->_activated = config["Deflate"]["activated"].AsBool();
     } catch(const std::exception& e) {
     }
     
@@ -54,8 +52,8 @@ void Deflate::PostProcess(ziapi::http::Context &context, const ziapi::http::Requ
 {
     res.body = this->_compressString(res.body);
     res.headers.insert({"Content-Encoding", "deflate"});
-    if (res.headers.find("Content-Lenght") != res.headers.end()) {
-        res.headers["Content-Length"] = res.body.size();
+    if (res.headers.find("Content-Length") != res.headers.end()) {
+        res.headers["Content-Length"] = std::to_string(res.body.size());
     } else {
         res.headers.insert({"Content-Length", std::to_string(res.body.size())});
     }
