@@ -13,6 +13,7 @@
 #include "dylib/dylib.hpp"
 #include <stdio.h>
 #include "ziapi/Module.hpp"
+#include <array>
 
 #if defined(_WIN32) || defined(_WIN64)
 

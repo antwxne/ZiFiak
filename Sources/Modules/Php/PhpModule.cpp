@@ -94,7 +94,7 @@ void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req, ziapi:
 }
 
 #if defined(_WIN32) || defined(_WIN64)
-void zia::modules::php::PhpCgi::WriteToPipe()
+void zia::modules::php::PhpCgi::WriteToPipe() noexcept
 {
     DWORD dwRead;
     DWORD dwWritten;
@@ -114,7 +114,7 @@ void zia::modules::php::PhpCgi::WriteToPipe()
     CloseHandle(g_hChildStd_IN_Wr);
 }
 
-std::string zia::modules::php::PhpCgi::GetFromPipe()
+std::string zia::modules::php::PhpCgi::GetFromPipe() noexcept
 {
     int i = 0;
     DWORD dwRead;
@@ -197,7 +197,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0);
     SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0);
 
-    if (req.boddy.size() != 0) {
+    if (req.body.size() != 0) {
         exec = "echo " + req.body + " | " + exec;
     }
 
