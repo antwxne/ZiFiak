@@ -204,7 +204,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     CreateChildProcess(env, exec);
     std::string tmp = "tmp";
 
-    g_hInputFile = CreateFile(reinterpret_cast<LPCWSTR>(tmp.data()), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, nullptr);
+    g_hInputFile = CreateFileA(reinterpret_cast<LPCSTR>(tmp.data()), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, nullptr);
     WriteToPipe();
     resp = GetFromPipe();
 #else
