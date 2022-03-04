@@ -27,18 +27,19 @@ struct FileState {
     State state;
 };
 
-static const std::string ModulesPath = "Modules/";
-
 class Watcher {
     public:
-        Watcher(const std::string &path, bool &changes);
+        Watcher(bool &changes);
         ~Watcher();
+        void init(const std::string &path);
         void update();
+        void updateFile();
         std::vector<FileState> getChanges();
 
     private:
         void setUpdatedFiles(std::vector<FileState> &files);
         void searchFiles();
+        void searchFile();
         std::vector<FileState> getFilesInFolder(const std::string &path);
         std::vector<FileState> checkDeletedFiles();
         std::string _basicPath;

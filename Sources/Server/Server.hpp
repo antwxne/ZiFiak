@@ -35,7 +35,9 @@ private:
     Node _serverConfig;
     LoadLibs _loadLibs;
     bool _isModuleChange;
+    bool _isConfigChange;
     Watcher::Watcher _moduleWatcher;
+    Watcher::Watcher _configWatcher;
     std::vector<std::thread> _threadPool;
     std::mutex _mutex;
     bool _isRunning;

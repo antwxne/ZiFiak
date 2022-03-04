@@ -11,7 +11,8 @@
 #include "ConfigParser.hpp"
 #include "Server.hpp"
 
-zia::server::Server::Server() : _isModuleChange(false), _moduleWatcher(Watcher::ModulesPath, _isModuleChange), _isRunning(false) {
+zia::server::Server::Server() : _isModuleChange(false), _isConfigChange(false),
+                                _moduleWatcher(_isModuleChange), _configWatcher(_isConfigChange), _isRunning(false) {
 }
 
 zia::server::Server::~Server()
@@ -21,7 +22,6 @@ zia::server::Server::~Server()
     }
 }
 
-
 void zia::server::Server::init(const std::string &filepath) {
     Debug::log("init server");
 
@@ -30,9 +30,12 @@ void zia::server::Server::init(const std::string &filepath) {
     try {
         this->_serverConfig = ConfigParser::loadFromFile(filepath);
         auto pathDirectory = zia::server::Server::getPathDirectory();
+        _configWatcher.init(filepath);
+        _moduleWatcher.init(pathDirectory);
         _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
         Debug::log("config load successfully loaded");
     } catch (const std::runtime_error &e) {
+        std::cout << "CRASH " << e.what() << std::endl;
         Debug::warn("failed to load config file: " + std::string(e.what()));
         this->_serverConfig = Node(ziapi::config::Undefined{});
     }
@@ -126,6 +129,7 @@ void zia::server::Server::run() {
     }
     while (1) {
         if (_isModuleChange) {
+            std::cout << "zouzou" << std::endl;
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
             _isModuleChange = false;
         }
