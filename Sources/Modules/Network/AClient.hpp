@@ -21,14 +21,16 @@
 namespace zia::modules::network {
 
 struct KeepAliveInfos {
-    KeepAliveInfos(int vtimeout, int vmax): timeout(vtimeout), max(vmax) {}
+    KeepAliveInfos(bool connection = false, int vtimeout = 0, int vmax = 0): timeout(vtimeout), max(vmax), always(connection) {}
     KeepAliveInfos(const KeepAliveInfos &other)
     {
+        always = other.always;
         timeout = other.timeout;
         max = other.timeout;
     }
     int timeout;
     int max;
+    bool always;
 };
 
 class AClient {

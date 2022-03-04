@@ -17,7 +17,8 @@ DYLIB_API ziapi::IModule *LoadZiaModule()
 }
 
 zia::modules::network::HTTPNetwork::HTTPNetwork()
-    : _io_context(), _acceptor(_io_context), _signalSet(_io_context), _init(false)
+    : _io_context(), _acceptor(_io_context), _signalSet(_io_context),
+    _init(false)
 {
     _signalSet.add(SIGINT);
     _signalSet.add(SIGTERM);
@@ -41,23 +42,31 @@ zia::modules::network::HTTPNetwork::~HTTPNetwork()
 void zia::modules::network::HTTPNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("Init HTTP network module...");
-
+    int port;
     try {
-        int port = cfg["http"]["port"].AsInt();
+        port = cfg["http"]["port"].AsInt();
+    } catch (const std::out_of_range &e) {
+        port = 80;
+        Debug::warn("HTTP Network using default port " + std::to_string(port));
+    }
+    try {
+        _init = cfg["http"]["activated"].AsBool();
+    } catch (const std::out_of_range &e) {
+        _init = false;
+        Debug::warn("HTTP Network not activated");
+    }
+    try {
         asio::ip::tcp::endpoint basicEndPoint(
             asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
-
         _acceptor.open(basicEndPoint.protocol());
         _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
         _acceptor.bind(basicEndPoint);
         _acceptor.listen();
-        _init = true;
-    } catch (const std::out_of_range &e) {
-        Debug::err("Can't init HTTP module, please check the config file");
+    } catch (const std::exception &e) {
         _init = false;
+        Debug::err(e.what()) ;
         Terminate();
     }
-
 }
 
 ziapi::Version zia::modules::network::HTTPNetwork::GetVersion() const noexcept
@@ -228,6 +237,9 @@ void zia::modules::network::HTTPNetwork::disconnectClient() noexcept
                 if (!keepAlive.has_value()) {
                     return true;
                 }
+                if (keepAlive.value().always) {
+                    return false;
+                }
                 if (keepAlive.value().max == 0) {
                     return true;
                 }
@@ -241,6 +253,7 @@ void zia::modules::network::HTTPNetwork::disconnectClient() noexcept
                 return false;
             });
         if (toDelete != _clients.cend()) {
+            Debug::log("HTTP Client disconnected");
             _clients.erase(toDelete);
         }
     }
@@ -253,19 +266,16 @@ void zia::modules::network::HTTPNetwork::genericSend(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-//   Debug::log("Want to send == " + std::string(static_cast<const char *>(data)));
     client.getAsioSocket().async_send(asio::buffer(data, size),
         [&, this](const asio::error_code &errorCode,
             std::size_t bytesTransferred
         ) {
-            if (errorCode) {
+            if (errorCode || !client.getKeepAliveInfos().has_value()) {
                 client.setConnectionStatut(false);
-            } else if (!client.getKeepAliveInfos().has_value()) {
-                client.setConnectionStatut(false);
-                client.setProcessingARequest(false);
             } else {
                 this->startReceive(requests, client);
             }
+            client.setProcessingARequest(false);
             client.updateTime();
             Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
         });

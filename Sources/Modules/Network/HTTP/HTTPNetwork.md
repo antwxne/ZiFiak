@@ -16,7 +16,8 @@ It will fill up `ziapi::http::IRequestOutputQueue` with incoming request.
 
 ```cpp
 const ziapi::config::Node &cfg; // server configuration
-int port = cfg["http"]["port"].AsInt(); // port to listen
+int port = cfg["http"]["port"].AsInt(); // port to listen -> by default the port is 80
+bool activated = cfg["http"]["activated"].AsBool(); // use this module or not -> by default it's false 
 ```
 
 ## Context
