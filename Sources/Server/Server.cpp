@@ -28,9 +28,10 @@ void zia::server::Server::init(const std::string &filepath) {
     ConfigParser confParser;
 
     try {
+        _configWatcher.init(filepath);
+        _configWatcher.getChanges();
         this->_serverConfig = ConfigParser::loadFromFile(filepath);
         auto pathDirectory = zia::server::Server::getPathDirectory();
-        _configWatcher.init(filepath);
         _moduleWatcher.init(pathDirectory);
         _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
         Debug::log("config load successfully loaded");
@@ -128,6 +129,29 @@ void zia::server::Server::run() {
         _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first)));
     }
     while (1) {
+        if (_isConfigChange) {
+            if (_configWatcher.getChanges()[0].state == Watcher::DEL)
+                continue;
+            std::cout << "changeConfig" << std::endl;
+            std::cout << "path directory " << zia::server::Server::getPathDirectory() << std::endl;
+            _loadLibs.openFilesAndStore(zia::server::Server::getPathDirectory());
+            std::cout << "openFilesAndStore" << std::endl;
+            _loadLibs.initLibs(_serverConfig);
+            std::cout << "initLibs" << std::endl;
+            _loadLibs.getType();
+            std::cout << "getType" << std::endl;
+            _loadLibs.sortModules();
+            std::cout << "sortModules" << std::endl;
+           // _loadLibs.sortModules();
+            std::cout << "sort" << std::endl;
+            _isConfigChange = false;
+            std::cout << "toto" << std::endl;
+            std::cout << _loadLibs.getPostProcessorModules().size() << std::endl;
+            std::cout << _loadLibs.getPreProcessorModules().size() << std::endl;
+            std::cout << _loadLibs.getNetWorkModules().size() << std::endl;
+            std::cout << _loadLibs.getHandlerModules().size() << std::endl;
+
+        }
         if (_isModuleChange) {
             std::cout << "zouzou" << std::endl;
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);

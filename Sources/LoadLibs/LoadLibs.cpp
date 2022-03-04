@@ -93,6 +93,12 @@ void LoadLibs::loadLibByFiles(const std::vector<Watcher::FileState> &files, ziap
 
 void LoadLibs::openFilesAndStore(const std::string &file) {
     std::string tmp;
+    _handlerModules.clear();
+    _preProcessorModules.clear();
+    _postProcessorModules.clear();
+    _netWorkModules.clear();
+    _tmp.clear();
+    _listLib.clear();
     for (auto &x: std::filesystem::directory_iterator(file)) {
         try {
             tmp = x.path().string();

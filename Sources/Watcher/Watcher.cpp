@@ -88,6 +88,7 @@ std::vector<FileState> Watcher::getChanges()
     std::vector<FileState> tmp(_modifiedFiles);
 
     _modifiedFiles.clear();
+    _changes = false;
     return (tmp);
 }
 
