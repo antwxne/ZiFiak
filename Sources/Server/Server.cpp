@@ -84,7 +84,7 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
     for (auto &module : _loadLibs.getPostProcessorModules()) {
         // for (auto &response : responses) {
             if (module.first->ShouldPostProcess(req.second, req.first, response)) {
-                module.first->PostProcess(req.second, response);
+                module.first->PostProcess(req.second, req.first, response);
             }
         // }
     }

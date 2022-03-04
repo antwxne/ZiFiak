@@ -24,5 +24,8 @@
         "PUT"
       ]
     }
-  ]
+  ],
+  "Deflate": {
+    "activated": true
+  }
 }

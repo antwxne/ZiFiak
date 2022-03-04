@@ -22,12 +22,12 @@ void FallBack::Init([[maybe_unused]] const ziapi::config::Node &)
 
 [[nodiscard]] ziapi::Version FallBack::GetVersion() const noexcept
 {
-    return ziapi::Version{4, 0, 0};
+    return ziapi::Version{5, 0, 0};
 }
 
 [[nodiscard]] ziapi::Version FallBack::GetCompatibleApiVersion() const noexcept
 {
-    return ziapi::Version{4, 0, 0};
+    return ziapi::Version{5, 0, 0};
 }
 
 [[nodiscard]] const char *FallBack::GetName() const noexcept
@@ -40,10 +40,14 @@ void FallBack::Init([[maybe_unused]] const ziapi::config::Node &)
     return "Check if an error occured during pipelines and set error response properly";
 }
 
-void FallBack::PostProcess(ziapi::http::Context &context, ziapi::http::Response &res)
+void FallBack::PostProcess(ziapi::http::Context &context, const ziapi::http::Request &, ziapi::http::Response &res)
 {
     auto errorOccured = std::any_cast<std::pair<ziapi::http::Code,const char *>>(context["ErrorOccured"]);
     res.Bootstrap(errorOccured.first, errorOccured.second);
+    if (res.headers.find("Content-Length") != res.headers.end()) {
+        res.headers["Content-Length"] = "0";
+    }
+    res.body = "";
 }
 
 [[nodiscard]] double FallBack::GetPostProcessorPriority() const noexcept
