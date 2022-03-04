@@ -6,6 +6,7 @@
 */
 
 #include "Watcher.hpp"
+#include "Debug/Debug.hpp"
 #include <iostream>
 
 namespace Watcher {
@@ -26,9 +27,11 @@ void Watcher::init(const std::string &path)
     _basicPath = path;
     if (!std::filesystem::is_directory(systemPath)) {
         searchFile();
+        Debug::log("Watcher: File " + path + " unitialized");
         _thread = std::thread(&Watcher::updateFile, this);
     } else {
         searchFiles();
+        Debug::log("Watcher: Folder " + path + " unitialized");
         _thread = std::thread(&Watcher::update, this);
     }
 }
