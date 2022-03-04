@@ -193,14 +193,14 @@ void zia::modules::network::HTTPSNetwork::handleReceive(
     std::size_t bytes_transfered
 )
 {
-    client.setProcessingARequest(true);
     if (error == asio::error::eof) {
         client.setConnectionStatut(false);
         return;
     }
-    if (!client.isConnected()) {
+    if (!client.isConnected() || client.isProcessingARequest()) {
         return;
     }
+    client.setProcessingARequest(true);
     client.saveBuffer();
     client.clearBuffer();
     try {
