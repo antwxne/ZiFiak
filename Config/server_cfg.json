@@ -1,12 +1,14 @@
 {
   "directory" : "Modules",
   "http": {
-    "port": 8080
+    "port": 8080,
+    "activated": false
   },
   "https": {
     "port": 7777,
     "certificate_path": "./Certificat/cert.pem",
-    "private_key_file": "./Certificat/key.pem"
+    "private_key_file": "./Certificat/key.pem",
+    "activated": true
   },
   "AllowMethods": [
     {

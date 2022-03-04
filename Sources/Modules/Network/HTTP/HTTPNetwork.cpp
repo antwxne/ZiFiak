@@ -42,20 +42,29 @@ zia::modules::network::HTTPNetwork::~HTTPNetwork()
 void zia::modules::network::HTTPNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("Init HTTP network module...");
-
+    int port;
     try {
-        int port = cfg["http"]["port"].AsInt();
+        port = cfg["http"]["port"].AsInt();
+    } catch (const std::out_of_range &e) {
+        port = 80;
+        Debug::warn("HTTP Network using default port " + std::to_string(port));
+    }
+    try {
+        _init = cfg["http"]["activated"].AsBool();
+    } catch (const std::out_of_range &e) {
+        _init = false;
+        Debug::warn("HTTP Network not activated");
+    }
+    try {
         asio::ip::tcp::endpoint basicEndPoint(
             asio::ip::tcp::endpoint(asio::ip::tcp::v4(), port));
-
         _acceptor.open(basicEndPoint.protocol());
         _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
         _acceptor.bind(basicEndPoint);
         _acceptor.listen();
-        _init = true;
-    } catch (const std::out_of_range &e) {
-        Debug::err("Can't init HTTP module, please check the config file");
+    } catch (const std::exception &e) {
         _init = false;
+        Debug::err(e.what()) ;
         Terminate();
     }
 }

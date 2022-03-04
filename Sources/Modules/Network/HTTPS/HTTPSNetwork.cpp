@@ -42,12 +42,35 @@ zia::modules::network::HTTPSNetwork::~HTTPSNetwork()
 void zia::modules::network::HTTPSNetwork::Init(const ziapi::config::Node &cfg)
 {
     Debug::log("Init HTTPS network module");
-
+    std::string certificate_path;
+    std::string private_key_file;
+    int port;
     try {
-        std::string certificate_path = cfg["https"]["certificate_path"].AsString();
-        std::string private_key_file = cfg["https"]["private_key_file"].AsString();
-        int port = cfg["https"]["port"].AsInt();
+        certificate_path = cfg["https"]["certificate_path"].AsString();
+    } catch (const std::out_of_range &e) {
+        certificate_path = "./Certificat/cert.pem";
+        Debug::warn("HTTPS Network using default certificate_path " + certificate_path);
 
+    }
+    try {
+        private_key_file = cfg["https"]["private_key_file"].AsString();
+    } catch (const std::out_of_range &e) {
+        private_key_file = "./Certificat/key.pem";
+        Debug::warn("HTTPS Network using default private_key_file " + private_key_file);
+
+    }
+    try {
+        port = cfg["https"]["port"].AsInt();
+    } catch (const std::out_of_range &e) {
+        port = 443;
+        Debug::warn("HTTPS Network using default port " + std::to_string(port));
+    }
+    try {
+        _init = cfg["https"]["activated"].AsBool();
+    } catch (const std::out_of_range &e) {
+        Debug::warn("HTTPS Network not activated");
+    }
+    try {
         _sslContext.set_options(asio::ssl::context::default_workarounds |
             asio::ssl::context::no_sslv2 | asio::ssl::context::single_dh_use);
         _sslContext.use_certificate_chain_file(certificate_path);
@@ -60,10 +83,9 @@ void zia::modules::network::HTTPSNetwork::Init(const ziapi::config::Node &cfg)
         _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
         _acceptor.bind(basicEndPoint);
         _acceptor.listen();
-        _init = true;
-    } catch (const std::out_of_range &e) {
-        Debug::err("Can't init HTTPS module, please check the config file");
+    } catch (const std::exception &e) {
         _init = false;
+        Debug::err(e.what()) ;
         Terminate();
     }
 }
