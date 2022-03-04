@@ -36,7 +36,6 @@ void zia::server::Server::init(const std::string &filepath) {
         _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
         Debug::log("config load successfully loaded");
     } catch (const std::runtime_error &e) {
-        std::cout << "CRASH " << e.what() << std::endl;
         Debug::warn("failed to load config file: " + std::string(e.what()));
         this->_serverConfig = Node(ziapi::config::Undefined{});
     }
@@ -82,15 +81,12 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
     for (auto &module : _loadLibs.getHandlerModules()) {
         if (module.first->ShouldHandle(req.second, req.first)) {
             module.first->Handle(req.second, req.first, response);
-            // handleModule(module.first, req, response);
         }
     }
     for (auto &module : _loadLibs.getPostProcessorModules()) {
-        // for (auto &response : responses) {
             if (module.first->ShouldPostProcess(req.second, req.first, response)) {
                 module.first->PostProcess(req.second, req.first, response);
             }
-        // }
     }
     // std::cout << "XXX: " << std::any_cast<std::string>(req.second["client.socket.address"]) << " " << std::any_cast<std::uint16_t>(req.second["client.socket.port"])  << std::endl;
     // for (auto &elem : req.second) {
@@ -101,7 +97,7 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
 
 void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses)
 {
-    while (_isRunning) {
+    while (getIsRunning()) {
         auto curr = request.Pop();
         if (curr == std::nullopt) {
             continue;
@@ -117,48 +113,50 @@ void zia::server::Server::threadPoolNetwork(const std::unique_ptr<ziapi::INetwor
     zia::container::ResponseQueue responses;
 
     network->Run(requests, responses);
-    while (_isRunning) {
+    while (getIsRunning()) {
         threadPool(requests, responses);
     }
+    network->Terminate();
+}
+
+void zia::server::Server::terminateNetwork()
+{
+    setIsRunning(false);
+    for (auto &it: _threadPool) {
+        it.join();
+    }
+    setIsRunning(true);
+}
+
+void zia::server::Server::initNetwork()
+{
+    for (auto &module : _loadLibs.getNetWorkModules()) {
+        _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first)));
+    }    
 }
 
 void zia::server::Server::run() {
-    _isRunning = true;
-    for (auto &module : _loadLibs.getNetWorkModules()) {
-        // module.first->Run(requests, responses);
-        _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first)));
-    }
+    setIsRunning(true);
+    initNetwork();
     while (1) {
         if (_isConfigChange) {
             if (_configWatcher.getChanges()[0].state == Watcher::DEL)
                 continue;
-            std::cout << "changeConfig" << std::endl;
-            std::cout << "path directory " << zia::server::Server::getPathDirectory() << std::endl;
+            terminateNetwork();
             _loadLibs.openFilesAndStore(zia::server::Server::getPathDirectory());
-            std::cout << "openFilesAndStore" << std::endl;
             _loadLibs.initLibs(_serverConfig);
-            std::cout << "initLibs" << std::endl;
             _loadLibs.getType();
-            std::cout << "getType" << std::endl;
             _loadLibs.sortModules();
-            std::cout << "sortModules" << std::endl;
-           // _loadLibs.sortModules();
-            std::cout << "sort" << std::endl;
+            initNetwork();
             _isConfigChange = false;
-            std::cout << "toto" << std::endl;
-            std::cout << _loadLibs.getPostProcessorModules().size() << std::endl;
-            std::cout << _loadLibs.getPreProcessorModules().size() << std::endl;
-            std::cout << _loadLibs.getNetWorkModules().size() << std::endl;
-            std::cout << _loadLibs.getHandlerModules().size() << std::endl;
-
         }
         if (_isModuleChange) {
-            std::cout << "zouzou" << std::endl;
+            terminateNetwork();
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
+            initNetwork();
             _isModuleChange = false;
         }
     }
-    _isRunning = false;
     Debug::log("server running");
 }
 

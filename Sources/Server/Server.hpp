@@ -28,6 +28,16 @@ public:
     const std::string getPathDirectory() const;
 
 private:
+    void terminateNetwork();
+    void initNetwork();
+    void setIsRunning(const bool &change) {
+        std::scoped_lock(_mutex);
+        _isRunning = change;
+    }
+    const bool &getIsRunning() const {
+        std::scoped_lock(_mutex);
+        return (_isRunning);
+    }
     void handleModule(const std::unique_ptr<ziapi::IHandlerModule> &process, std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &handlerResponses);
     void threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses);
     void threadPoolNetwork(const std::unique_ptr<ziapi::INetworkModule> &network);
