@@ -12,14 +12,14 @@
     {
       "path": "/",
       "methods": [
-        "POSTS",
+        "POST",
         "GET"
       ]
     },
     {
       "path": "/caca",
       "methods": [
-        "POSTS",
+        "POST",
         "GET",
         "PUT"
       ]
@@ -27,5 +27,9 @@
   ],
   "Deflate": {
     "activated": true
+  },
+  "Log": {
+    "activated": true,
+    "path": "/home/afouquet/TEK3/ZIA/ZiFiak/log.txt"
   }
 }

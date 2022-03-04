@@ -66,7 +66,7 @@ void AllowMethods::PreProcess(ziapi::http::Context &context, ziapi::http::Reques
 
 double AllowMethods::GetPreProcessorPriority() const noexcept
 {
-    return 0.0f;
+    return 0.6f;
 }
 
 bool AllowMethods::ShouldPreProcess(const ziapi::http::Context &context, const ziapi::http::Request &req) const
