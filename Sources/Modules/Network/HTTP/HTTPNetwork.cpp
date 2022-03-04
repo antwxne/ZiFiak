@@ -167,7 +167,6 @@ void zia::modules::network::HTTPNetwork::handleReceive(
     std::size_t bytes_transfered
 )
 {
-    client.setProcessingARequest(true);
     if (error == asio::error::eof) {
         client.setConnectionStatut(false);
         return;
@@ -175,6 +174,7 @@ void zia::modules::network::HTTPNetwork::handleReceive(
     if (!client.isConnected()) {
         return;
     }
+    client.setProcessingARequest(true);
     client.saveBuffer();
     client.clearBuffer();
     try {
