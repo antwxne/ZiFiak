@@ -37,23 +37,16 @@ class AClient {
 public:
     AClient();
     virtual ~AClient() = default;
-    template<typename T>
-    AClient &operator<<(const T &obj)
-    {
-        return genericSend(&obj, sizeof obj);
-    }
 
-    AClient &operator<<(std::string &str);
-    AClient &operator<<(std::vector <uint8_t> &arr);
-    AClient &operator<<(const ziapi::http::Response &response);
     void operator>>(std::string &str) const;
     void operator>>(std::vector <uint8_t> &arr) const;
     AClient &operator+=(const std::vector <uint8_t> &arr);
 
     [[nodiscard]] const std::vector <uint8_t> &getRawRequest() const noexcept;
     std::vector <uint8_t> &getRawRequest() noexcept;
-    [[nodiscard]] bool isProcessingARequest() const noexcept;
-    void setProcessingARequest(bool var) noexcept;
+    [[nodiscard]] int isProcessingARequest() const noexcept;
+    void IncrementProcessingARequest() noexcept;
+    void DecrementProcessingARequest() noexcept;
     void setKeepAlive(const ziapi::http::Request &req) noexcept;
     [[nodiscard]] const std::optional<KeepAliveInfos> &getKeepAliveInfos() const noexcept;
     [[nodiscard]] const std::chrono::steady_clock::time_point &getTimeLastRequest() const noexcept;
@@ -66,22 +59,22 @@ public:
     std::vector<uint8_t> &getBuffer() noexcept;
     void saveBuffer() noexcept;
     void clearBuffer() noexcept;
+    bool isNewClient() const noexcept;
 
 public:
     virtual int getSocketFd() = 0;
     virtual bool operator==(int fd) noexcept = 0;
     virtual bool operator==(const ziapi::http::Context &ctx) const = 0;
-    [[nodiscard]] virtual ziapi::http::Context getContext() const noexcept = 0;
-protected:
+    [[nodiscard]] virtual ziapi::http::Context getContext() noexcept = 0;
 
-    virtual AClient &genericSend(const void *obj, const std::size_t &size) = 0;
 protected:
-    bool _processingRequest;
+    int _processingRequest;
     bool _isConnected;
     std::vector <uint8_t> _rawRequest;
     std::vector <uint8_t> _buffer;
     std::chrono::steady_clock::time_point _lastRequest;
     std::optional<KeepAliveInfos> _keepAlive;
+    bool _isNew;
 };
 }
 #endif //ZIA_ACLIENT_HPP

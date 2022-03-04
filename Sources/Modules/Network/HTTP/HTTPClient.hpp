@@ -17,10 +17,8 @@ public:
     int getSocketFd() override;
     bool operator==(int fd) noexcept override;
     bool operator==(const ziapi::http::Context &ctx) const override;
-    [[nodiscard]] ziapi::http::Context getContext() const noexcept override;
+    [[nodiscard]] ziapi::http::Context getContext() noexcept override;
     asio::ip::tcp::socket &getAsioSocket() noexcept;
-private:
-    HTTPClient &genericSend(const void *obj, const std::size_t &size) override;
 
 private:
     asio::ip::tcp::socket _socket;
