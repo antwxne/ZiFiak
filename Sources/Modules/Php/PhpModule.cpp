@@ -20,7 +20,6 @@ void zia::modules::php::PhpCgi::Init(const ziapi::config::Node &cfg)
             auto obj = e->AsDict();
             _paths.push_back({obj["url"]->AsString(),obj["filePath"]->AsString()});
         }
-        _env.push_back("CONTENT_TYPE=" + cfg["modules"]["PHP-CGI"]["content_type"].AsString());
         _env.push_back("GATEWAY_INTERFACE=" + cfg["modules"]["PHP-CGI"]["gateway_interface"].AsString());
         _env.push_back("PATH_INFO=" + cfg["modules"]["PHP-CGI"]["path_info"].AsString());
         _env.push_back("PATH_TRANSLATED=" + cfg["modules"]["PHP-CGI"]["path_translated"].AsString());
@@ -75,22 +74,22 @@ bool zia::modules::php::PhpCgi::ShouldHandle(const ziapi::http::Context &ctx, co
     return false;
 }
 
-void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req) noexcept
+void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req, ziapi::http::Context &ctx) noexcept
 {
         for (auto elem : _paths) {
             if (req.target.find(elem.first) == 0) {
                 _env.push_back("SCRIPT_FILENAME=" + elem.second);
                 _env.push_back("SCRIPT_NAME=" + elem.second);
-            std::cout << "ENV: " << elem.second << std::endl;
                 break;
             }
         }
+        _env.push_back("CONTENT_TYPE=" + req.headers.at("Content-Type"));
         _env.push_back("REQUEST_METHOD=" + req.method);
         _env.push_back("QUERY_STRING=");
         _env.push_back("CONTENT_LENGTH=" + std::to_string(req.body.length()));
-        _env.push_back("HTTP_ACCEPT=*/*");
+        _env.push_back("HTTP_ACCEPT=" + req.headers.at("Accept"));
         _env.push_back("HTTP_ACCEPT_LANGUAGE=fr");
-        _env.push_back("HTTP_USER_AGENT=charlie");
+        _env.push_back("HTTP_USER_AGENT=" + req.headers.at("User-Agent"));
         _env.push_back("HTTP_COOKIE=");
 }
 
@@ -175,7 +174,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     std::string token;
     std::string lilToken;
 
-    EnvSetUp(req);
+    EnvSetUp(req, ctx);
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -198,9 +197,9 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0);
     SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0);
 
-    //if (req.boddy.size() != 0) {
-    //    exec += " | " + req.body;
-    //}
+    if (req.boddy.size() != 0) {
+        exec = "echo " + req.body + " | " + exec;
+    }
 
     CreateChildProcess(env, exec);
     std::string tmp = "tmp";
@@ -216,7 +215,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         }
 
         if (req.body.size() != 0) {
-            file = popen(("echo " + req.body + " | " + "env -i" + env + " " +  _cgi).c_str(), "r");
+            file = popen(("echo \"" + req.body + "\" | " + "env -i" + env + " " +  _cgi).c_str(), "r");
         }
         else {
             file = popen(("env -i " + env + " " + _cgi).c_str(), "r");
@@ -232,7 +231,11 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         }
 
 #endif
-
+    if (resp == "Erreur") {
+        ctx.insert({"ErrorOccured", std::pair(ziapi::http::Code::kInternalServerError, ziapi::http::reason::kInternalServerError)});
+        return;
+    }
+    std::cout << "resp ==" << resp << std::endl;
     while ((pos = resp.find("\r\n")) != std::string::npos) {
         token = resp.substr(0, pos);
         while ((tokenPos = token.find(":")) != std::string::npos) {

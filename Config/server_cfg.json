@@ -12,7 +12,7 @@
     {
       "path": "/",
       "methods": [
-        "POSTS",
+        "POST",
         "GET"
       ]
     },
@@ -48,7 +48,6 @@
       "server_software" : "Ziapi/5.0.0",
       "remote_ident" : "",
       "auth_type" : "",
-      "content_type" : "text/php",
       "gateway_interface" : "CGI/1.1",
       "path_translated" : "translationmagle",
       "remote_addr" : "remote",

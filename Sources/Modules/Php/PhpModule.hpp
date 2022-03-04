@@ -44,7 +44,7 @@ class PhpCgi : public ziapi::IHandlerModule {
         bool ShouldHandle(const ziapi::http::Context &ctx, const ziapi::http::Request &req) const override;
         void Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res) override;
 
-        void EnvSetUp(const ziapi::http::Request &req) noexcept;
+        void EnvSetUp(const ziapi::http::Request &req, ziapi::http::Context &ctx) noexcept;
 
 #if defined(_WIN32) || defined(_WIN64)
 
