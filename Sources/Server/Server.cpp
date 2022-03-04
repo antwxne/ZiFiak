@@ -11,7 +11,8 @@
 #include "ConfigParser.hpp"
 #include "Server.hpp"
 
-zia::server::Server::Server() : _isModuleChange(false), _moduleWatcher(Watcher::ModulesPath, _isModuleChange), _isRunning(false) {
+zia::server::Server::Server() : _isModuleChange(false), _isConfigChange(false),
+                                _moduleWatcher(_isModuleChange), _configWatcher(_isConfigChange), _isRunning(false) {
 }
 
 zia::server::Server::~Server()
@@ -21,15 +22,17 @@ zia::server::Server::~Server()
     }
 }
 
-
 void zia::server::Server::init(const std::string &filepath) {
     Debug::log("init server");
 
     ConfigParser confParser;
 
     try {
+        _configWatcher.init(filepath);
+        _configWatcher.getChanges();
         this->_serverConfig = ConfigParser::loadFromFile(filepath);
         auto pathDirectory = zia::server::Server::getPathDirectory();
+        _moduleWatcher.init(pathDirectory);
         _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
         Debug::log("config load successfully loaded");
     } catch (const std::runtime_error &e) {
@@ -78,15 +81,12 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
     for (auto &module : _loadLibs.getHandlerModules()) {
         if (module.first->ShouldHandle(req.second, req.first)) {
             module.first->Handle(req.second, req.first, response);
-            // handleModule(module.first, req, response);
         }
     }
     for (auto &module : _loadLibs.getPostProcessorModules()) {
-        // for (auto &response : responses) {
             if (module.first->ShouldPostProcess(req.second, req.first, response)) {
                 module.first->PostProcess(req.second, req.first, response);
             }
-        // }
     }
     // std::cout << "XXX: " << std::any_cast<std::string>(req.second["client.socket.address"]) << " " << std::any_cast<std::uint16_t>(req.second["client.socket.port"])  << std::endl;
     // for (auto &elem : req.second) {
@@ -97,7 +97,7 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
 
 void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses)
 {
-    while (_isRunning) {
+    while (getIsRunning()) {
         auto curr = request.Pop();
         if (curr == std::nullopt) {
             continue;
@@ -113,24 +113,50 @@ void zia::server::Server::threadPoolNetwork(const std::unique_ptr<ziapi::INetwor
     zia::container::ResponseQueue responses;
 
     network->Run(requests, responses);
-    while (_isRunning) {
+    while (getIsRunning()) {
         threadPool(requests, responses);
     }
+    network->Terminate();
+}
+
+void zia::server::Server::terminateNetwork()
+{
+    setIsRunning(false);
+    for (auto &it: _threadPool) {
+        it.join();
+    }
+    setIsRunning(true);
+}
+
+void zia::server::Server::initNetwork()
+{
+    for (auto &module : _loadLibs.getNetWorkModules()) {
+        _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first)));
+    }    
 }
 
 void zia::server::Server::run() {
-    _isRunning = true;
-    for (auto &module : _loadLibs.getNetWorkModules()) {
-        // module.first->Run(requests, responses);
-        _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first)));
-    }
+    setIsRunning(true);
+    initNetwork();
     while (1) {
+        if (_isConfigChange) {
+            if (_configWatcher.getChanges()[0].state == Watcher::DEL)
+                continue;
+            terminateNetwork();
+            _loadLibs.openFilesAndStore(zia::server::Server::getPathDirectory());
+            _loadLibs.initLibs(_serverConfig);
+            _loadLibs.getType();
+            _loadLibs.sortModules();
+            initNetwork();
+            _isConfigChange = false;
+        }
         if (_isModuleChange) {
+            terminateNetwork();
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
+            initNetwork();
             _isModuleChange = false;
         }
     }
-    _isRunning = false;
     Debug::log("server running");
 }
 

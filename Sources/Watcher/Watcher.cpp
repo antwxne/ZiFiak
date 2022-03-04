@@ -10,15 +10,27 @@
 
 namespace Watcher {
 
-Watcher::Watcher(const std::string &path, bool &changes) : _basicPath(path), _changes(changes)
+Watcher::Watcher(bool &changes) : _changes(changes)
 {
-    searchFiles();
-    _thread = std::thread(&Watcher::update, this);
 }
 
 Watcher::~Watcher()
 {
     _thread.join();
+}
+
+void Watcher::init(const std::string &path)
+{
+    auto systemPath = std::filesystem::status(path);
+
+    _basicPath = path;
+    if (!std::filesystem::is_directory(systemPath)) {
+        searchFile();
+        _thread = std::thread(&Watcher::updateFile, this);
+    } else {
+        searchFiles();
+        _thread = std::thread(&Watcher::update, this);
+    }
 }
 
 std::vector<FileState> Watcher::getFilesInFolder(const std::string &folderPath)
@@ -76,6 +88,7 @@ std::vector<FileState> Watcher::getChanges()
     std::vector<FileState> tmp(_modifiedFiles);
 
     _modifiedFiles.clear();
+    _changes = false;
     return (tmp);
 }
 
@@ -90,10 +103,43 @@ void Watcher::searchFiles()
     }
 }
 
+void Watcher::searchFile()
+{
+    std::vector<FileState> files;
+
+    if (!std::filesystem::exists(std::filesystem::status(_basicPath))) {
+        if (_saves.size()) {
+            files.push_back(FileState{_basicPath, State::DEL});
+            _saves.clear();
+            setUpdatedFiles(files);
+        }
+        return;
+    }
+    auto modifiedTime = std::filesystem::last_write_time(_basicPath).time_since_epoch();
+    if (_saves.find(_basicPath) == _saves.end()) {
+        _saves[_basicPath] = modifiedTime;
+        files.push_back(FileState{_basicPath, State::ADD});
+    } else if (_saves.at(_basicPath) != modifiedTime) {
+        files.push_back(FileState{_basicPath, State::MOD});
+        _saves[_basicPath] = modifiedTime;
+    }
+    if (!files.empty()) {
+        setUpdatedFiles(files);
+    }
+}
+
 void Watcher::update()
 {
     while (1) {
         searchFiles();
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+}
+
+void Watcher::updateFile()
+{
+    while (1) {
+        searchFile();
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 }
