@@ -31,11 +31,11 @@ private:
     void terminateNetwork();
     void initNetwork();
     void setIsRunning(const bool &change) {
-        std::scoped_lock(_mutex);
+        std::scoped_lock lock(_mutex);
         _isRunning = change;
     }
-    const bool &getIsRunning() const {
-        std::scoped_lock(_mutex);
+    const bool &getIsRunning() {
+        std::scoped_lock lock(_mutex);
         return (_isRunning);
     }
     void handleModule(const std::unique_ptr<ziapi::IHandlerModule> &process, std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &handlerResponses);
