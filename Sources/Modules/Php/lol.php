@@ -2,5 +2,5 @@
 
 //$post = print_r($_POST, TRUE);
 
-echo "bite";
+echo "test php-cgi";
 ?>

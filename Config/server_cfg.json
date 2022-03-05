@@ -41,7 +41,7 @@
       "remote_host" : "wsh",
       "script_filename" : [
         {
-          "url": "/toto",
+          "url": "/php",
           "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Php/lol.php"
         }
       ],
@@ -65,7 +65,7 @@
       "remote_host" : "wsh",
       "script_filename" : [
         {
-          "url": "/popo",
+          "url": "/ruby",
           "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Ruby/lol.rb"
         }
       ],

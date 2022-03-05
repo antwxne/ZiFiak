@@ -98,9 +98,9 @@ void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req) noexce
         }
         _env.push_back("QUERY_STRING=" + query);
         _env.push_back("CONTENT_LENGTH=" + std::to_string(req.body.length()));
-        _env.push_back("HTTP_ACCEPT=*/*");
+        _env.push_back("HTTP_ACCEPT=\"" + req.headers.at("Accept") + "\"");
         _env.push_back("HTTP_ACCEPT_LANGUAGE=fr");
-        _env.push_back("HTTP_USER_AGENT=");
+        _env.push_back("HTTP_USER_AGENT=\"" + req.headers.at("User-Agent") + "\"");
         _env.push_back("HTTP_COOKIE=");
 }
 
