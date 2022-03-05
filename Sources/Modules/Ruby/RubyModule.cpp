@@ -2,36 +2,36 @@
 ** EPITECH PROJECT, 2022
 ** ZIA
 ** File description:
-** PhpModule
+** RubyModule
 */
 
-#include "Modules/Php/PhpModule.hpp"
+#include "Modules/Ruby/RubyModule.hpp"
 #include <iostream>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
 
-void zia::modules::php::PhpCgi::Init(const ziapi::config::Node &cfg)
+void zia::modules::ruby::RubyCgi::Init(const ziapi::config::Node &cfg)
 {
     try {
-        _cgi = cfg["modules"]["PHP-CGI"]["full_path"].AsString();
-        for (const auto& e : cfg["modules"]["PHP-CGI"]["script_filename"].AsArray()) {
+        _cgi = cfg["modules"]["RUBY-CGI"]["full_path"].AsString();
+        for (const auto& e : cfg["modules"]["RUBY-CGI"]["script_filename"].AsArray()) {
             auto obj = e->AsDict();
             _paths.push_back({obj["url"]->AsString(),obj["filePath"]->AsString()});
         }
-        _env.push_back("GATEWAY_INTERFACE=" + cfg["modules"]["PHP-CGI"]["gateway_interface"].AsString());
-        _env.push_back("PATH_INFO=" + cfg["modules"]["PHP-CGI"]["path_info"].AsString());
-        _env.push_back("PATH_TRANSLATED=" + cfg["modules"]["PHP-CGI"]["path_translated"].AsString());
-        _env.push_back("REMOTE_IDENT=" + cfg["modules"]["PHP-CGI"]["remote_ident"].AsString());
-        _env.push_back("REMOTE_USER=" + cfg["modules"]["PHP-CGI"]["remote_user"].AsString());
-        _env.push_back("SERVER_NAME=" + cfg["modules"]["PHP-CGI"]["server_name"].AsString());
-        _env.push_back("SERVER_PORT=" + cfg["modules"]["PHP-CGI"]["server_port"].AsString());
-        _env.push_back("SERVER_PROTOCOL=" + cfg["modules"]["PHP-CGI"]["protocol"].AsString());
-        _env.push_back("SERVER_SOFTWARE=" + cfg["modules"]["PHP-CGI"]["server_software"].AsString());
-        _env.push_back("REMOTE_HOST=" + cfg["modules"]["PHP-CGI"]["remote_host"].AsString());
-        _env.push_back("REMOTE_ADDR=" + cfg["modules"]["PHP-CGI"]["ip_client"].AsString());
-        _env.push_back("AUTH_TYPE=" + cfg["modules"]["PHP-CGI"]["auth_type"].AsString());
+        _env.push_back("GATEWAY_INTERFACE=" + cfg["modules"]["RUBY-CGI"]["gateway_interface"].AsString());
+        _env.push_back("PATH_INFO=" + cfg["modules"]["RUBY-CGI"]["path_info"].AsString());
+        _env.push_back("PATH_TRANSLATED=" + cfg["modules"]["RUBY-CGI"]["path_translated"].AsString());
+        _env.push_back("REMOTE_IDENT=" + cfg["modules"]["RUBY-CGI"]["remote_ident"].AsString());
+        _env.push_back("REMOTE_USER=" + cfg["modules"]["RUBY-CGI"]["remote_user"].AsString());
+        _env.push_back("SERVER_NAME=" + cfg["modules"]["RUBY-CGI"]["server_name"].AsString());
+        _env.push_back("SERVER_PORT=" + cfg["modules"]["RUBY-CGI"]["server_port"].AsString());
+        _env.push_back("SERVER_PROTOCOL=" + cfg["modules"]["RUBY-CGI"]["protocol"].AsString());
+        _env.push_back("SERVER_SOFTWARE=" + cfg["modules"]["RUBY-CGI"]["server_software"].AsString());
+        _env.push_back("REMOTE_HOST=" + cfg["modules"]["RUBY-CGI"]["remote_host"].AsString());
+        _env.push_back("REMOTE_ADDR=" + cfg["modules"]["RUBY-CGI"]["ip_client"].AsString());
+        _env.push_back("AUTH_TYPE=" + cfg["modules"]["RUBY-CGI"]["auth_type"].AsString());
         _env.push_back("REDIRECT_STATUS=200");
     }
     catch (const std::exception& e) {
@@ -39,32 +39,32 @@ void zia::modules::php::PhpCgi::Init(const ziapi::config::Node &cfg)
     }
 }
 
-ziapi::Version zia::modules::php::PhpCgi::GetVersion() const noexcept 
+ziapi::Version zia::modules::ruby::RubyCgi::GetVersion() const noexcept 
 {
     return {3, 1, 1};
 }
 
-ziapi::Version zia::modules::php::PhpCgi::GetCompatibleApiVersion() const noexcept
+ziapi::Version zia::modules::ruby::RubyCgi::GetCompatibleApiVersion() const noexcept
 {
     return {3, 1, 1};
 }
 
-const char *zia::modules::php::PhpCgi::GetName() const noexcept
+const char *zia::modules::ruby::RubyCgi::GetName() const noexcept
 {
-    return "Php cgi module";
+    return "ruby cgi module";
 }
 
-const char *zia::modules::php::PhpCgi::GetDescription() const noexcept
+const char *zia::modules::ruby::RubyCgi::GetDescription() const noexcept
 {
-    return "Php cgi module for handle the php";
+    return "ruby cgi module for handle the ruby";
 }
 
-double zia::modules::php::PhpCgi::GetHandlerPriority() const noexcept
+double zia::modules::ruby::RubyCgi::GetHandlerPriority() const noexcept
 {
     return 0.5;
 }
 
-bool zia::modules::php::PhpCgi::ShouldHandle(const ziapi::http::Context &ctx, const ziapi::http::Request &req) const
+bool zia::modules::ruby::RubyCgi::ShouldHandle(const ziapi::http::Context &ctx, const ziapi::http::Request &req) const
 {
     for (auto elem : _paths) {
         if (req.target.find(elem.first) == 0) {
@@ -74,7 +74,7 @@ bool zia::modules::php::PhpCgi::ShouldHandle(const ziapi::http::Context &ctx, co
     return false;
 }
 
-void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req) noexcept
+void zia::modules::ruby::RubyCgi::EnvSetUp(const ziapi::http::Request &req, ziapi::http::Context &ctx) noexcept
 {
         std::string query;
 
@@ -89,7 +89,7 @@ void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req) noexce
             _env.push_back("CONTENT_TYPE=" + req.headers.at("Content-Type"));
         }
         catch (const std::exception& e) {
-            _env.push_back("CONTENT_TYPE=");
+            _env.push_back("CONTENT_TYPE=POST");
         }
         _env.push_back("REQUEST_METHOD=" + req.method);
         if (req.target.find("?") != req.target.npos) {
@@ -105,7 +105,7 @@ void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req) noexce
 }
 
 #if defined(_WIN32) || defined(_WIN64)
-void zia::modules::php::PhpCgi::WriteToPipe() noexcept
+void zia::modules::ruby::RubyCgi::WriteToPipe() noexcept
 {
     DWORD dwRead;
     DWORD dwWritten;
@@ -125,7 +125,7 @@ void zia::modules::php::PhpCgi::WriteToPipe() noexcept
     CloseHandle(g_hChildStd_IN_Wr);
 }
 
-std::string zia::modules::php::PhpCgi::GetFromPipe() noexcept
+std::string zia::modules::ruby::RubyCgi::GetFromPipe() noexcept
 {
     int i = 0;
     DWORD dwRead;
@@ -149,7 +149,7 @@ std::string zia::modules::php::PhpCgi::GetFromPipe() noexcept
 }
 
 
-void zia::modules::php::PhpCgi::CreateChildProcess(std::string env, std::string exec)
+void zia::modules::ruby::RubyCgi::CreateChildProcess(std::string env, std::string exec)
 {
     TCHAR szCmdline[] = TEXT("child");
     PROCESS_INFORMATION piProcInfo;
@@ -173,7 +173,7 @@ void zia::modules::php::PhpCgi::CreateChildProcess(std::string env, std::string 
 #endif
 
 
-void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res)
+void zia::modules::ruby::RubyCgi::Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res)
 {
     int i = 0;
     int pos = 0;
@@ -185,7 +185,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     std::string token;
     std::string lilToken;
 
-    EnvSetUp(req);
+    EnvSetUp(req, ctx);
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -226,7 +226,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         }
 
         if (req.body.size() != 0) {
-            file = popen(("echo \"" + req.body + "\" | " + "env -i" + env + " " +  _cgi).c_str(), "r");
+            file = popen(("echo \"" + req.body + "\" | " + "env -i" + env +  _cgi).c_str(), "r");
         }
         else {
             file = popen(("env -i " + env + " " + _cgi).c_str(), "r");
@@ -236,7 +236,6 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
             while (std::fgets(buf.data(), 128, file) != nullptr) {
                 resp += buf.data();
             }
-            pclose(file);
         }
         else {
             throw std::runtime_error("error CreateProces");
@@ -262,5 +261,5 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
 
 DYLIB_API ziapi::IModule *LoadZiaModule()
 {
-    return new zia::modules::php::PhpCgi;
+    return new zia::modules::ruby::RubyCgi;
 }

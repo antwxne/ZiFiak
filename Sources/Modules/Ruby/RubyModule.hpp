@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2022
 ** ZIA
 ** File description:
-** PhpModule
+** rubyModule
 */
 
 #pragma once
@@ -26,12 +26,12 @@
 #endif
 
 
-namespace zia::modules::php {
+namespace zia::modules::ruby {
 
-class PhpCgi : public ziapi::IHandlerModule {
+class RubyCgi : public ziapi::IHandlerModule {
     public:
-        PhpCgi() = default;
-        ~PhpCgi() = default;
+        RubyCgi() = default;
+        ~RubyCgi() = default;
 
         //IModule
         void Init(const ziapi::config::Node &cfg) override;
@@ -45,7 +45,7 @@ class PhpCgi : public ziapi::IHandlerModule {
         bool ShouldHandle(const ziapi::http::Context &ctx, const ziapi::http::Request &req) const override;
         void Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res) override;
 
-        void EnvSetUp(const ziapi::http::Request &req) noexcept;
+        void EnvSetUp(const ziapi::http::Request &req, ziapi::http::Context &ctx) noexcept;
 
 #if defined(_WIN32) || defined(_WIN64)
 
