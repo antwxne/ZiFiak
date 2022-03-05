@@ -49,15 +49,15 @@ void zia::modules::network::HTTPSNetwork::Init(const ziapi::config::Node &cfg)
         certificate_path = cfg["https"]["certificate_path"].AsString();
     } catch (const std::out_of_range &e) {
         certificate_path = "./Certificat/cert.pem";
-        Debug::warn("HTTPS Network using default certificate_path " + certificate_path);
-
+        Debug::warn(
+            "HTTPS Network using default certificate_path " + certificate_path);
     }
     try {
         private_key_file = cfg["https"]["private_key_file"].AsString();
     } catch (const std::out_of_range &e) {
         private_key_file = "./Certificat/key.pem";
-        Debug::warn("HTTPS Network using default private_key_file " + private_key_file);
-
+        Debug::warn(
+            "HTTPS Network using default private_key_file " + private_key_file);
     }
     try {
         port = cfg["https"]["port"].AsInt();
@@ -83,9 +83,10 @@ void zia::modules::network::HTTPSNetwork::Init(const ziapi::config::Node &cfg)
         _acceptor.set_option(asio::ip::tcp::acceptor::reuse_address(true));
         _acceptor.bind(basicEndPoint);
         _acceptor.listen();
+        Debug::log("HTTPS listening on port " + std::to_string(port));
     } catch (const std::exception &e) {
         _init = false;
-        Debug::err(e.what()) ;
+        Debug::err(e.what());
         Terminate();
     }
 }
@@ -126,6 +127,9 @@ void zia::modules::network::HTTPSNetwork::Run(
             std::ref(requests)));
     _io_context.post(std::bind(&HTTPSNetwork::disconnectClient, this));
     _io_context.restart();
+    if (_thread.joinable()) {
+        _thread.join();
+    }
     _thread = std::thread([&]() {
         while (!_io_context.stopped()) {
             _io_context.run_one();
@@ -162,6 +166,7 @@ void zia::modules::network::HTTPSNetwork::handleAccept(
     zia::modules::network::HTTPSClient &client
 )
 {
+    Debug::log("HTTPS Client connected");
     client.initSSL();
     client.getAsioSSLSocket()->async_handshake(asio::ssl::stream_base::server,
         [&](const std::error_code &error) {
@@ -197,17 +202,17 @@ void zia::modules::network::HTTPSNetwork::handleReceive(
         client.setConnectionStatut(false);
         return;
     }
-    if (!client.isConnected() || client.isProcessingARequest()) {
+    if (!client.isConnected()) {
+        Debug::log("HTTPS client not connected");
         return;
     }
-    client.setProcessingARequest(true);
     client.saveBuffer();
     client.clearBuffer();
     try {
         auto req = zia::modules::network::HTTPParser::createRequest(
             client.toString());
         if (zia::modules::network::HTTPParser::isRequestComplete(req)) {
-            client.setProcessingARequest(true);
+            client.IncrementProcessingARequest();
             requests.Push(std::make_pair(req, client.getContext()));
             client.clearRawRequest();
             client.setKeepAlive(req);
@@ -253,7 +258,10 @@ void zia::modules::network::HTTPSNetwork::disconnectClient() noexcept
     if (!_clients.empty()) {
         auto toDelete = std::find_if(_clients.begin(), _clients.end(),
             [](const std::unique_ptr<HTTPSClient> &client) {
-                if (client->isProcessingARequest()) {
+                if (client->isNewClient()) {
+                    return false;
+                }
+                if (client->isProcessingARequest() > 0) {
                     return false;
                 }
                 if (!client->isConnected()) {
@@ -303,7 +311,7 @@ void zia::modules::network::HTTPSNetwork::genericSend(
                 } else {
                     this->startReceive(requests, client);
                 }
-                client.setProcessingARequest(false);
+                client.DecrementProcessingARequest();
                 client.updateTime();
                 Debug::log(
                     std::to_string(bytesTransferred) + " bytes transferred");

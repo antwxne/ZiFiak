@@ -71,7 +71,7 @@ void zia::server::Server::pipeLine(std::pair<ziapi::http::Request, ziapi::http::
                      "        <p>This is an example of a simple HTML page with one paragraph.</p>\n"
                      "    </body>\n"
                      "</html>");
-    response.body = plop;
+    //response.body = plop;
     response.headers[ziapi::http::header::kContentLength] = std::to_string(plop.size());
     for (auto &module : _loadLibs.getPreProcessorModules()) {
         if (module.first->ShouldPreProcess(req.second, req.first)) {
@@ -166,6 +166,10 @@ void zia::server::Server::run() {
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
             initNetwork();
             _isModuleChange = false;
+            std::cout << _loadLibs.getHandlerModules().size() << std::endl;
+            std::cout << _loadLibs.getPreProcessorModules().size() << std::endl;
+            std::cout << _loadLibs.getPostProcessorModules().size() << std::endl;
+            std::cout << _loadLibs.getNetWorkModules().size() << std::endl;
         }
     }
     Debug::log("server running");

@@ -8,9 +8,9 @@
 #include "AClient.hpp"
 #include "Modules/Network/HTTPParser/HTTPParser.hpp"
 
-zia::modules::network::AClient::AClient() : _keepAlive(std::nullopt),
-    _processingRequest(true), _isConnected(true), _rawRequest(),
-    _lastRequest(std::chrono::steady_clock::now())
+zia::modules::network::AClient::AClient() :
+    _processingRequest(0), _isConnected(true), _rawRequest(),
+    _lastRequest(std::chrono::steady_clock::now()), _keepAlive(std::nullopt), _isNew(true)
 {
 }
 
@@ -24,14 +24,14 @@ std::vector<uint8_t> &zia::modules::network::AClient::getRawRequest() noexcept
     return _rawRequest;
 }
 
-bool zia::modules::network::AClient::isProcessingARequest() const noexcept
+int zia::modules::network::AClient::isProcessingARequest() const noexcept
 {
     return _processingRequest;
 }
 
-void zia::modules::network::AClient::setProcessingARequest(bool var) noexcept
+void zia::modules::network::AClient::IncrementProcessingARequest() noexcept
 {
-    _processingRequest = var;
+    _processingRequest++;
 }
 
 void zia::modules::network::AClient::setKeepAlive(
@@ -85,20 +85,6 @@ void zia::modules::network::AClient::changeBufferSize(const std::size_t &size
     _rawRequest.resize(size);
 }
 
-zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
-    std::string &str
-)
-{
-    return genericSend(str.c_str(), str.size() * sizeof(*str.c_str()));
-}
-
-zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
-    std::vector<uint8_t> &arr
-)
-{
-    return genericSend(&*arr.begin(), arr.size() * sizeof(*arr.begin()));
-}
-
 void zia::modules::network::AClient::operator>>(std::string &str) const
 {
     str.resize(_rawRequest.size() * sizeof(*_rawRequest.begin()));
@@ -129,14 +115,6 @@ bool zia::modules::network::AClient::isConnected() const
 void zia::modules::network::AClient::setConnectionStatut(bool isConnected)
 {
     _isConnected = isConnected;
-}
-
-zia::modules::network::AClient &zia::modules::network::AClient::operator<<(
-    const ziapi::http::Response &response
-)
-{
-    std::string res = zia::modules::network::HTTPParser::readResponse(response);
-    return genericSend(res.c_str(), res.size() * sizeof(*res.c_str()));
 }
 
 std::string zia::modules::network::AClient::toString() const noexcept
@@ -173,4 +151,15 @@ void zia::modules::network::AClient::clearBuffer() noexcept
 const std::optional<zia::modules::network::KeepAliveInfos> &zia::modules::network::AClient::getKeepAliveInfos() const noexcept
 {
     return _keepAlive;
+}
+
+void zia::modules::network::AClient::DecrementProcessingARequest() noexcept
+{
+    _processingRequest--;
+    _isNew = false;
+}
+
+bool zia::modules::network::AClient::isNewClient() const noexcept
+{
+    return _isNew;
 }

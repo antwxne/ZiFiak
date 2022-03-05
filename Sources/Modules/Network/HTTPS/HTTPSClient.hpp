@@ -20,13 +20,11 @@ public:
     int getSocketFd() override;
     bool operator==(int fd) noexcept override;
     bool operator==(const ziapi::http::Context &ctx) const override;
-    [[nodiscard]] ziapi::http::Context getContext() const noexcept override;
+    [[nodiscard]] ziapi::http::Context getContext() noexcept override;
     const std::shared_ptr<asio::ssl::stream<asio::ip::tcp::socket>> &getAsioSSLSocket() const noexcept;
     asio::ip::tcp::socket &getAsioSocket() noexcept;
     void initSSL();
     asio::io_context::strand &getStrand();
-private:
-    HTTPSClient &genericSend(const void *obj, const std::size_t &size) override;
 
 private:
     asio::ip::tcp::socket _socket;

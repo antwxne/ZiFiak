@@ -172,16 +172,16 @@ void zia::modules::network::HTTPNetwork::handleReceive(
         return;
     }
     if (!client.isConnected()) {
+        Debug::log("HTTP client not connected");
         return;
     }
-    client.setProcessingARequest(true);
     client.saveBuffer();
     client.clearBuffer();
     try {
         auto req = zia::modules::network::HTTPParser::createRequest(
             client.toString());
         if (zia::modules::network::HTTPParser::isRequestComplete(req)) {
-            client.setProcessingARequest(true);
+            client.IncrementProcessingARequest();
             requests.Push(std::make_pair(req, client.getContext()));
             client.clearRawRequest();
             client.setKeepAlive(req);
@@ -227,7 +227,10 @@ void zia::modules::network::HTTPNetwork::disconnectClient() noexcept
     if (!_clients.empty()) {
         auto toDelete = std::find_if(_clients.begin(), _clients.end(),
             [](const std::unique_ptr<HTTPClient> &client) {
-                if (client->isProcessingARequest()) {
+                if (client->isNewClient()) {
+                    return false;
+                }
+                if (client->isProcessingARequest() > 0) {
                     return false;
                 }
                 if (!client->isConnected()) {
@@ -275,7 +278,7 @@ void zia::modules::network::HTTPNetwork::genericSend(
             } else {
                 this->startReceive(requests, client);
             }
-            client.setProcessingARequest(false);
+            client.DecrementProcessingARequest();
             client.updateTime();
             Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
         });

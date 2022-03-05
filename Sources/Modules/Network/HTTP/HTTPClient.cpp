@@ -20,12 +20,21 @@ int zia::modules::network::HTTPClient::getSocketFd()
 }
 
 
-ziapi::http::Context zia::modules::network::HTTPClient::getContext() const noexcept
+ziapi::http::Context zia::modules::network::HTTPClient::getContext() noexcept
 {
     ziapi::http::Context ctx;
+    asio::error_code ec;
 
-    ctx["client.socket.address"] = _socket.remote_endpoint().address().to_string();
-    ctx["client.socket.port"] = static_cast<std::uint16_t>(_socket.remote_endpoint().port());
+    ctx["client.socket.address"] = _socket.remote_endpoint(ec).address().to_string();
+    if (ec) {
+        _isNew = false;
+        _isConnected = false;
+    }
+    ctx["client.socket.port"] = static_cast<std::uint16_t>(_socket.remote_endpoint(ec).port());
+    if (ec) {
+        _isNew = false;
+        _isConnected = false;
+    }
     return ctx;
 }
 
@@ -44,28 +53,6 @@ bool zia::modules::network::HTTPClient::operator==(const ziapi::http::Context &c
 bool zia::modules::network::HTTPClient::operator==(int fd) noexcept
 {
     return fd == getSocketFd();
-}
-
-zia::modules::network::HTTPClient &zia::modules::network::HTTPClient::genericSend(
-    const void *obj, const std::size_t &size
-)
-{
-    this->_socket.async_send(asio::buffer(obj, size),
-        [this](const asio::error_code &errorCode, std::size_t bytesTransferred) {
-            if (errorCode) {
-                throw MyException(errorCode.message(), __PRETTY_FUNCTION__,
-                    __FILE__, __LINE__);
-            }
-            if (!this->_keepAlive.has_value()) {
-                this->_isConnected = false;
-                this->_processingRequest = false;
-            } else {
-                this->_keepAlive->max -= 1;
-            }
-            this->updateTime();
-            Debug::log(std::to_string(bytesTransferred) + " bytes transferred");
-        });
-    return *this;
 }
 
 asio::ip::tcp::socket &zia::modules::network::HTTPClient::getAsioSocket() noexcept

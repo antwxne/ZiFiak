@@ -80,8 +80,9 @@ bool AllowMethods::ShouldPreProcess(const ziapi::http::Context &context, const z
     if (getDirOptions.second[0] == "reset")
         return false;
     for (const auto &e : getDirOptions.second) {
-        if (e == req.method)
+        if (e == req.method) {
             return false;
+        }
     }
     return true;
 }
