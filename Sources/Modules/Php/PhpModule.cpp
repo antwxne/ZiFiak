@@ -76,6 +76,8 @@ bool zia::modules::php::PhpCgi::ShouldHandle(const ziapi::http::Context &ctx, co
 
 void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req, ziapi::http::Context &ctx) noexcept
 {
+        std::string query;
+
         for (auto elem : _paths) {
             if (req.target.find(elem.first) == 0) {
                 _env.push_back("SCRIPT_FILENAME=" + elem.second);
@@ -83,9 +85,18 @@ void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req, ziapi:
                 break;
             }
         }
-        _env.push_back("CONTENT_TYPE=" + req.headers.at("Content-Type"));
+        try {
+            _env.push_back("CONTENT_TYPE=" + req.headers.at("Content-Type"));
+        }
+        catch (const std::exception& e) {
+            _env.push_back("CONTENT_TYPE=POST");
+        }
         _env.push_back("REQUEST_METHOD=" + req.method);
-        _env.push_back("QUERY_STRING=");
+        if (req.target.find("?") != req.target.npos) {
+            query = req.target;
+            query.erase(0, query.find("?") + 1);
+        }
+        _env.push_back("QUERY_STRING=" + query);
         _env.push_back("CONTENT_LENGTH=" + std::to_string(req.body.length()));
         _env.push_back("HTTP_ACCEPT=" + req.headers.at("Accept"));
         _env.push_back("HTTP_ACCEPT_LANGUAGE=fr");
@@ -235,7 +246,6 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
         ctx.insert({"ErrorOccured", std::pair(ziapi::http::Code::kInternalServerError, ziapi::http::reason::kInternalServerError)});
         return;
     }
-    std::cout << "resp ==" << resp << std::endl;
     while ((pos = resp.find("\r\n")) != std::string::npos) {
         token = resp.substr(0, pos);
         while ((tokenPos = token.find(":")) != std::string::npos) {
