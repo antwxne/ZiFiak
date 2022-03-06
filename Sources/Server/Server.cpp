@@ -44,8 +44,8 @@ void zia::server::Server::init(const std::string &filepath) {
 const std::string zia::server::Server::getPathDirectory() const {
     try {
         return _serverConfig["directory"].AsString();
-    } catch (std::runtime_error &e) {
-        return "./modules";
+    } catch (const std::out_of_range &e) {
+        return "Modules";
     }
 }
 
@@ -166,10 +166,10 @@ void zia::server::Server::run() {
             _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);
             initNetwork();
             _isModuleChange = false;
-            std::cout << _loadLibs.getHandlerModules().size() << std::endl;
-            std::cout << _loadLibs.getPreProcessorModules().size() << std::endl;
-            std::cout << _loadLibs.getPostProcessorModules().size() << std::endl;
-            std::cout << _loadLibs.getNetWorkModules().size() << std::endl;
+            //std::cout << _loadLibs.getHandlerModules().size() << std::endl;
+            //std::cout << _loadLibs.getPreProcessorModules().size() << std::endl;
+            //std::cout << _loadLibs.getPostProcessorModules().size() << std::endl;
+            //std::cout << _loadLibs.getNetWorkModules().size() << std::endl;
         }
     }
     Debug::log("server running");
