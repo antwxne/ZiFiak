@@ -73,17 +73,21 @@ bool zia::modules::global::GlobalCgi::ShouldHandle(const ziapi::http::Context &c
     return false;
 }
 
-void zia::modules::global::GlobalCgi::EnvSetUp(const ziapi::http::Request &req) noexcept
+bool zia::modules::global::GlobalCgi::EnvSetUp(const ziapi::http::Request &req) noexcept
 {
         std::string query;
+        _cgi = {};
 
         for (auto elem : _paths) {
-            if (req.target.find(elem.first) == 0) {
+            if (req.target.find(elem.first) == 0 && req.target.size() == elem.first.size()) {
                 _cgi = elem.second.second;
                 _env.push_back("SCRIPT_FILENAME=" + elem.second.first);
                 _env.push_back("SCRIPT_NAME=" + elem.second.first);
                 break;
             }
+        }
+        if (_cgi.size() == 0) {
+            return 1;
         }
         try {
             _env.push_back("CONTENT_TYPE=" + req.headers.at("Content-Type"));
@@ -102,6 +106,7 @@ void zia::modules::global::GlobalCgi::EnvSetUp(const ziapi::http::Request &req) 
         _env.push_back("HTTP_ACCEPT_LANGUAGE=fr");
         _env.push_back("HTTP_USER_AGENT=\"" + req.headers.at("User-Agent") + "\"");
         _env.push_back("HTTP_COOKIE=");
+        return 0;
 }
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -185,7 +190,8 @@ void zia::modules::global::GlobalCgi::Handle(ziapi::http::Context &ctx, const zi
     std::string token = {};
     std::string lilToken = {};
 
-    EnvSetUp(req);
+    if (EnvSetUp(req))
+        return;
 
 #if defined(_WIN32) || defined(_WIN64)
 
