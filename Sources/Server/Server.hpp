@@ -40,7 +40,7 @@ private:
     }
     void handleModule(const std::unique_ptr<ziapi::IHandlerModule> &process, std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &handlerResponses);
     void threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses);
-    void threadPoolNetwork(const std::unique_ptr<ziapi::INetworkModule> &network);
+    void threadPoolNetwork(const std::unique_ptr<ziapi::INetworkModule> &network, zia::container::RequestQueue &requests, zia::container::ResponseQueue &responses);
     void pipeLine(std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &responses);
     Node _serverConfig;
     LoadLibs _loadLibs;
@@ -48,6 +48,10 @@ private:
     bool _isConfigChange;
     Watcher::Watcher _moduleWatcher;
     Watcher::Watcher _configWatcher;
+    zia::container::RequestQueue requests1;
+    zia::container::ResponseQueue responses1;
+    zia::container::RequestQueue requests2;
+    zia::container::ResponseQueue responses2;
     std::vector<std::thread> _threadPool;
     std::mutex _mutex;
     bool _isRunning;

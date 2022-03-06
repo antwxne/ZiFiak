@@ -107,11 +107,8 @@ void zia::server::Server::threadPool(zia::container::RequestQueue &request, zia:
     }
 }
 
-void zia::server::Server::threadPoolNetwork(const std::unique_ptr<ziapi::INetworkModule> &network)
+void zia::server::Server::threadPoolNetwork(const std::unique_ptr<ziapi::INetworkModule> &network, zia::container::RequestQueue &requests, zia::container::ResponseQueue &responses)
 {
-    zia::container::RequestQueue requests;
-    zia::container::ResponseQueue responses;
-
     network->Run(requests, responses);
     while (getIsRunning()) {
         threadPool(requests, responses);
@@ -125,14 +122,24 @@ void zia::server::Server::terminateNetwork()
     for (auto &it: _threadPool) {
         it.join();
     }
+    // requests1.clear();
+    // requests2.clear();
+    // responses1.clear();
+    // responses2.clear();
     _threadPool.clear();
 }
 
 void zia::server::Server::initNetwork()
 {
     setIsRunning(true);
+    int a = 0;
     for (auto &module : _loadLibs.getNetWorkModules()) {
-        _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first)));
+        if (a == 0) {
+            _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first), std::ref(requests1), std::ref(responses1)));
+        } else {
+            _threadPool.emplace_back(std::thread(&zia::server::Server::threadPoolNetwork, this, std::ref(module.first), std::ref(requests2), std::ref(responses2)));
+        }
+        a++;
     }
 }
 
