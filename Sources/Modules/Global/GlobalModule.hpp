@@ -26,12 +26,12 @@
 #endif
 
 
-namespace zia::modules::ruby {
+namespace zia::modules::global {
 
-class RubyCgi : public ziapi::IHandlerModule {
+class GlobalCgi : public ziapi::IHandlerModule {
     public:
-        RubyCgi() = default;
-        ~RubyCgi() = default;
+        GlobalCgi() = default;
+        ~GlobalCgi() = default;
 
         //IModule
         void Init(const ziapi::config::Node &cfg) override;
@@ -45,7 +45,8 @@ class RubyCgi : public ziapi::IHandlerModule {
         bool ShouldHandle(const ziapi::http::Context &ctx, const ziapi::http::Request &req) const override;
         void Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res) override;
 
-        void EnvSetUp(const ziapi::http::Request &req, ziapi::http::Context &ctx) noexcept;
+        //Set up the env
+        void EnvSetUp(const ziapi::http::Request &req) noexcept;
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -59,15 +60,15 @@ class RubyCgi : public ziapi::IHandlerModule {
             bool _initSetUp = true;
             std::vector<std::string> _env;
             std::string _cgi;
-            std::vector<std::pair<std::string, std::string>> _paths;
+            std::vector<std::pair<std::string, std::pair<std::string, std::string>>> _paths;
 
 #if defined(_WIN32) || defined(_WIN64)
 
-            HANDLE g_hChildStd_IN_Rd = nullptr;
-            HANDLE g_hChildStd_IN_Wr = nullptr;
-            HANDLE g_hChildStd_OUT_Rd = nullptr;
-            HANDLE g_hChildStd_OUT_Wr = nullptr;
-            HANDLE g_hInputFile = nullptr;
+            HANDLE _childStd_IN_Rd = nullptr;
+            HANDLE _childStd_IN_Wr = nullptr;
+            HANDLE _childStd_OUT_Rd = nullptr;
+            HANDLE _childStd_OUT_Wr = nullptr;
+            HANDLE _inputFile = nullptr;
 
 #endif
 

@@ -113,16 +113,16 @@ void zia::modules::php::PhpCgi::WriteToPipe() noexcept
     bool bSuccess = false;
 
     while (1) {
-        bSuccess = ReadFile(g_hInputFile, chBuf, BUFSIZE, &dwRead, nullptr);
+        bSuccess = ReadFile(_inputFile, chBuf, BUFSIZE, &dwRead, nullptr);
         if (!bSuccess || dwRead == 0) {
             break;
         }
-        bSuccess = WriteFile(g_hChildStd_IN_Wr, chBuf, dwRead, &dwWritten, nullptr);
+        bSuccess = WriteFile(_childStd_IN_Wr, chBuf, dwRead, &dwWritten, nullptr);
         if (!bSuccess) {
             break;
         }
     }
-    CloseHandle(g_hChildStd_IN_Wr);
+    CloseHandle(_childStd_IN_Wr);
 }
 
 std::string zia::modules::php::PhpCgi::GetFromPipe() noexcept
@@ -135,7 +135,7 @@ std::string zia::modules::php::PhpCgi::GetFromPipe() noexcept
     std::string tmp = {};
 
     while (1) {
-        bSuccess = ReadFile(g_hChildStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
+        bSuccess = ReadFile(_childStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
         while (i != dwRead) {
             tmp += chBuf[i];
             i++;
@@ -160,15 +160,15 @@ void zia::modules::php::PhpCgi::CreateChildProcess(std::string env, std::string 
     ZeroMemory(&siStartInfo, sizeof(STARTUPINFOA));
 
     siStartInfo.cb = sizeof(STARTUPINFOA);
-    siStartInfo.hStdOutput = g_hChildStd_OUT_Wr;
-    siStartInfo.hStdInput = g_hChildStd_IN_Rd;
+    siStartInfo.hStdOutput = _childStd_OUT_Wr;
+    siStartInfo.hStdInput = _childStd_IN_Rd;
     siStartInfo.dwFlags = STARTF_USESTDHANDLES;
 
     bSuccess = CreateProcessA(nullptr, _strdup(exec.c_str()), nullptr, nullptr, true, 0, (LPVOID)env.data(), nullptr, &siStartInfo, &piProcInfo);
     CloseHandle(piProcInfo.hProcess);
     CloseHandle(piProcInfo.hThread);
-    CloseHandle(g_hChildStd_OUT_Wr);
-    CloseHandle(g_hChildStd_IN_Rd);
+    CloseHandle(_childStd_OUT_Wr);
+    CloseHandle(_childStd_IN_Rd);
 }
 #endif
 
@@ -203,10 +203,10 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     saAttr.bInheritHandle = true;
     saAttr.lpSecurityDescriptor = nullptr;
 
-    CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &saAttr, 0);
-    SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0);
-    CreatePipe(&g_hChildStd_IN_Rd, &g_hChildStd_IN_Wr, &saAttr, 0);
-    SetHandleInformation(g_hChildStd_IN_Wr, HANDLE_FLAG_INHERIT, 0);
+    CreatePipe(&_childStd_OUT_Rd, &_childStd_OUT_Wr, &saAttr, 0);
+    SetHandleInformation(_childStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0);
+    CreatePipe(&_childStd_IN_Rd, &_childStd_IN_Wr, &saAttr, 0);
+    SetHandleInformation(_childStd_IN_Wr, HANDLE_FLAG_INHERIT, 0);
 
     if (req.body.size() != 0) {
         exec = "echo " + req.body + " | " + exec;
@@ -215,7 +215,7 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
     CreateChildProcess(env, exec);
     std::string tmp = "tmp";
 
-    g_hInputFile = CreateFileA(reinterpret_cast<LPCSTR>(tmp.data()), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, nullptr);
+    _inputFile = CreateFileA(reinterpret_cast<LPCSTR>(tmp.data()), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_READONLY, nullptr);
     WriteToPipe();
     resp = GetFromPipe();
 #else

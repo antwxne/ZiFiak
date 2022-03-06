@@ -41,12 +41,11 @@
       "remote_host" : "wsh",
       "script_filename" : [
         {
-          "url": "/php",
+          "url": "/popo",
           "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Php/lol.php"
         }
       ],
       "ip_client" : "127.0.0.1",
-      "exec_name" : "lol.php",
       "protocol" : "HTTP/1.1",
       "server_name" : "ZiFiak",
       "server_port" : "8080",
@@ -59,18 +58,42 @@
       "remote_user" : "bibicharlie",
       "server_addr" : "localhost"
     },
-    "RUBY-CGI": {
+    "GLOBAL-CGI": {
       "path_info" : "/",
-      "full_path" : "Sources/Modules/Ruby/lol.rb",
       "remote_host" : "wsh",
       "script_filename" : [
         {
-          "url": "/ruby",
-          "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Ruby/lol.rb"
+          "url": "/rubyGet",
+          "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Global/test/rubyGet.rb",
+          "execPath": "Sources/Modules/Global/test/rubyGet.rb"
+        },
+        {
+          "url": "/rubyPost",
+          "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Global/test/rubyPost.rb",
+          "execPath": "Sources/Modules/Global/test/rubyPost.rb"
+        },
+        {
+          "url": "/pythonGet",
+          "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Global/test/pythonGet.py",
+          "execPath": "Sources/Modules/Global/test/pythonGet.py"
+        },
+        {
+          "url": "/pythonPost",
+          "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Global/test/pythonPost.py",
+          "execPath": "Sources/Modules/Global/test/pythonPost.py"
+        },
+        {
+          "url": "/phpGet",
+          "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Global/test/phpGet.php",
+          "execPath": "/opt/homebrew/bin/php-cgi"
+        },
+        {
+          "url": "/phpPost",
+          "filePath": "/Users/tcampos/Epitech/WorkInProgress/ZiFiak/Sources/Modules/Global/test/phpPost.php",
+          "execPath": "/opt/homebrew/bin/php-cgi"
         }
       ],
       "ip_client" : "127.0.0.1",
-      "exec_name" : "lol.rb",
       "protocol" : "HTTP/1.1",
       "server_name" : "ZiFiak",
       "server_port" : "8080",

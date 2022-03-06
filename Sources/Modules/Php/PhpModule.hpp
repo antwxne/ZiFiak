@@ -63,11 +63,11 @@ class PhpCgi : public ziapi::IHandlerModule {
 
 #if defined(_WIN32) || defined(_WIN64)
 
-            HANDLE g_hChildStd_IN_Rd = nullptr;
-            HANDLE g_hChildStd_IN_Wr = nullptr;
-            HANDLE g_hChildStd_OUT_Rd = nullptr;
-            HANDLE g_hChildStd_OUT_Wr = nullptr;
-            HANDLE g_hInputFile = nullptr;
+            HANDLE _childStd_IN_Rd = nullptr;
+            HANDLE _childStd_IN_Wr = nullptr;
+            HANDLE _childStd_OUT_Rd = nullptr;
+            HANDLE _childStd_OUT_Wr = nullptr;
+            HANDLE _inputFile = nullptr;
 
 #endif
 

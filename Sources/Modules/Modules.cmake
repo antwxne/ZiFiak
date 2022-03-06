@@ -43,13 +43,13 @@ add_library(php_cgi SHARED ${BASE_MODULE}
         )
 conan_target_link_libraries(php_cgi ${CONAN_LIBS})
 add_dependencies(php_cgi ziapi)
-# Ruby-cgi MODULE
-add_library(ruby_cgi SHARED ${BASE_MODULE}
-        Sources/Modules/Ruby/RubyModule.hpp
-        Sources/Modules/Ruby/RubyModule.cpp
+# Global-cgi MODULE
+add_library(global_cgi SHARED ${BASE_MODULE}
+        Sources/Modules/Global/GlobalModule.hpp
+        Sources/Modules/Global/GlobalModule.cpp
         )
-conan_target_link_libraries(ruby_cgi ${CONAN_LIBS})
-add_dependencies(ruby_cgi ziapi)
+conan_target_link_libraries(global_cgi ${CONAN_LIBS})
+add_dependencies(global_cgi ziapi)
 # Delegate MODULE
 add_library(deflate SHARED ${BASE_MODULE}
         Sources/Modules/Deflate/Deflate.hpp
