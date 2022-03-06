@@ -107,18 +107,18 @@ void zia::modules::php::PhpCgi::EnvSetUp(const ziapi::http::Request &req) noexce
 #if defined(_WIN32) || defined(_WIN64)
 void zia::modules::php::PhpCgi::WriteToPipe() noexcept
 {
-    DWORD dwRead;
-    DWORD dwWritten;
+    DWORD readPipe;
+    DWORD writePipe;
     char chBuf[BUFSIZE];
-    bool bSuccess = false;
+    bool succeed = false;
 
     while (1) {
-        bSuccess = ReadFile(_inputFile, chBuf, BUFSIZE, &dwRead, nullptr);
-        if (!bSuccess || dwRead == 0) {
+        succeed = ReadFile(_inputFile, chBuf, BUFSIZE, &readPipe, nullptr);
+        if (!succeed || readPipe == 0) {
             break;
         }
-        bSuccess = WriteFile(_childStd_IN_Wr, chBuf, dwRead, &dwWritten, nullptr);
-        if (!bSuccess) {
+        succeed = WriteFile(_childStd_IN_Wr, chBuf, readPipe, &writePipe, nullptr);
+        if (!succeed) {
             break;
         }
     }
@@ -128,20 +128,19 @@ void zia::modules::php::PhpCgi::WriteToPipe() noexcept
 std::string zia::modules::php::PhpCgi::GetFromPipe() noexcept
 {
     int i = 0;
-    DWORD dwRead;
-    DWORD dwWritten;
+    DWORD readPipe;
     char chBuf[BUFSIZE];
-    bool bSuccess = false;
+    bool succeed = false;
     std::string tmp = {};
 
     while (1) {
-        bSuccess = ReadFile(_childStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
-        while (i != dwRead) {
+        succeed = ReadFile(_childStd_OUT_Rd, chBuf, BUFSIZE, &readPipe, NULL);
+        while (i != readPipe) {
             tmp += chBuf[i];
             i++;
         }
         i = 0;
-        if (!bSuccess || dwRead == 0) {
+        if (!succeed || readPipe == 0) {
             break;
         }
     }
@@ -151,22 +150,20 @@ std::string zia::modules::php::PhpCgi::GetFromPipe() noexcept
 
 void zia::modules::php::PhpCgi::CreateChildProcess(std::string env, std::string exec)
 {
-    TCHAR szCmdline[] = TEXT("child");
-    PROCESS_INFORMATION piProcInfo;
-    STARTUPINFOA siStartInfo;
-    bool bSuccess = false;
+    PROCESS_INFORMATION procInfo;
+    STARTUPINFOA startInfo;
 
-    ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
-    ZeroMemory(&siStartInfo, sizeof(STARTUPINFOA));
+    ZeroMemory(&procInfo, sizeof(PROCESS_INFORMATION));
+    ZeroMemory(&startInfo, sizeof(STARTUPINFOA));
 
-    siStartInfo.cb = sizeof(STARTUPINFOA);
-    siStartInfo.hStdOutput = _childStd_OUT_Wr;
-    siStartInfo.hStdInput = _childStd_IN_Rd;
-    siStartInfo.dwFlags = STARTF_USESTDHANDLES;
+    startInfo.cb = sizeof(STARTUPINFOA);
+    startInfo.hStdOutput = _childStd_OUT_Wr;
+    startInfo.hStdInput = _childStd_IN_Rd;
+    startInfo.dwFlags = STARTF_USESTDHANDLES;
 
-    bSuccess = CreateProcessA(nullptr, _strdup(exec.c_str()), nullptr, nullptr, true, 0, (LPVOID)env.data(), nullptr, &siStartInfo, &piProcInfo);
-    CloseHandle(piProcInfo.hProcess);
-    CloseHandle(piProcInfo.hThread);
+    CreateProcessA(nullptr, _strdup(exec.c_str()), nullptr, nullptr, true, 0, (LPVOID)env.data(), nullptr, &startInfo, &procInfo);
+    CloseHandle(procInfo.hProcess);
+    CloseHandle(procInfo.hThread);
     CloseHandle(_childStd_OUT_Wr);
     CloseHandle(_childStd_IN_Rd);
 }
@@ -190,7 +187,6 @@ void zia::modules::php::PhpCgi::Handle(ziapi::http::Context &ctx, const ziapi::h
 #if defined(_WIN32) || defined(_WIN64)
 
     std::string exec = _cgi;
-
     SECURITY_ATTRIBUTES saAttr;
 
     while (i != _env.size()) {
