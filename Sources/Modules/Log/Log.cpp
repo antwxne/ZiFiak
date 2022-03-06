@@ -33,7 +33,7 @@ ziapi::Version Log::GetVersion() const noexcept
 
 ziapi::Version Log::GetCompatibleApiVersion() const noexcept
 {
-    return {5, 0, 0};
+    return {5, 0, 1};
 }
 
 const char *Log::GetName() const noexcept

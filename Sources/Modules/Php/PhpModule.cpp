@@ -46,7 +46,7 @@ ziapi::Version zia::modules::php::PhpCgi::GetVersion() const noexcept
 
 ziapi::Version zia::modules::php::PhpCgi::GetCompatibleApiVersion() const noexcept
 {
-    return {3, 1, 1};
+    return {5, 0, 1};
 }
 
 const char *zia::modules::php::PhpCgi::GetName() const noexcept

@@ -45,7 +45,7 @@ ziapi::Version zia::modules::global::GlobalCgi::GetVersion() const noexcept
 
 ziapi::Version zia::modules::global::GlobalCgi::GetCompatibleApiVersion() const noexcept
 {
-    return {3, 1, 1};
+    return {5, 0, 1};
 }
 
 const char *zia::modules::global::GlobalCgi::GetName() const noexcept

@@ -27,7 +27,7 @@ void FallBack::Init([[maybe_unused]] const ziapi::config::Node &)
 
 [[nodiscard]] ziapi::Version FallBack::GetCompatibleApiVersion() const noexcept
 {
-    return ziapi::Version{5, 0, 0};
+    return ziapi::Version{5, 0, 1};
 }
 
 [[nodiscard]] const char *FallBack::GetName() const noexcept

@@ -58,7 +58,7 @@ include(ExternalProject)
 ExternalProject_Add(
         ziapi
         GIT_REPOSITORY https://github.com/martin-olivier/ZiAPI.git
-        GIT_TAG v5.0.0
+        GIT_TAG v5.0.1
         INSTALL_COMMAND ""
         TEST_COMMAND ""
 )
