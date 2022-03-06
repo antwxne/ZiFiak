@@ -3,7 +3,6 @@ set(BASE_MODULE
         Sources/Exceptions/MyException.hpp
         Sources/Debug/Debug.hpp
         Sources/Debug/Debug.cpp
-        Sources/dylib/dylib.hpp
        )
 
 # HTTP NETWORK MODULE
