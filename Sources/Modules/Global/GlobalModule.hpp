@@ -46,7 +46,7 @@ class GlobalCgi : public ziapi::IHandlerModule {
         void Handle(ziapi::http::Context &ctx, const ziapi::http::Request &req, ziapi::http::Response &res) override;
 
         //Set up the env
-        void EnvSetUp(const ziapi::http::Request &req) noexcept;
+        bool EnvSetUp(const ziapi::http::Request &req) noexcept;
 
 #if defined(_WIN32) || defined(_WIN64)
 
