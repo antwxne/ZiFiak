@@ -71,6 +71,7 @@ const std::string zia::server::Server::getPathDirectory() const {
     try {
         return _serverConfig["directory"].AsString();
     } catch (const std::out_of_range &e) {
+        Debug::warn("Server use Modules folder by default");
         return "Modules";
     }
 }
