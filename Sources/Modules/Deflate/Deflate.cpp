@@ -35,7 +35,7 @@ void Deflate::Init([[maybe_unused]] const ziapi::config::Node &config)
 
 [[nodiscard]] ziapi::Version Deflate::GetCompatibleApiVersion() const noexcept
 {
-    return ziapi::Version{5, 0, 0};
+    return ziapi::Version{5, 0, 1};
 }
 
 [[nodiscard]] const char *Deflate::GetName() const noexcept

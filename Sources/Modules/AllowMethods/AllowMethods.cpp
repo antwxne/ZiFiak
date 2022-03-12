@@ -45,7 +45,7 @@ ziapi::Version AllowMethods::GetVersion() const noexcept
 
 ziapi::Version AllowMethods::GetCompatibleApiVersion() const noexcept
 {
-    return {5, 0, 0};
+    return {5, 0, 1};
 }
 
 const char *AllowMethods::GetName() const noexcept

@@ -98,7 +98,7 @@ ziapi::Version zia::modules::network::HTTPSNetwork::GetVersion() const noexcept
 
 ziapi::Version zia::modules::network::HTTPSNetwork::GetCompatibleApiVersion() const noexcept
 {
-    return {5, 0, 0};
+    return {5, 0, 1};
 }
 
 const char *zia::modules::network::HTTPSNetwork::GetName() const noexcept

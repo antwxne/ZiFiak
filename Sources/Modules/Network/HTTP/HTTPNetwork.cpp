@@ -76,7 +76,7 @@ ziapi::Version zia::modules::network::HTTPNetwork::GetVersion() const noexcept
 
 ziapi::Version zia::modules::network::HTTPNetwork::GetCompatibleApiVersion() const noexcept
 {
-    return {5, 0, 0};
+    return {5, 0, 1};
 }
 
 const char *zia::modules::network::HTTPNetwork::GetName() const noexcept
