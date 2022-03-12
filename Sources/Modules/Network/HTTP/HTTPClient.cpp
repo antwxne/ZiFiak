@@ -11,6 +11,9 @@ zia::modules::network::HTTPClient::HTTPClient(
     asio::io_context &ioContext
 ) : AClient(), _socket(ioContext)
 {
+    if (_socket.native_handle() == -1) {
+        throw std::runtime_error("Corrupted or Bad file descriptor");
+    }
 }
 
 

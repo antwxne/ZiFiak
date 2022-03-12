@@ -153,13 +153,17 @@ void zia::modules::network::HTTPSNetwork::startAccept(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-    auto newClient = std::make_unique<zia::modules::network::HTTPSClient>(
-        HTTPSClient(_io_context, _sslContext));
+    try {
+        auto newClient = std::make_unique<zia::modules::network::HTTPSClient>(
+            HTTPSClient(_io_context, _sslContext));
 
-    _acceptor.async_accept(newClient->getAsioSocket(),
-        std::bind(&HTTPSNetwork::handleAccept, this, std::ref(requests),
-            std::ref(*newClient)));
-    _clients.push_back(std::move(newClient));
+        _acceptor.async_accept(newClient->getAsioSocket(),
+            std::bind(&HTTPSNetwork::handleAccept, this, std::ref(requests),
+                std::ref(*newClient)));
+        _clients.push_back(std::move(newClient));
+    } catch (const std::exception &e) {
+        Debug::log(e.what());
+    }
 }
 
 void zia::modules::network::HTTPSNetwork::handleAccept(

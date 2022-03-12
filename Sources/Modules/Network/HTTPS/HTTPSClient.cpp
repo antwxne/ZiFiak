@@ -11,6 +11,9 @@ zia::modules::network::HTTPSClient::HTTPSClient(asio::io_context &ioContext,
     asio::ssl::context &sslContext
 ) : AClient(), _socket(ioContext), _sslContext(sslContext), _strand(ioContext)
 {
+    if (_socket.native_handle() == -1) {
+        throw std::runtime_error("Corrupted or Bad file descriptor");
+    }
 }
 
 void zia::modules::network::HTTPSClient::initSSL()
