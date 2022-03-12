@@ -7,6 +7,8 @@
 
 #include <exception>
 #include <iostream>
+#include <filesystem>
+#include <fstream>
 #include "Debug/Debug.hpp"
 #include "ConfigParser.hpp"
 #include "Server.hpp"
@@ -22,15 +24,39 @@ zia::server::Server::~Server()
     }
 }
 
+std::string zia::server::Server::createConfig()
+{
+    std::srand(std::time(nullptr));
+    std::filesystem::create_directory("Config");
+    std::string newPath = "./Config/config" + std::to_string(std::rand()) + ".json";
+    std::ofstream newConfig{newPath};
+
+    newConfig << 
+    "{\n"
+    "    \"http\": {\n"
+    "        \"port\": 8080,\n"
+    "        \"activated\": true\n"
+    "    },\n"
+    "    \"https\": {\n"
+    "        \"port\": 8081,\n"
+    "        \"activated\": true\n"
+    "    }\n"
+    "}" << std::endl;
+    return newPath;
+}
+
 void zia::server::Server::init(const std::string &filepath) {
     Debug::log("init server");
 
-    ConfigParser confParser;
+    std::string path = filepath;
 
     try {
-        _configWatcher.init(filepath);
+        if (filepath.empty()) {
+            path = createConfig();
+        }
+        _configWatcher.init(path);
         _configWatcher.getChanges();
-        this->_serverConfig = ConfigParser::loadFromFile(filepath);
+        this->_serverConfig = ConfigParser::loadFromFile(path);
         auto pathDirectory = zia::server::Server::getPathDirectory();
         _moduleWatcher.init(pathDirectory);
         _loadLibs.loadLibByFiles(_moduleWatcher.getChanges(), _serverConfig);

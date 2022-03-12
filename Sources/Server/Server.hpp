@@ -38,6 +38,7 @@ private:
         std::scoped_lock lock(_mutex);
         return (_isRunning);
     }
+    std::string createConfig();
     void handleModule(const std::unique_ptr<ziapi::IHandlerModule> &process, std::pair<ziapi::http::Request, ziapi::http::Context> &req, zia::container::ResponseQueue &handlerResponses);
     void threadPool(zia::container::RequestQueue &request, zia::container::ResponseQueue &responses);
     void threadPoolNetwork(const std::unique_ptr<ziapi::INetworkModule> &network);
