@@ -143,6 +143,7 @@ void zia::modules::network::HTTPSNetwork::Run(
 void zia::modules::network::HTTPSNetwork::Terminate()
 {
     _io_context.stop();
+    _io_context.restart();
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
     Debug::log("HTTPS network module terminated");

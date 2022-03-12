@@ -121,6 +121,7 @@ void zia::modules::network::HTTPNetwork::Run(
 void zia::modules::network::HTTPNetwork::Terminate()
 {
     _io_context.stop();
+    _io_context.restart();
     _signalSet.remove(SIGINT);
     _signalSet.remove(SIGTERM);
     Debug::log("HTTP network module terminated");
