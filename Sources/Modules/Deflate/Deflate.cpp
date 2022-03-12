@@ -10,7 +10,7 @@
 #include "Deflate.hpp"
 #include "zlib.h"
 
-Deflate::Deflate() : _activated(true)
+Deflate::Deflate() : _activated(false)
 {
 }
 
@@ -24,8 +24,8 @@ void Deflate::Init([[maybe_unused]] const ziapi::config::Node &config)
     try {
         this->_activated = config["Deflate"]["activated"].AsBool();
     } catch(const std::exception& e) {
+        std::cerr << "Deflate(Init): " << e.what() << std::endl;
     }
-    
 }
 
 [[nodiscard]] ziapi::Version Deflate::GetVersion() const noexcept
@@ -66,8 +66,9 @@ void Deflate::PostProcess(ziapi::http::Context &context, const ziapi::http::Requ
 
 bool Deflate::ShouldPostProcess(const ziapi::http::Context &context, const ziapi::http::Request &req, const ziapi::http::Response &res) const
 {
-    if (!this->_activated)
+    if (!this->_activated) {
         return false;
+    }
     if (req.headers.find("Accept-Encoding") != req.headers.end() && req.headers.at("Accept-Encoding").find("gzip") != std::string::npos)
         return true;
     return false;
