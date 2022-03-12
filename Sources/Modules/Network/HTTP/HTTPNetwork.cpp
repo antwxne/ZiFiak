@@ -99,13 +99,7 @@ void zia::modules::network::HTTPNetwork::Run(
         Terminate();
         return;
     }
-    try {
-        startAccept(requests);
-    } catch (const std::exception &e) {
-        Debug::err("HTTP network not enough fd");
-        Terminate();
-        return;
-    }
+    startAccept(requests);
     _io_context.post(
         std::bind(&HTTPNetwork::sendResponses, this, std::ref(responses),
             std::ref(requests)));
@@ -137,17 +131,13 @@ void zia::modules::network::HTTPNetwork::startAccept(
     ziapi::http::IRequestOutputQueue &requests
 )
 {
-    try {
-        auto newClient = std::make_unique<zia::modules::network::HTTPClient>(
-            HTTPClient(_io_context));
+    auto newClient = std::make_unique<zia::modules::network::HTTPClient>(
+        HTTPClient(_io_context));
 
-        _acceptor.async_accept(newClient->getAsioSocket(),
-            std::bind(&HTTPNetwork::handleAccept, this, std::ref(requests),
-                std::ref(*newClient)));
-        _clients.push_back(std::move(newClient));
-    } catch (const std::exception &e) {
-        Debug::log(e.what());
-    }
+    _acceptor.async_accept(newClient->getAsioSocket(),
+        std::bind(&HTTPNetwork::handleAccept, this, std::ref(requests),
+            std::ref(*newClient)));
+    _clients.push_back(std::move(newClient));
 }
 
 void zia::modules::network::HTTPNetwork::handleAccept(
@@ -155,6 +145,11 @@ void zia::modules::network::HTTPNetwork::handleAccept(
     zia::modules::network::HTTPClient &client
 )
 {
+    if (client.getSocketFd() < 0) {
+        client.setConnectionStatut(false);
+        Debug::err("HTTP Client corrupted fd");
+        return;
+    }
     Debug::log("HTTP Client connected");
     startReceive(requests, client);
     startAccept(requests);
