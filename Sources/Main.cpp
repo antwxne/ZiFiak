@@ -13,13 +13,13 @@
 
 int main(int ac, char **av)
 {
-    if (ac != 2) {
-        std::cout << "please provide the config file path" << std::endl;
+    if (ac > 2) {
+        std::cout << "please provide one config file path or nothing for basic config" << std::endl;
         return 84;
     }
     zia::server::Server server;
     try {
-        server.init(av[1]);
+        server.init(ac != 2 ? "" : av[1]);
         server.run();
     } catch (const MyException &e) {
         Debug::err(e);
