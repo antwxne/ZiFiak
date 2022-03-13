@@ -35,11 +35,11 @@ class SetID : public ziapi::IPreProcessorModule {
         std::size_t _id;
 };
 
-struct __attribute__((packed)) uniqueId {
-    u_int64_t time;
-    u_int32_t ip;
-    u_int16_t port;
-    u_int8_t id;
-};
+// struct __attribute__((packed)) uniqueId {
+//     u_int64_t time;
+//     u_int32_t ip;
+//     u_int16_t port;
+//     u_int8_t id;
+// };
 
 DYLIB_API ziapi::IModule *LoadZiaModule();
