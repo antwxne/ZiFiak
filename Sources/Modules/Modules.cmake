@@ -65,6 +65,14 @@ add_library(log SHARED ${BASE_MODULE}
 conan_target_link_libraries(log ${CONAN_LIBS})
 add_dependencies(log ziapi)
 
+# SetID MODULE
+add_library(setId SHARED ${BASE_MODULE}
+        Sources/Modules/SetID/SetID.hpp
+        Sources/Modules/SetID/SetID.cpp
+        )
+conan_target_link_libraries(setId ${CONAN_LIBS})
+add_dependencies(setId ziapi)
+
 # HTTPS NETWORK MODULE
 add_library(HTTPS_network SHARED ${BASE_MODULE}
         Sources/Modules/Network/HTTPS/HTTPSClient.hpp

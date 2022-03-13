@@ -95,9 +95,9 @@ ziapi::http::Request HTTPParser::createRequest(const std::string &str)
     } catch (std::invalid_argument &e) {
         std::cout << e.what() << std::endl;
     }
-    for (auto &elem: req.headers) {
-        std::cout << elem.first << " " << elem.second << std::endl;
-    }
+    // for (auto &elem: req.headers) {
+    //     std::cout << elem.first << " " << elem.second << std::endl;
+    // }
     return req;
 }
 
