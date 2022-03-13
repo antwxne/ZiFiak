@@ -31,9 +31,6 @@ class Environment : public ziapi::IPreProcessorModule {
         [[nodiscard]] double GetPreProcessorPriority() const noexcept override;
 
         [[nodiscard]] bool ShouldPreProcess(const ziapi::http::Context &ctx, const ziapi::http::Request &req) const override;
-
-    private:
-        bool _active;
 };
 
 DYLIB_API ziapi::IModule *LoadZiaModule();

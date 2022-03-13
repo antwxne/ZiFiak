@@ -9,17 +9,12 @@
 #include "Environment.hpp"
 #include "Debug/Debug.hpp"
 
-Environment::Environment() : _active(false)
+Environment::Environment()
 {
 }
 
 void Environment::Init(const ziapi::config::Node &config)
 {
-    try {
-        this->_active = config["Environment"]["activated"].AsBool();
-    } catch (const std::exception& e) {
-        Debug::warn("Failed to init Environment module");
-    }
 }
 
 [[nodiscard]] ziapi::Version Environment::GetVersion() const noexcept
@@ -74,7 +69,7 @@ void Environment::PreProcess(ziapi::http::Context &ctx, ziapi::http::Request &re
 
 [[nodiscard]] bool Environment::ShouldPreProcess(const ziapi::http::Context &ctx, const ziapi::http::Request &req) const
 {
-    return this->_active;
+    return true;
 }
 
 DYLIB_API ziapi::IModule *LoadZiaModule()

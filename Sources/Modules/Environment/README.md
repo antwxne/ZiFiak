@@ -6,18 +6,11 @@
 
 ####Config:
 
-- To implement this module correctly you need to add a variable in you server config file named "Environment" wich contain the "activated" variable, respectively to able/disable the module.
-```json
-{
-    "Environment": {
-        "activated": true
-    }
-}
-```
+- This module does not need any configuration
 
 ####How it works ?
 
-- In PreProcess, if the module is activated, it will check in the body if there is the key:
+- In PreProcess, it will check in the body if there is the key:
   - setenv
   - unsetenv
 
