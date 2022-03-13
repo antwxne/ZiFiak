@@ -73,6 +73,14 @@ add_library(setId SHARED ${BASE_MODULE}
 conan_target_link_libraries(setId ${CONAN_LIBS})
 add_dependencies(setId ziapi)
 
+# Environment MODULE
+add_library(Environment SHARED ${BASE_MODULE}
+        Sources/Modules/Environment/Environment.hpp
+        Sources/Modules/Environment/Environment.cpp
+        )
+conan_target_link_libraries(Environment ${CONAN_LIBS})
+add_dependencies(Environment ziapi)
+
 # HTTPS NETWORK MODULE
 add_library(HTTPS_network SHARED ${BASE_MODULE}
         Sources/Modules/Network/HTTPS/HTTPSClient.hpp
