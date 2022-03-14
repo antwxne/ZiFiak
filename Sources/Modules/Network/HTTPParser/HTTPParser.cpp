@@ -51,9 +51,10 @@ std::string getMethod(std::string &method)
 
 ziapi::http::Version getVersion(std::string &version)
 {
-    if (_versions.find(version) == _versions.end())
+    if (_versions.find(version) == _versions.end()) {
         throw std::invalid_argument(
             "getVersion - Http request Usage:\n{Method}\\r\\n{target}\\r\\n{version}\\r\\n{header}\\r\\n{body}");
+    }
     return _versions.at(version);
 }
 
@@ -84,17 +85,13 @@ ziapi::http::Request HTTPParser::createRequest(const std::string &str)
     std::string temp;
 
     //    Debug::log("client buffer: " + str);
-    try {
-        std::getline(stream, temp, ' ');
-        req.method = getMethod(temp);
-        std::getline(stream, temp, ' ');
-        req.target = getTarget(temp);
-        std::getline(stream, temp, '\r');
-        req.version = getVersion(temp);
-        getHeaderBody(req, stream);
-    } catch (std::invalid_argument &e) {
-        std::cout << e.what() << std::endl;
-    }
+    std::getline(stream, temp, ' ');
+    req.method = getMethod(temp);
+    std::getline(stream, temp, ' ');
+    req.target = getTarget(temp);
+    std::getline(stream, temp, '\r');
+    req.version = getVersion(temp);
+    getHeaderBody(req, stream);
     // for (auto &elem: req.headers) {
     //     std::cout << elem.first << " " << elem.second << std::endl;
     // }
